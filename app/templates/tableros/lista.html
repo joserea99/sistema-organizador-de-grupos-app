@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Tableros - Organizador de Grupos{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/cards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/forms.css') }}">
+<style>
+    /* Estilos específicos para el dashboard que no están en componentes */
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-6);
+        margin-bottom: var(--space-8);
+    }
+
+    .stat-card {
+        padding: var(--space-6);
+        border-radius: var(--radius-xl);
+        text-align: center;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--color-primary);
+        margin-bottom: var(--space-2);
+    }
+
+    .tableros-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--space-6);
+    }
+
+    .tablero-card {
+        background: var(--bg-primary);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        transition: transform 0.3s ease;
+    }
+
+    .tablero-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .tablero-header {
+        background: var(--bg-secondary);
+        padding: var(--space-6);
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .tablero-icon {
+        font-size: 2.5rem;
+        margin-bottom: var(--space-4);
+        display: inline-block;
+        padding: var(--space-3);
+        background: var(--bg-primary);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .tablero-body {
+        padding: var(--space-6);
+    }
+
+    .tablero-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: var(--space-6);
+        text-align: center;
+    }
+
+    .tablero-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container p-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="header mb-8 p-6 rounded-2xl flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold header-title">
+                <i class="fas fa-layer-group mr-3"></i>Mis Tableros
+            </h1>
+            <p class="text-secondary mt-2">Gestiona tus grupos y ministerios</p>
+        </div>
+        <div class="flex gap-4">
+            <select id="theme-selector" class="form-select text-sm w-auto">
+                <option value="clasico">Tema Clásico</option>
+                <option value="moderno">Tema Moderno</option>
+                <option value="minimalista">Tema Minimalista</option>
+                <option value="oscuro">Tema Oscuro</option>
+            </select>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">
+                <i class="fas fa-sign-out-alt mr-2"></i>Salir
+            </a>
+        </div>
+    </header>
+
+    <!-- Estadísticas -->
+    <section class="stats-overview">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_tableros or 0 }}</div>
+            <div class="text-secondary font-medium">Tableros</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_personas or 0 }}</div>
+            <div class="text-secondary font-medium">Personas</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_listas or 0 }}</div>
+            <div class="text-secondary font-medium">Listas</div>
+        </div>
+    </section>
+
+    <!-- Controles -->
+    <section class="controls-section mb-8 flex flex-wrap gap-4 justify-between items-center">
+        <div class="flex-1 min-w-[300px]">
+            <input type="text" class="form-input" placeholder="Buscar tableros..."
+                onkeyup="filtrarTableros(this.value)">
+        </div>
+        <a href="{{ url_for('tableros.crear') }}" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Nuevo Tablero
+        </a>
+    </section>
+
+    <!-- Grid de Tableros -->
+    <section class="tableros-grid" id="tablerosGrid">
+        {% if tableros %}
+        {% for tablero in tableros %}
+        <div class="tablero-card">
+            <div class="tablero-header">
+                <div class="tablero-icon">{{ tablero.icono or '📋' }}</div>
+                <h3 class="text-xl font-bold text-primary">{{ tablero.nombre }}</h3>
+            </div>
+            <div class="tablero-body">
+                <div class="tablero-stats">
+                    <div>
+                        <div class="text-2xl font-bold text-primary">{{ tablero.total_listas or 0 }}</div>
+                        <div class="text-xs text-secondary uppercase tracking-wider">Listas</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-primary">{{ tablero.total_tarjetas or 0 }}</div>
+                        <div class="text-xs text-secondary uppercase tracking-wider">Personas</div>
+                    </div>
+                </div>
+                <div class="tablero-actions">
+                    <a href="{{ url_for('tableros.ver', tablero_id=tablero.id) }}"
+                        class="btn btn-primary w-full justify-center">
+                        Abrir
+                    </a>
+                    <a href="{{ url_for('tableros.editar', tablero_id=tablero.id) }}"
+                        class="btn btn-secondary w-full justify-center">
+                        Editar
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-span-full text-center py-12 text-secondary">
+            <i class="fas fa-folder-open text-6xl mb-4 opacity-50"></i>
+            <p class="text-xl">No tienes tableros aún. ¡Crea el primero!</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+    function filtrarTableros(texto) {
+        const busqueda = texto.toLowerCase();
+        document.querySelectorAll('.tablero-card').forEach(card => {
+            const titulo = card.querySelector('h3').textContent.toLowerCase();
+            if (titulo.includes(busqueda)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

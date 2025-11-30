@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Tableros - Organizador de Ministerios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-50: #f0f9ff;
+            --primary-500: #0ea5e9;
+            --primary-600: #0284c7;
+            --secondary-500: #a855f7;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --success-500: #22c55e;
+            --warning-500: #f59e0b;
+            --error-500: #ef4444;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-50) 0%, #faf5ff 100%);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--secondary-500) 100%);
+            padding: var(--space-6) var(--space-8);
+            color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .btn-header {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            font-weight: 500;
+            transition: var(--transition-normal);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-8);
+        }
+
+        .stats-overview {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-6);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            background: var(--gray-50);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-600);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+        }
+
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .search-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .search-controls {
+            display: flex;
+            gap: var(--space-4);
+            align-items: center;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: var(--space-4) var(--space-6);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            font-size: 1rem;
+            transition: var(--transition-normal);
+            background: var(--gray-50);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .btn-crear {
+            background: linear-gradient(135deg, var(--success-500), #16a34a);
+            color: white;
+            border: none;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-xl);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .btn-crear:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tableros-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .tablero-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            transition: var(--transition-normal);
+            position: relative;
+        }
+
+        .tablero-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .tablero-card.favorito::before {
+            content: '⭐';
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            z-index: 1;
+            font-size: 1.2rem;
+        }
+
+        .tablero-header {
+            background: linear-gradient(135deg, var(--gray-700), var(--gray-900));
+            color: white;
+            padding: var(--space-6);
+            position: relative;
+        }
+
+        .tablero-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--space-4);
+        }
+
+        .tablero-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+
+        .tablero-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .tablero-body {
+            padding: var(--space-6);
+        }
+
+        .tablero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .tablero-stat {
+            text-align: center;
+            background: var(--gray-50);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+        }
+
+        .stat-number-small {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-600);
+        }
+
+        .stat-label-small {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .tablero-actions {
+            display: flex;
+            gap: var(--space-4);
+        }
+
+        .btn-tablero {
+            flex: 1;
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            transition: var(--transition-normal);
+        }
+
+        .btn-primary {
+            background: var(--primary-500);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-600);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .comandos-section {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            margin-top: var(--space-8);
+        }
+
+        .comandos-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+
+        .comandos-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .comandos-subtitle {
+            color: var(--gray-600);
+            font-size: 1.125rem;
+        }
+
+        .comandos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+        }
+
+        .comando-card {
+            background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            text-align: center;
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .comando-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary-500);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .comando-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-xl);
+            background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto var(--space-4);
+        }
+
+        .comando-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .comando-description {
+            color: var(--gray-600);
+            margin-bottom: var(--space-6);
+            line-height: 1.5;
+        }
+
+        .comando-action {
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+            color: white;
+            border: none;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-4);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .comando-action:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .comando-action.danger {
+            background: linear-gradient(135deg, var(--error-500), #dc2626);
+        }
+
+        .comando-action.success {
+            background: linear-gradient(135deg, var(--success-500), #16a34a);
+        }
+
+        .comando-action.warning {
+            background: linear-gradient(135deg, var(--warning-500), #d97706);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--space-8);
+            color: var(--gray-600);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--gray-300);
+            margin-bottom: var(--space-4);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: var(--space-6);
+            right: var(--space-6);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .toast {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-6);
+            box-shadow: var(--shadow-xl);
+            border-left: 4px solid var(--success-500);
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            min-width: 300px;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: var(--transition-normal);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.error { border-left-color: var(--error-500); }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: var(--space-4);
+                text-align: center;
+            }
+            
+            .main-container {
+                padding: var(--space-4);
+            }
+            
+            .tableros-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .comandos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <i class="fas fa-clipboard-list"></i>
+                Mis Tableros de Ministerio
+            </h1>
+            <div class="header-actions">
+                <a href="{{ url_for('profile') }}" class="btn-header">
+                    <i class="fas fa-user"></i>
+                    Perfil
+                </a>
+                <a href="{{ url_for('logout') }}" class="btn-header">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Salir
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- Estadísticas Generales -->
+        <section class="stats-overview">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.total_tableros or 0 }}</div>
+                    <div class="stat-label">Tableros Totales</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.total_personas or 0 }}</div>
+                    <div class="stat-label">Personas Registradas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.total_listas or 0 }}</div>
+                    <div class="stat-label">Listas Activas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.tableros_activos or 0 }}</div>
+                    <div class="stat-label">Tableros con Datos</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Búsqueda y Controles -->
+        <section class="search-section">
+            <div class="search-header">
+                <h2 class="search-title">
+                    <i class="fas fa-search"></i>
+                    Mis Tableros
+                </h2>
+            </div>
+            
+            <div class="search-controls">
+                <input 
+                    type="text" 
+                    class="search-bar" 
+                    placeholder="Buscar tableros por nombre..."
+                    value="{{ busqueda }}"
+                    onchange="buscarTableros(this.value)"
+                >
+                <a href="{{ url_for('crear_tablero') }}" class="btn-crear">
+                    <i class="fas fa-plus"></i>
+                    Crear Tablero
+                </a>
+                <a href="{{ url_for('ver_plantillas') }}" class="btn-crear" style="background: linear-gradient(135deg, var(--secondary-500), #7c3aed);">
+                    <i class="fas fa-magic"></i>
+                    Usar Plantilla
+                </a>
+            </div>
+        </section>
+
+        <!-- Grid de Tableros -->
+        <section class="tableros-section">
+            {% if tableros %}
+            <div class="tableros-grid">
+                {% for tablero in tableros %}
+                <div class="tablero-card {{ 'favorito' if tablero.favorito else '' }}">
+                    <div class="tablero-header">
+                        <div class="tablero-icon">{{ tablero.icono or '📋' }}</div>
+                        <h3 class="tablero-title">{{ tablero.nombre }}</h3>
+                        {% if tablero.descripcion %}
+                        <p class="tablero-description">{{ tablero.descripcion }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="tablero-body">
+                        <div class="tablero-stats">
+                            <div class="tablero-stat">
+                                <div class="stat-number-small">{{ tablero.total_listas or 0 }}</div>
+                                <div class="stat-label-small">Listas</div>
+                            </div>
+                            <div class="tablero-stat">
+                                <div class="stat-number-small">{{ tablero.total_tarjetas or 0 }}</div>
+                                <div class="stat-label-small">Personas</div>
+                            </div>
+                            <div class="tablero-stat">
+                                <div class="stat-number-small">
+                                    {% if tablero.actividad_texto %}
+                                        {{ tablero.actividad_texto.split()[1] if tablero.actividad_texto.split()|length > 1 else tablero.actividad_texto }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                                <div class="stat-label-small">Actividad</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tablero-actions">
+                            <a href="{{ url_for('ver_tablero', tablero_id=tablero.id) }}" class="btn-tablero btn-primary">
+                                <i class="fas fa-eye"></i>
+                                Abrir
+                            </a>
+                            <a href="{{ url_for('editar_tablero', tablero_id=tablero.id) }}" class="btn-tablero btn-secondary">
+                                <i class="fas fa-edit"></i>
+                                Editar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h3>No tienes tableros aún</h3>
+                <p>Crea tu primer tablero o usa una plantilla prediseñada</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Sección de Comandos Adicionales -->
+        <section class="comandos-section">
+            <div class="comandos-header">
+                <h2 class="comandos-title">
+                    <i class="fas fa-tools"></i>
+                    Herramientas Avanzadas
+                </h2>
+                <p class="comandos-subtitle">
+                    Gestiona y administra todos tus datos de ministerio
+                </p>
+            </div>
+
+            <div class="comandos-grid">
+                <!-- Exportar Todos los Datos -->
+                <div class="comando-card">
+                    <div class="comando-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3 class="comando-title">Exportar Todo</h3>
+                    <p class="comando-description">
+                        Descarga todos tus tableros y personas en formato Excel, CSV o JSON
+                    </p>
+                    <a href="{{ url_for('descargar_datos', formato='excel') }}" class="comando-action success">
+                        <i class="fas fa-file-excel"></i>
+                        Descargar Excel
+                    </a>
+                </div>
+
+                <!-- Plantilla de Importación -->
+                <div class="comando-card">
+                    <div class="comando-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h3 class="comando-title">Plantilla Excel</h3>
+                    <p class="comando-description">
+                        Descarga la plantilla para importar personas masivamente
+                    </p>
+                    <a href="{{ url_for('descargar_plantilla_excel') }}" class="comando-action">
+                        <i class="fas fa-download"></i>
+                        Descargar Plantilla
+                    </a>
+                </div>
+
+                <!-- Dashboard Analytics -->
+                <div class="comando-card">
+                    <div class="comando-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="comando-title">Dashboard</h3>
+                    <p class="comando-description">
+                        Ve estadísticas completas y análisis de tu ministerio
+                    </p>
+                    <a href="{{ url_for('dashboard') }}" class="comando-action">
+                        <i class="fas fa-analytics"></i>
+                        Ver Dashboard
+                    </a>
+                </div>
+
+                <!-- Recordatorios -->
+                <div class="comando-card">
+                    <div class="comando-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3 class="comando-title">Recordatorios</h3>
+                    <p class="comando-description">
+                        Gestiona seguimientos pendientes y próximos contactos
+                    </p>
+                    <a href="{{ url_for('recordatorios') }}" class="comando-action warning">
+                        <i class="fas fa-calendar-check"></i>
+                        Ver Recordatorios
+                    </a>
+                </div>
+
+                <!-- Backup de Datos -->
+                <div class="comando-card">
+                    <div class="comando-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="comando-title">Respaldo</h3>
+                    <p class="comando-description">
+                        Crear una copia de seguridad completa de todos tus datos
+                    </p>
+                    <button class="comando-action" onclick="crearBackup()">
+                        <i class="fas fa-save"></i>
+                        Crear Respaldo
+                    </button>
+                </div>
+
+                <!-- Configuración Global -->
+                <div class="comando-card">
+                    <div class="comando-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3 class="comando-title">Configuración</h3>
+                    <p class="comando-description">
+                        Ajusta preferencias globales y configuración de cuenta
+                    </p>
+                    <a href="{{ url_for('profile') }}" class="comando-action">
+                        <i class="fas fa-user-cog"></i>
+                        Configurar
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function buscarTableros(query) {
+            const url = new URL(window.location);
+            if (query.trim()) {
+                url.searchParams.set('busqueda', query);
+            } else {
+                url.searchParams.delete('busqueda');
+            }
+            window.location.href = url.toString();
+        }
+
+        function crearBackup() {
+            showToast('🔄 Creando respaldo completo...', 'info');
+            
+            fetch('/descargar/json')
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `backup_ministerio_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showToast('✅ Respaldo creado exitosamente', 'success');
+                })
+                .catch(error => {
+                    showToast('❌ Error creando respaldo', 'error');
+                    console.error('Error:', error);
+                });
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'exclamation-triangle' : 'info-circle';
+            
+            toast.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 4000);
+        }
+
+        // Mostrar mensajes flash
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => {
+                        showToast('{{ message }}', '{{ 'error' if category == 'error' else 'success' }}');
+                    }, 500);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

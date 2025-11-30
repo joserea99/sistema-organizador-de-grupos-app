@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Lista - {{ lista.nombre }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Estilos para la paleta de colores y el contenedor principal */
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .card-header, .card-body {
+            padding: 1.5rem;
+        }
+        .card-header {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            background-color: #f9fafb;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .color-swatch {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        .color-swatch.selected {
+            border-color: #ffffff;
+            box-shadow: 0 0 0 3px #667eea;
+            transform: scale(1.1);
+        }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h4 style="margin:0;">✏️ Editar Lista</h4>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" action="">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="nombre" class="form-label">Nombre de la lista:</label>
+                        <input type="text" name="nombre" id="nombre" value="{{ lista.nombre }}" class="form-control" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <label class="form-label">Color:</label>
+                        <div id="color-palette-container" class="color-palette">
+                            </div>
+                        <input type="hidden" name="color" id="selected-color" value="{{ lista.color }}">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a href="{{ url_for('tableros.ver', tablero_id=tablero.id) }}" class="btn btn-secondary">← Cancelar</a>
+                        <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const COLORES_DISPONIBLES = [
+                '#e53935', '#d81b60', '#8e24aa', '#5e35b1', '#3949ab', '#1e88e5', '#039be5', '#00acc1', 
+                '#00897b', '#43a047', '#7cb342', '#c0ca33', '#fdd835', '#ffb300', '#fb8c00', '#f4511e', 
+                '#6d4c41', '#757575', '#546e7a', '#2c3e50'
+            ];
+
+            const paletteContainer = document.getElementById('color-palette-container');
+            const hiddenInput = document.getElementById('selected-color');
+            let currentColor = hiddenInput.value;
+
+            function selectColor(colorValue, swatchElement) {
+                hiddenInput.value = colorValue;
+                paletteContainer.querySelectorAll('.color-swatch').forEach(sw => sw.classList.remove('selected'));
+                if (swatchElement) {
+                    swatchElement.classList.add('selected');
+                }
+            }
+
+            COLORES_DISPONIBLES.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = color;
+                swatch.dataset.color = color;
+                if (color.toLowerCase() === currentColor.toLowerCase()) {
+                    swatch.classList.add('selected');
+                }
+                swatch.addEventListener('click', () => selectColor(color, swatch));
+                paletteContainer.appendChild(swatch);
+            });
+
+            if (!COLORES_DISPONIBLES.includes(currentColor.toLowerCase())) {
+                const customSwatch = document.createElement('div');
+                customSwatch.className = 'color-swatch selected';
+                customSwatch.style.backgroundColor = currentColor;
+                customSwatch.dataset.color = currentColor;
+                customSwatch.addEventListener('click', () => selectColor(currentColor, customSwatch));
+                paletteContainer.prepend(customSwatch);
+            }
+        });
+    </script>
+</body>
+</html>

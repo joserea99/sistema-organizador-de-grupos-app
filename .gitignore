@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+venv/
+.env
+*.db
+.DS_Store
+instance/
+*.log
+data/*.json
+venv/bin/activate && python run.py.png

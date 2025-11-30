@@ -1,0 +1,112 @@
+/* === MAPS COMPONENT === */
+
+.maps-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.map-container {
+    height: 700px;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* Controles del Mapa */
+.map-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    align-items: center;
+}
+
+/* Botón especial para Smart Cluster */
+#btnSmartCluster {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+}
+
+#btnSmartCluster:hover {
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+}
+
+.map-filter-btn {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+.map-filter-btn:hover {
+    background: var(--bg-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.map-filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+.map-filter-btn i {
+    font-size: 0.9rem;
+}
+
+/* InfoWindow Customization (Google Maps) */
+.gm-style-iw {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+.gm-style-iw-d {
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
+.gm-style-iw-c {
+    padding: 0 !important;
+}
+
+.gm-style-iw-t::after {
+    background: var(--bg-primary) !important;
+}
+
+.map-info-window {
+    padding: var(--space-3);
+    min-width: 200px;
+}
+
+.map-info-window h3 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.map-info-window p {
+    margin: 0 0 var(--space-1) 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.map-info-window .btn-sm {
+    margin-top: var(--space-2);
+    width: 100%;
+}

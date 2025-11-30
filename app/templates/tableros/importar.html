@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar desde Excel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .info-section {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-section h3 {
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-section ul {
+            color: #0369a1;
+            margin-left: 20px;
+        }
+
+        .info-section ul li {
+            margin-bottom: 5px;
+        }
+
+        .upload-section {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+
+        .upload-section:hover {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+
+        .upload-section.dragover {
+            border-color: #059669;
+            background-color: #dcfce7;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .upload-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .file-info {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background: #ecfdf5;
+            border-radius: 6px;
+            color: #047857;
+        }
+
+        .template-section {
+            background: #fefce8;
+            border: 1px solid #eab308;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .template-section h3 {
+            color: #a16207;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .template-btn {
+            background: #eab308;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .template-btn:hover {
+            background: #ca8a04;
+            transform: translateY(-1px);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+        }
+
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .example-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .example-table th,
+        .example-table td {
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .example-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .example-table td {
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            display: none;
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Importar desde Excel</h1>
+            <p>Lista: <strong>{{ lista.nombre }}</strong> ({{ lista.tablero_nombre }})</p>
+        </div>
+
+        <div class="content">
+            <!-- Información sobre formato -->
+            <div class="info-section">
+                <h3>
+                    ℹ️ Información Importante
+                </h3>
+                <ul>
+                    <li><strong>Formatos aceptados:</strong> .xlsx, .xls, .csv</li>
+                    <li><strong>Columnas requeridas:</strong> Nombre (obligatorio)</li>
+                    <li><strong>Columnas opcionales:</strong> Dirección, Teléfono, Edad, Estado Civil, Num Hijos, Edades Hijos</li>
+                    <li><strong>Edades de hijos:</strong> Separar por comas (ej: 5,8,12)</li>
+                    <li><strong>Límite:</strong> Máximo 1000 filas por importación</li>
+                </ul>
+            </div>
+
+            <!-- Descargar plantilla -->
+            <div class="template-section">
+                <h3>
+                    📋 Plantilla de Excel
+                </h3>
+                <p>Para facilitar la importación, descarga nuestra plantilla con el formato correcto:</p>
+                <br>
+                <a href="{{ url_for('tableros.descargar_plantilla_excel') }}" class="template-btn">
+                    ⬇️ Descargar Plantilla
+                </a>
+                
+                <!-- Ejemplo de formato -->
+                <table class="example-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Edad</th>
+                            <th>Estado Civil</th>
+                            <th>Num Hijos</th>
+                            <th>Edades Hijos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Juan Pérez</td>
+                            <td>Calle 123, Col. Centro</td>
+                            <td>555-0123</td>
+                            <td>35</td>
+                            <td>Casado</td>
+                            <td>2</td>
+                            <td>5,8</td>
+                        </tr>
+                        <tr>
+                            <td>María García</td>
+                            <td>Av. Principal 456</td>
+                            <td>555-0124</td>
+                            <td>28</td>
+                            <td>Soltera</td>
+                            <td>0</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Formulario de upload -->
+            <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                <div class="upload-section" id="uploadArea">
+                    <div class="upload-content">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">📁</div>
+                        <h3>Selecciona tu archivo Excel</h3>
+                        <p style="color: #6b7280; margin-bottom: 20px;">
+                            Arrastra el archivo aquí o haz clic para seleccionar
+                        </p>
+                        
+                        <input type="file" id="fileInput" name="archivo" class="file-input" 
+                               accept=".xlsx,.xls,.csv" required>
+                        <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                            📂 Seleccionar Archivo
+                        </button>
+                        
+                        <div class="file-info" id="fileInfo">
+                            <strong>Archivo seleccionado:</strong> <span id="fileName"></span><br>
+                            <span id="fileSize"></span>
+                        </div>
+                        
+                        <div class="progress-bar" id="progressBar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{{ url_for('tableros.ver', tablero_id=lista.tablero_id) }}" class="btn btn-secondary">
+                        ❌ Cancelar
+                    </a>
+                    <button type="submit" id="submitBtn" class="btn btn-primary" disabled>
+                        🚀 Importar Personas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const submitBtn = document.getElementById('submitBtn');
+        const uploadArea = document.getElementById('uploadArea');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+
+        // Manejar selección de archivo
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                displayFileInfo(file);
+            }
+        });
+
+        // Drag & Drop
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                // Verificar extensión
+                const allowedExtensions = ['.xlsx', '.xls', '.csv'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (allowedExtensions.includes(fileExtension)) {
+                    fileInput.files = files;
+                    displayFileInfo(file);
+                } else {
+                    alert('Solo se permiten archivos .xlsx, .xls o .csv');
+                }
+            }
+        });
+
+        function displayFileInfo(file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+            submitBtn.disabled = false;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Manejar envío del formulario
+        uploadForm.addEventListener('submit', function(e) {
+            if (!fileInput.files[0]) {
+                e.preventDefault();
+                alert('Por favor selecciona un archivo antes de continuar.');
+                return;
+            }
+
+            // Mostrar barra de progreso
+            progressBar.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Procesando...';
+
+            // Simular progreso (en producción esto vendría del servidor)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 200);
+
+            // El formulario se enviará normalmente
+            // La barra de progreso se ocultará cuando la página se recargue
+        });
+    </script>
+</body>
+</html>	

@@ -1,0 +1,4694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ tablero.nombre if tablero else 'Gestión de Personas' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --primary-light: #764ba2;
+            --secondary-color: #f093fb;
+            --accent-color: #4facfe;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-dark: #111827;
+            --border-color: #e5e7eb;
+            --border-light: #f3f4f6;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* === HEADER === */
+        .header {
+            background: var(--bg-primary);
+            box-shadow: var(--shadow-sm);
+            padding: var(--space-4) 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 var(--space-6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        /* === MAIN CONTAINER === */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+
+        /* === CONTROLS === */
+        .controls-section {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-md);
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+
+        .controls-actions {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--space-2);
+            align-items: center;
+        }
+
+        /* === DROPDOWN === */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .dropdown-toggle::after {
+            content: '\f0d7';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-left: var(--space-2);
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown-toggle.active::after {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-secondary);
+            color: var(--primary-color);
+        }
+
+        .dropdown-item:first-child {
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .dropdown-item:last-child {
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+
+        /* === IMPORT/EXPORT SECTION === */
+        .import-export-section {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-md);
+        }
+
+        .import-export-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .import-export-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .import-export-actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .import-export-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+        }
+
+        .import-card, .export-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            border: 1px solid var(--border-light);
+        }
+
+        .import-card-header, .export-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .import-card-header i, .export-card-header i {
+            font-size: 1.5rem;
+            color: var(--success-color);
+        }
+
+        .export-card-header i {
+            color: var(--primary-color);
+        }
+
+        .import-card-header h3, .export-card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .import-card-content p, .export-card-content p {
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+        }
+
+        .import-steps {
+            margin-bottom: var(--space-4);
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+            padding: var(--space-2);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+        }
+
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step span:not(.step-number) {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .export-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .export-option {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .export-option:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .export-option i {
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .controls-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .search-filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .search-input {
+            position: relative;
+        }
+
+        .search-input input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4) var(--space-3) var(--space-10);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-input input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input .search-icon {
+            position: absolute;
+            left: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .filter-select select {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            background: var(--bg-primary);
+            transition: all 0.2s ease;
+        }
+
+        .filter-select select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats-row {
+            display: flex;
+            gap: var(--space-4);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        /* === KANBAN BOARD === */
+        .kanban-container {
+            display: flex;
+            gap: var(--space-6);
+            overflow-x: auto;
+            padding-bottom: var(--space-4);
+            margin-bottom: var(--space-8);
+        }
+
+        /* 🎯 DRAG & DROP PARA LISTAS */
+        .kanban-container.sortable-lists {
+            cursor: grab;
+        }
+
+        .kanban-container.sortable-lists .kanban-list {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .kanban-container.sortable-lists .kanban-list.sortable-chosen {
+            transform: scale(1.02);
+            box-shadow: var(--shadow-xl);
+            cursor: grabbing;
+            z-index: 1000;
+        }
+
+        .kanban-container.sortable-lists .kanban-list.sortable-ghost {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .kanban-list {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            min-width: 350px;
+            max-width: 350px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
+        }
+
+        .list-header {
+            padding: var(--space-5) var(--space-6);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        }
+
+        .list-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .list-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .list-count {
+            background: var(--primary-color);
+            color: white;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .list-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .list-content {
+            padding: var(--space-4);
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .sortable-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            min-height: 100px;
+        }
+
+        /* ===== 🎯 PERSON CARDS CON CLICK ACORDEÓN (MODIFICADO CON CORRECCIONES) ===== */
+        .person-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* === ESTILO PARA EL FOCO DEL TECLADO === */
+        .person-card:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 🎯 HEADER: SIEMPRE VISIBLE CON INDICADOR DE CLICK (CORREGIDO) */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4);
+            position: relative;
+            z-index: 2;
+            background: var(--bg-primary);
+            cursor: pointer; /* Indicar que es clickeable */
+        }
+
+        /* 🔥 CORRECCIÓN: CONTENEDOR DEL NOMBRE OPTIMIZADO */
+        .card-header > div:first-child {
+            flex: 1; /* Ocupar el espacio disponible */
+            min-width: 0; /* Permitir que se reduzca si es necesario */
+        }
+
+        /* 🔥 CORRECCIÓN: CHEVRON EN EL BORDE DERECHO Y CLICKEABLE */
+        .card-header::after {
+            content: '\f078'; /* fas fa-chevron-down */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: var(--space-4); /* 🔥 CAMBIADO: Al borde derecho */
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.875rem;
+            transition: transform 0.3s ease, right 0.3s ease; /* 🔥 AGREGADO: transición para right */
+            pointer-events: auto; /* 🔥 CAMBIADO: Hacer clickeable */
+            z-index: 5; /* 🔥 CAMBIADO: Reducir de 10 a 5 */
+            cursor: pointer; /* 🔥 CAMBIADO: Mostrar cursor de click */
+            padding: var(--space-1); /* 🔥 CAMBIADO: Reducir de var(--space-2) a var(--space-1) */
+        }
+
+        /* Indicador visual más claro de que se puede expandir */
+        .card-header:hover::after {
+            color: var(--primary-color);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .person-card.expanded .card-header::after {
+            right: calc(var(--space-4) + 90px); /* 🔥 NUEVO: Mover hacia la izquierda cuando esté expandida */
+            transform: translateY(-50%) rotate(180deg);
+            color: var(--primary-color); /* 🔥 OPCIONAL: Hacerla más visible */
+            font-size: 0.75rem; /* 🔥 OPCIONAL: Ligeramente más pequeña */
+        }
+
+        /* 🔥 CORRECCIÓN: NOMBRE OCUPA CASI TODO EL ANCHO */
+        .person-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.4;
+            margin-right: calc(var(--space-4) + 20px); /* 🔥 CAMBIADO: Solo espacio para el chevron */
+            flex: 1; /* 🔥 CAMBIADO: Que ocupe el espacio disponible */
+        }
+
+        .person-info {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: var(--space-1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 🔥 CORRECCIÓN: BOTONES OCULTOS EN MODO COMPACTO */
+        .card-actions {
+            display: none; /* 🔥 CAMBIADO: Ocultar completamente en modo compacto */
+            gap: var(--space-1);
+            transition: opacity 0.3s ease;
+            position: relative;
+            z-index: 15; /* 🔥 CAMBIADO: Aumentar de 10 a 15 */
+        }
+
+        /* 🔥 NUEVO: ASEGURAR QUE LOS BOTONES SEAN COMPLETAMENTE CLICKEABLES */
+        .card-actions button,
+        .card-actions a {
+            position: relative;
+            z-index: 20; /* 🔥 NUEVO: Máxima prioridad para botones individuales */
+            pointer-events: auto;
+        }
+
+        /* 🎯 CONTENIDO EXPANDIBLE: CONTROLADO POR CLASE .expanded */
+        .card-expandable {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-primary);
+        }
+
+        .card-details {
+            padding: 0 var(--space-4) var(--space-3);
+            display: grid;
+            gap: var(--space-2);
+        }
+
+        .card-detail {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-icon {
+            width: 14px;
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+
+        .card-contact {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            margin: 0 var(--space-4) var(--space-4);
+        }
+
+        .contact-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-2);
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+        }
+
+        /* 🔥 ESTADO EXPANDIDO: ACTIVADO POR CLICK (CON CORRECCIONES) */
+        .person-card.expanded {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-color);
+            z-index: 10;
+        }
+
+        .person-card.expanded .person-info {
+            opacity: 1;
+        }
+
+        /* 🔥 CORRECCIÓN: MOSTRAR BOTONES SOLO CUANDO ESTÁ EXPANDIDA */
+        .person-card.expanded .card-actions {
+            display: flex; /* 🔥 CAMBIADO: Mostrar solo al expandir */
+            opacity: 1;
+        }
+
+        /* 🔥 CORRECCIÓN: AJUSTAR MARGEN DEL NOMBRE CUANDO ESTÁ EXPANDIDA */
+        .person-card.expanded .person-name {
+            margin-right: calc(var(--space-4) + 180px); /* 🔥 CAMBIADO: Aumentar de 80px a 180px para más espacio */
+        }
+
+        .person-card.expanded .card-expandable {
+            max-height: 500px;
+            opacity: 1;
+            padding-top: var(--space-2);
+        }
+
+        /* 🎯 INDICADOR VISUAL DE EXPANDIDO */
+        .person-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        }
+
+        .person-card.expanded::before {
+            transform: scaleX(1);
+        }
+
+        /* 🎯 HOVER SUTIL SOLO PARA INDICAR QUE ES CLICKEABLE */
+        .person-card:hover:not(.dragging):not(.expanded) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 🎯 CUANDO SE ESTÁ ARRASTRANDO (MANTENER FUNCIONALIDAD EXISTENTE) */
+        .person-card.dragging {
+            opacity: 0.8;
+            transform: rotate(2deg) scale(0.98) !important;
+            z-index: 100 !important;
+        }
+
+        .person-card.dragging .card-expandable {
+            max-height: 0 !important;
+            opacity: 0 !important;
+            transition: none !important;
+        }
+
+        .person-card.dragging .person-info {
+            opacity: 0 !important;
+        }
+
+        .person-card.dragging .card-actions {
+            opacity: 0 !important;
+        }
+
+        /* Estados de SortableJS (MANTENER) */
+        .sortable-ghost {
+            opacity: 0.3 !important;
+            background: var(--bg-secondary) !important;
+            transform: none !important;
+        }
+
+        .sortable-chosen {
+            cursor: grabbing !important;
+            transform: scale(1.02);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-1) var(--space-2);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .tag.estado-casado { background: #fef3c7; color: #d97706; }
+        .tag.estado-soltero { background: #dbeafe; color: #2563eb; }
+        .tag.tiene-hijos { background: #dcfce7; color: #16a34a; }
+
+        /* === BUTTONS === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-4);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: var(--space-1) var(--space-2);
+            font-size: 0.75rem;
+        }
+
+        .btn-sm.import-btn {
+            padding: var(--space-2) var(--space-3);
+            font-size: 0.75rem;
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-sm.import-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-sm.import-btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-sm.import-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .import-text {
+            margin-left: var(--space-1);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .import-text {
+                display: none;
+            }
+            
+            /* 🔥 CORRECCIÓN: RESPONSIVE PARA TARJETAS COMPACTAS */
+            .person-name {
+                margin-right: calc(var(--space-3) + 15px); /* Menos espacio en móviles */
+            }
+            
+            .card-header::after {
+                right: var(--space-3);
+                font-size: 0.75rem;
+                padding: var(--space-1);
+            }
+        }
+
+        /* === EMPTY LIST HINT === */
+        .empty-list-hint {
+            text-align: center;
+            padding: var(--space-8) var(--space-4);
+            color: var(--text-light);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            margin: var(--space-4);
+            border: 2px dashed var(--border-color);
+        }
+
+        .empty-list-hint i {
+            font-size: 2rem;
+            margin-bottom: var(--space-2);
+            color: var(--success-color);
+        }
+
+        .empty-list-hint p {
+            margin: 0 0 var(--space-1) 0;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .empty-list-hint small {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .empty-list-hint strong {
+            color: var(--success-color);
+        }
+
+        .btn-icon {
+            padding: var(--space-2);
+            width: auto;
+            height: auto;
+        }
+
+        /* === MODALS === */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: var(--space-2);
+            border-radius: var(--radius-lg);
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* === FORMS === */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            padding: var(--space-3) var(--space-4);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* === 🆕 ESTILOS PARA AUTOCOMPLETADO DE DIRECCIONES === */
+        .address-input-container {
+            position: relative;
+        }
+
+        .form-input.address-input {
+            position: relative;
+        }
+
+        .form-input.address-input.validating {
+            border-color: var(--warning-color);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .form-input.address-input.valid {
+            border-color: var(--success-color);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .form-input.address-input.invalid {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .address-validation-icon {
+            position: absolute;
+            right: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            z-index: 5;
+        }
+
+        .address-validation-icon.validating {
+            color: var(--warning-color);
+            animation: spin 1s linear infinite;
+        }
+
+        .address-validation-icon.valid {
+            color: var(--success-color);
+        }
+
+        .address-validation-icon.invalid {
+            color: var(--error-color);
+        }
+
+        .address-help-text {
+            font-size: 0.75rem;
+            margin-top: var(--space-1);
+            transition: all 0.2s ease;
+        }
+
+        .address-help-text.validating {
+            color: var(--warning-color);
+        }
+
+        .address-help-text.valid {
+            color: var(--success-color);
+        }
+
+        .address-help-text.invalid {
+            color: var(--error-color);
+        }
+
+        @keyframes spin {
+            from { transform: translateY(-50%) rotate(0deg); }
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        /* Customizar el dropdown de Google Places */
+        .pac-container {
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+            margin-top: 2px;
+        }
+
+        .pac-item {
+            padding: var(--space-3) var(--space-4);
+            border-bottom: 1px solid var(--border-light);
+            transition: background-color 0.2s ease;
+        }
+
+        .pac-item:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .pac-item-selected {
+            background-color: var(--primary-color) !important;
+            color: white;
+        }
+
+        .pac-matched {
+            font-weight: 600;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--space-3);
+            justify-content: flex-end;
+        }
+
+        /* === GOOGLE MAPS === */
+        .maps-section {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-6); /* Adjusted margin */
+            box-shadow: var(--shadow-md);
+        }
+
+        .maps-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .maps-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .maps-controls {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        .map-container {
+            height: 500px;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--space-6);
+        }
+
+        .map-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .map-filter-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            border: 2px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .map-filter-btn.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .map-legend {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+            color: var(--text-primary);
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* === NOTIFICATIONS === */
+        .toast {
+            position: fixed;
+            top: var(--space-4);
+            right: var(--space-4);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-xl);
+            border-left: 4px solid var(--success-color);
+            z-index: 1100;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: var(--space-4);
+            }
+
+            .search-filters {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                flex-direction: column;
+            }
+
+            .kanban-container {
+                flex-direction: column;
+                overflow-x: visible;
+            }
+
+            .kanban-list {
+                min-width: 100%;
+                max-width: 100%;
+                max-height: none;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: var(--space-4);
+                width: 95%;
+            }
+
+            .map-container {
+                height: 300px;
+            }
+
+            .maps-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-4);
+            }
+
+            .maps-controls {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .controls-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-4);
+            }
+
+            .controls-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .import-export-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .import-export-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-4);
+            }
+
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+            }
+
+            .empty-list-hint {
+                margin: var(--space-2);
+                padding: var(--space-4);
+            }
+
+            .empty-list-hint i {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .person-card {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* === 🆕 ESTILOS PARA MODO PIZARRA (VISTA GENERAL HORIZONTAL) === */
+        body.whiteboard-view-active {
+            overflow-x: hidden; /* Evitar doble scrollbar en el body */
+        }
+
+        /* Ocultar otras secciones para enfocarse en las listas */
+        body.whiteboard-view-active .maps-section,
+        body.whiteboard-view-active .controls-section:not(:first-of-type) {
+            display: none;
+        }
+
+        .kanban-container.whiteboard-mode {
+            display: flex;
+            overflow-x: auto;
+            min-height: 70vh; 
+            align-items: flex-start;
+            padding-bottom: var(--space-8);
+            
+            /* Se elimina el gap para un control preciso con márgenes */
+            gap: 0;
+            
+            transition: all 0.3s ease;
+        }
+
+        .kanban-container.whiteboard-mode .kanban-list[data-lista-id] {
+            /* Se aplica solo a las listas con datos, no al botón de agregar */
+            transform: scale(0.75);
+            transform-origin: top left; /* Escalar desde la esquina para un cálculo de margen más simple */
+            
+            min-width: 350px;
+            max-width: 350px;
+            max-height: 80vh;
+            
+            transition: transform 0.3s ease, margin-right 0.3s ease;
+
+            /* * Cálculo del margen negativo para juntar las listas:
+             * 1. El escalado a 0.75 deja un 25% de espacio vacío del ancho original (350px * 0.25 = 87.5px).
+             * 2. Queremos un pequeño espacio entre las listas, ej: 16px (var(--space-4)).
+             * 3. El margen derecho debe compensar el espacio vacío y dejar el espacio deseado.
+             * 4. Margen = espacio_deseado - espacio_vacío = 16px - 87.5px = -71.5px.
+            */
+            margin-right: calc(var(--space-4) - (350px * (1 - 0.75)));
+        }
+
+        /* El botón de 'Agregar Lista' se mantiene normal y se le da un margen */
+        .kanban-container.whiteboard-mode .kanban-list:not([data-lista-id]) {
+            transform: scale(1); /* Asegurarse de que no se escale */
+            margin-left: var(--space-4);
+            align-self: center; /* Centrarlo verticalmente con las listas más pequeñas */
+        }
+        
+        /* 🆕 Ayuda visual para salir del modo pizarra */
+        .whiteboard-hint {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(31, 41, 55, 0.8);
+            color: white;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            z-index: 1200;
+            font-size: 0.875rem;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        body.whiteboard-view-active .whiteboard-hint {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <i class="fas fa-users"></i>
+                {{ tablero.nombre if tablero else 'Gestión de Personas' }}
+            </h1>
+            <div class="header-actions">
+                <a href="{{ url_for('tableros.lista') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Volver
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="controls-section">
+            <div class="controls-header">
+                <h2 class="controls-title">
+                    <i class="fas fa-filter"></i>
+                    Filtros y Búsqueda
+                </h2>
+                <div class="controls-actions">
+                    <div class="btn-group">
+                        <a href="{{ url_for('tableros.descargar_plantilla_excel') }}" class="btn btn-success">
+                            <i class="fas fa-download"></i>
+                            Plantilla Excel
+                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" onclick="toggleDropdown('exportDropdown')">
+                                <i class="fas fa-download"></i>
+                                Exportar
+                            </button>
+                            <div class="dropdown-menu" id="exportDropdown">
+                                <a href="{{ url_for('tableros.exportar_datos', tablero_id=tablero.id, formato='excel') }}" class="dropdown-item">
+                                    <i class="fas fa-file-excel"></i>
+                                    Exportar Excel
+                                </a>
+                                <a href="{{ url_for('tableros.exportar_datos', tablero_id=tablero.id, formato='csv') }}" class="dropdown-item">
+                                    <i class="fas fa-file-csv"></i>
+                                    Exportar CSV
+                                </a>
+                                <a href="{{ url_for('tableros.exportar_datos', tablero_id=tablero.id, formato='json') }}" class="dropdown-item">
+                                    <i class="fas fa-file-code"></i>
+                                    Exportar JSON
+                                </a>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="agruparPorCercania()" title="Crear grupos automáticamente basados en ubicaciones">
+                            <i class="fas fa-users"></i>
+                            Agrupar por Zona
+                        </button>
+                        <button class="btn btn-secondary" onclick="mostrarAnalisisCercania()" title="Ver análisis de distancias">
+                            <i class="fas fa-chart-area"></i>
+                            Analizar Zonas
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="search-filters">
+                <div class="search-input">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por nombre, dirección, teléfono, ocupación...">
+                </div>
+                
+                <div class="filter-select">
+                    <select id="estadoCivilFilter">
+                        <option value="">Todos los estados civiles</option>
+                        <option value="Soltero">Solteros</option>
+                        <option value="Casado">Casados</option>
+                        <option value="Divorciado">Divorciados</option>
+                        <option value="Viudo">Viudos</option>
+                    </select>
+                </div>
+                
+                <div class="filter-select">
+                    <select id="hijosFilter">
+                        <option value="">Todos</option>
+                        <option value="con-hijos">Con hijos</option>
+                        <option value="sin-hijos">Sin hijos</option>
+                    </select>
+                </div>
+                
+                <div class="filter-select">
+                    <select id="listaFilter">
+                        <option value="">Todas las listas</option>
+                        {% for lista in listas %}
+                        <option value="{{ lista.id }}">{{ lista.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPersonas">{{ tablero.estadisticas.total_personas if tablero.estadisticas else 0 }}</div>
+                    <div class="stat-label">Total de Personas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCasados">{{ tablero.estadisticas.casados if tablero.estadisticas else 0 }}</div>
+                    <div class="stat-label">Casados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalConHijos">{{ tablero.estadisticas.con_hijos if tablero.estadisticas else 0 }}</div>
+                    <div class="stat-label">Con Hijos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalListas">{{ listas | length }}</div>
+                    <div class="stat-label">Listas</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-3);">
+                <button class="btn btn-sm btn-secondary" onclick="colapsarTodasLasTarjetas()" title="Colapsar todas las tarjetas expandidas">
+                    <i class="fas fa-compress"></i>
+                    Colapsar Todo
+                </button>
+                <button id="whiteboard-toggle-btn" class="btn btn-sm btn-secondary" onclick="toggleWhiteboardMode()" title="Activar modo pizarra (Esc)">
+                    <i class="fas fa-border-all"></i>
+                    Vista General
+                </button>
+                <small style="color: var(--text-light); font-size: 0.75rem;">
+                    💡 Haz clic en una tarjeta para expandir/colapsar
+                </small>
+            </div>
+        </section>
+
+        <section class="kanban-container sortable-lists" id="kanban-board">
+            {% for lista in listas %}
+            <div class="kanban-list" data-lista-id="{{ lista.id }}" data-posicion="{{ loop.index0 }}">
+                <div class="list-header">
+                    <div class="list-title">
+                        <div class="list-color" style="background-color: {{ lista.color }}"></div>
+                        {{ lista.nombre }}
+                        <span class="list-count">{{ lista.tarjetas | length }}</span>
+                    </div>
+                    <div class="list-actions">
+                        <button class="btn btn-sm btn-primary" onclick="abrirModalPersona('{{ lista.id }}')">
+        <i class="fas fa-plus"></i>
+                        </button>
+                        <a href="{{ url_for('tableros.importar_excel', lista_id=lista.id) }}" class="btn btn-sm btn-success import-btn" title="Importar Excel - Haz clic aquí para subir tu archivo Excel/CSV">
+                            <i class="fas fa-file-excel"></i>
+                            <span class="import-text">Importar</span>
+                        </a>
+                        <a href="{{ url_for('tableros.editar_lista', lista_id=lista.id) }}" class="btn btn-sm btn-secondary" title="Editar Lista">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-sm btn-secondary" onclick="eliminarLista('{{ lista.id }}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                {% if lista.tarjetas | length == 0 %}
+                <div class="empty-list-hint">
+                    <i class="fas fa-file-excel"></i>
+                    <p>Lista vacía</p>
+                    <small>Haz clic en <strong>Importar</strong> para subir un Excel/CSV</small>
+                </div>
+                {% endif %}
+                
+                <div class="list-content">
+                    <div class="sortable-list" data-lista-id="{{ lista.id }}">
+                        {% for tarjeta in lista.tarjetas %}
+                        <div class="person-card" 
+                             data-id="{{ tarjeta.id }}" 
+                             data-lista-id="{{ lista.id }}"
+                             tabindex="0" 
+                             role="button" 
+                             aria-expanded="false">
+                        <div class="card-header">
+                                <div>
+                                    <div class="person-name">{{ tarjeta.nombre_completo }}</div>
+                                    <div class="person-info">
+                                        {% if tarjeta.edad %}{{ tarjeta.edad }} años{% endif %}
+                                        {% if tarjeta.ocupacion %} • {{ tarjeta.ocupacion }}{% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <a href="{{ url_for('tableros.editar_tarjeta', lista_id=lista.id, tarjeta_id=tarjeta.id) }}" 
+                                       class="btn btn-sm btn-secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" onclick="eliminarPersona('{{ tarjeta.id }}')" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="card-expandable">
+                                <div class="card-details">
+                                    {% if tarjeta.telefono %}
+                                    <div class="card-detail">
+                                        <i class="fas fa-phone detail-icon"></i>
+                                        <span>{{ tarjeta.telefono }}{% if tarjeta.nombre_conyuge %}<br><small style="color: #f59e0b;">💑 {{ tarjeta.nombre_conyuge }}</small>{% endif %}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if tarjeta.direccion %}
+                                    <div class="card-detail">
+                                        <i class="fas fa-map-marker-alt detail-icon"></i>
+                                        <span>{{ tarjeta.direccion }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if tarjeta.estado_civil %}
+                                    <div class="card-detail">
+                                        <i class="fas fa-heart detail-icon"></i>
+                                        <span class="tag estado-{{ tarjeta.estado_civil.lower() }}">{{ tarjeta.estado_civil }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if tarjeta.numero_hijos and tarjeta.numero_hijos > 0 %}
+                                    <div class="card-detail">
+                                        <i class="fas fa-child detail-icon"></i>
+                                        <span class="tag tiene-hijos">
+                                            {{ tarjeta.numero_hijos }} hijo{% if tarjeta.numero_hijos != 1 %}s{% endif %}
+                                            {% if tarjeta.edades_hijos %} ({{ tarjeta.edades_hijos }}){% endif %}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="card-detail">
+                                        <i class="fas fa-calendar detail-icon"></i>
+                                        <span>Creado: {{ tarjeta.fecha_creacion[:10] if tarjeta.fecha_creacion else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                
+                                {% if tarjeta.nombre_conyuge or tarjeta.telefono_conyuge %}
+                                <div class="card-contact">
+                                    <div class="contact-title">Información del Cónyuge</div>
+                                    <div class="contact-info">
+                                        {% if tarjeta.nombre_conyuge %}
+                                        <div class="contact-item">
+                                            <i class="fas fa-user detail-icon"></i>
+                                            <span>{{ tarjeta.nombre_conyuge }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if tarjeta.telefono_conyuge %}
+                                        <div class="contact-item">
+                                            <i class="fas fa-phone detail-icon"></i>
+                                            <span>{{ tarjeta.telefono_conyuge }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="kanban-list" style="min-width: 300px; max-width: 300px;">
+                <div class="list-content" style="display: flex; align-items: center; justify-content: center; height: 200px;">
+                    <button class="btn btn-primary" onclick="abrirModalLista()">
+                        <i class="fas fa-plus"></i>
+                        Agregar Lista
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="maps-section">
+            <div class="maps-header">
+                <h2 class="maps-title">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Mapa de Ubicaciones de Personas
+                </h2>
+                <div class="maps-controls">
+                    <button class="btn btn-secondary" onclick="centrarMapa()">
+                        <i class="fas fa-crosshairs"></i>
+                        Centrar Mapa
+                    </button>
+                    <button class="btn btn-secondary" onclick="cambiarEstiloMapa()">
+                        <i class="fas fa-layer-group"></i>
+                        Cambiar Estilo
+                    </button>
+                </div>
+            </div>
+            
+            <div class="map-filters">
+                <button class="map-filter-btn active" onclick="toggleFiltroMapa('all')" data-filter="all">
+                    <i class="fas fa-globe"></i>
+                    Mostrar Todo
+                </button>
+                {% for lista in listas %}
+                <button class="map-filter-btn" onclick="toggleFiltroMapa('{{ lista.id }}')" data-filter="{{ lista.id }}">
+                    <div class="legend-color" style="background-color: {{ lista.color }}"></div>
+                    {{ lista.nombre }}
+                </button>
+                {% endfor %}
+            </div>
+            
+            <div id="map" class="map-container"></div>
+            
+            <div class="map-legend">
+                <div class="legend-title">Leyenda del Mapa</div>
+                <div class="legend-items">
+                    {% for lista in listas %}
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: {{ lista.color }}"></div>
+                        <span>{{ lista.nombre }} (<span id="count-{{ lista.id }}">0</span> personas)</span>
+                    </div>
+                    {% endfor %}
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #666;"></div>
+                        <span>Total visible: <span id="total-visible">0</span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="controls-section">
+            <div class="controls-header">
+                <h2 class="controls-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Configuración de Agrupación Geográfica
+                </h2>
+                <div class="controls-actions">
+                    <button class="btn btn-secondary" onclick="mostrarAyudaAgrupacion()">
+                        <i class="fas fa-question-circle"></i>
+                        Ayuda
+                    </button>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: var(--space-4); align-items: end;">
+                <div class="form-group">
+                    <label class="form-label">Radio de Agrupación (km)</label>
+                    <input type="number" id="radioAgrupacion" class="form-input" value="3" min="0.5" max="50" step="0.5">
+                    <small style="color: var(--text-light); font-size: 0.75rem;">Distancia máxima entre personas</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Mínimo Personas / Grupo</label>
+                    <input type="number" id="minimoPersonas" class="form-input" value="3" min="2" max="20">
+                    <small style="color: var(--text-light); font-size: 0.75rem;">Mínimo para formar un grupo</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Máximo Personas / Grupo</label>
+                    <input type="number" id="maximoPersonas" class="form-input" value="8" min="2" max="100">
+                    <small style="color: var(--text-light); font-size: 0.75rem;">Límite para dividir un grupo</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Estrategia</label>
+                    <select id="estrategiaAgrupacion" class="form-input">
+                        <option value="densidad">Por densidad</option>
+                        <option value="distancia">Por distancia fija</option>
+                        <option value="equilibrado">Equilibrado</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: var(--space-2);">
+                    <button class="btn btn-success" onclick="aplicarConfiguracionOptima()" title="Calcular automáticamente los mejores parámetros">
+                        <i class="fas fa-magic"></i>
+                        Auto
+                    </button>
+                    <button class="btn btn-primary" onclick="agruparPorCercaniaMejorado()" title="Crear grupos con la configuración actual">
+                        <i class="fas fa-users"></i>
+                        Agrupar
+                    </button>
+                </div>
+            </div>
+            <div id="statsAgrupacion" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: var(--bg-secondary); border-radius: var(--radius-lg);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);" id="totalPersonasAnalisis">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Personas Total</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--success-color);" id="personasConCoordenadas">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Con Coordenadas</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--warning-color);" id="gruposPosibles">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Grupos Posibles</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent-color);" id="distanciaPromedio">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary);">Distancia Prom. (km)</div>
+                    </div>
+                </div>
+                
+                <div id="sugerenciasPanel" style="margin-top: var(--space-4); display: none;">
+                    <div style="background: #e7f3ff; border-left: 4px solid var(--primary-color); padding: var(--space-3); border-radius: var(--radius-md);">
+                        <h4 style="margin: 0 0 var(--space-2) 0; color: var(--primary-color); font-size: 0.95rem;">
+                            <i class="fas fa-lightbulb"></i> Sugerencias Inteligentes
+                        </h4>
+                        <div id="sugerenciasContenido" style="font-size: 0.875rem; color: var(--text-secondary);"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="modalPersona" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Agregar Nueva Persona</h3>
+                <button class="modal-close" onclick="cerrarModal('modalPersona')">×</button>
+            </div>
+            
+            <form id="formPersona" onsubmit="guardarPersona(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" name="nombre" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Apellido *</label>
+                        <input type="text" name="apellido" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" name="telefono" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Edad</label>
+                        <input type="number" name="edad" class="form-input" min="0" max="120">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección</label>
+                        <div class="address-input-container">
+                            <input type="text" 
+                                   name="direccion" 
+                                   id="direccionInput"
+                                   class="form-input address-input" 
+                                   placeholder="Comienza a escribir una dirección en Orlando, FL...">
+                            <i class="fas fa-map-marker-alt address-validation-icon" id="addressIcon" style="display: none;"></i>
+                        </div>
+                        <div class="address-help-text" id="addressHelpText">
+                            💡 Escribe y selecciona una dirección del autocompletado para mayor precisión
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Estado Civil</label>
+                        <select name="estado_civil" class="form-input">
+                            <option value="">Seleccionar...</option>
+                            <option value="Soltero">Soltero</option>
+                            <option value="Casado">Casado</option>
+                            <option value="Divorciado">Divorciado</option>
+                            <option value="Viudo">Viudo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Ocupación</label>
+                        <input type="text" name="ocupacion" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Número de Hijos</label>
+                        <input type="number" name="numero_hijos" class="form-input" min="0" max="20">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Edades de Hijos</label>
+                        <input type="text" name="edades_hijos" class="form-input" placeholder="Ej: 5, 8, 12">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nombre del Cónyuge</label>
+                        <input type="text" name="nombre_conyuge" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Teléfono del Cónyuge</label>
+                        <input type="tel" name="telefono_conyuge" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Responsable</label>
+                        <input type="text" name="responsable" class="form-input" placeholder="Quien está a cargo de esta persona">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">Notas</label>
+                        <textarea name="notas" class="form-input" rows="3" placeholder="Información adicional..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalPersona')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Guardar
+                    </button>
+                </div>
+                
+                <input type="hidden" name="lista_id" id="listaIdPersona">
+            </form>
+        </div>
+    </div>
+
+    <div id="modalLista" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Agregar Nueva Lista</h3>
+                <button class="modal-close" onclick="cerrarModal('modalLista')">×</button>
+            </div>
+            
+            <form id="formLista" onsubmit="guardarLista(event)">
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Lista *</label>
+                    <input type="text" name="titulo" class="form-input" required placeholder="Ej: Miembros Activos, Visitantes, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <select name="color" class="form-input">
+                        <option value="#3498db">Azul</option>
+                        <option value="#e74c3c">Rojo</option>
+                        <option value="#2ecc71">Verde</option>
+                        <option value="#f39c12">Naranja</option>
+                        <option value="#9b59b6">Púrpura</option>
+                        <option value="#1abc9c">Turquesa</option>
+                        <option value="#e67e22">Naranja Oscuro</option>
+                        <option value="#34495e">Gris Azulado</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalLista')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Crear Lista
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="whiteboard-hint" id="whiteboard-hint">
+        Estás en Vista General. Presiona <strong>Esc</strong> para salir.
+    </div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAM44jyxplaDzn1m7bJ79RtQGCmzYNuOCg&libraries=places&callback=initMap" async defer></script>
+
+    <script>
+        // ===== VARIABLES GLOBALES =====
+        let mapa;
+        let marcadores = [];
+        let infoWindow;
+        let estiloMapaActual = 0;
+        let filtroMapaActivo = 'all';
+        let isWhiteboardMode = false;
+        
+        // 🆕 Variables para el autocompletado de direcciones
+        let autocompleteInstance = null;
+        let addressValidationTimeout = null;
+        let selectedPlace = null;
+        
+        const estilosMapa = [
+            [], // Estilo por defecto
+            [
+                { "featureType": "all", "elementType": "geometry.fill", "stylers": [{ "weight": "2.00" }] },
+                { "featureType": "all", "elementType": "geometry.stroke", "stylers": [{ "color": "#9c9c9c" }] },
+                { "featureType": "landscape", "elementType": "all", "stylers": [{ "color": "#f2f2f2" }] },
+                { "featureType": "poi", "elementType": "all", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "road", "elementType": "all", "stylers": [{ "saturation": -100 }, { "lightness": 45 }] },
+                { "featureType": "transit", "elementType": "all", "stylers": [{ "visibility": "off" }] },
+                { "featureType": "water", "elementType": "all", "stylers": [{ "color": "#46bcec" }, { "visibility": "on" }] }
+            ]
+        ];
+
+        // ===== DATOS DE LISTAS Y PERSONAS =====
+        const listas = [
+            {% for lista in listas %}
+            {
+                id: '{{ lista.id }}',
+                nombre: '{{ lista.nombre }}',
+                color: '{{ lista.color }}',
+                personas: [
+                    {% for tarjeta in lista.tarjetas %}
+                    {
+                        id: '{{ tarjeta.id }}',
+                        nombre_completo: '{{ tarjeta.nombre_completo }}',
+                        direccion: '{{ tarjeta.direccion }}',
+                        telefono: '{{ tarjeta.telefono }}{% if tarjeta.nombre_conyuge %}<br><small style="color: #f59e0b;">💑 {{ tarjeta.nombre_conyuge }}</small>{% endif %}',
+                        edad: {{ tarjeta.edad if tarjeta.edad else 'null' }},
+                        estado_civil: '{{ tarjeta.estado_civil }}',
+                        numero_hijos: {{ tarjeta.numero_hijos if tarjeta.numero_hijos else 0 }},
+                        edades_hijos: '{{ tarjeta.edades_hijos }}',
+                        ocupacion: '{{ tarjeta.ocupacion }}',
+                        nombre_conyuge: '{{ tarjeta.nombre_conyuge }}',
+                        telefono_conyuge: '{{ tarjeta.telefono_conyuge }}'
+                    }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // ===== 🆕 FUNCIONES DE AUTOCOMPLETADO Y VALIDACIÓN DE DIRECCIONES =====
+
+        function initializeAddressAutocomplete() {
+            const addressInput = document.getElementById('direccionInput');
+            if (!addressInput) return;
+
+            console.log('🏠 Inicializando autocompletado de direcciones...');
+
+            // Configurar opciones del autocomplete con bias hacia Orlando
+            const autocompleteOptions = {
+                bounds: new google.maps.LatLngBounds(
+                    new google.maps.LatLng(28.3000, -81.6000), // SW corner Orlando área
+                    new google.maps.LatLng(28.7500, -81.1000)  // NE corner Orlando área
+                ),
+                strictBounds: false, // Permitir direcciones fuera del bounds pero priorizar Orlando
+                fields: ['address_components', 'formatted_address', 'geometry', 'place_id'],
+                types: ['address'], // Solo direcciones específicas, no POIs generales
+                componentRestrictions: { country: 'US' }
+            };
+
+            // Crear instancia de autocomplete
+            autocompleteInstance = new google.maps.places.Autocomplete(addressInput, autocompleteOptions);
+
+            // Configurar bias adicional hacia Orlando
+            const orlandoBounds = new google.maps.LatLngBounds(
+                new google.maps.LatLng(28.3000, -81.6000),
+                new google.maps.LatLng(28.7500, -81.1000)
+            );
+            autocompleteInstance.setBounds(orlandoBounds);
+
+            // Event listeners para el autocomplete
+            autocompleteInstance.addListener('place_changed', onPlaceSelected);
+            
+            // Event listeners para validación en tiempo real
+            addressInput.addEventListener('input', onAddressInput);
+            addressInput.addEventListener('blur', onAddressBlur);
+            addressInput.addEventListener('focus', onAddressFocus);
+
+            console.log('✅ Autocompletado inicializado con éxito');
+        }
+
+        function onPlaceSelected() {
+            const place = autocompleteInstance.getPlace();
+            const addressInput = document.getElementById('direccionInput');
+            const addressIcon = document.getElementById('addressIcon');
+            const addressHelpText = document.getElementById('addressHelpText');
+
+            console.log('📍 Lugar seleccionado:', place);
+
+            if (!place.geometry) {
+                console.warn('⚠️ Lugar seleccionado sin geometría');
+                setAddressValidationState('invalid', 'Dirección no válida. Selecciona una opción del menú.');
+                return;
+            }
+
+            // Validar que sea una dirección específica (no solo ciudad/estado)
+            const hasStreetNumber = place.address_components.some(component => 
+                component.types.includes('street_number')
+            );
+
+            if (!hasStreetNumber) {
+                console.warn('⚠️ Dirección muy general, falta número de calle');
+                setAddressValidationState('invalid', 'Por favor, especifica un número de calle para mayor precisión.');
+                return;
+            }
+
+            // Verificar si está en el área de Orlando (preferible)
+            const isInOrlando = isLocationInOrlando(place.geometry.location);
+            
+            selectedPlace = place;
+            
+            if (isInOrlando) {
+                setAddressValidationState('valid', '✅ Dirección válida en Orlando, FL');
+                mostrarNotificacionDireccion('📍 Dirección de Orlando validada correctamente', 'success');
+            } else {
+                setAddressValidationState('valid', '✅ Dirección válida (fuera del área de Orlando)');
+                mostrarNotificacionDireccion('📍 Dirección validada (ubicada fuera de Orlando)', 'warning');
+            }
+
+            console.log('✅ Dirección validada exitosamente');
+        }
+
+        function onAddressInput(event) {
+            const input = event.target;
+            const value = input.value.trim();
+            
+            // Cancelar validación anterior si existe
+            if (addressValidationTimeout) {
+                clearTimeout(addressValidationTimeout);
+            }
+
+            if (value.length === 0) {
+                resetAddressValidation();
+                return;
+            }
+
+            // Si el usuario está escribiendo, mostrar estado de validación
+            setAddressValidationState('validating', 'Escribiendo...');
+            selectedPlace = null; // Reset lugar seleccionado
+
+            // Validación con debounce
+            addressValidationTimeout = setTimeout(() => {
+                if (value.length >= 10) { // Mínimo 10 caracteres para una dirección básica
+                    validateTypedAddress(value);
+                } else {
+                    setAddressValidationState('invalid', 'Dirección muy corta. Continúa escribiendo...');
+                }
+            }, 500);
+        }
+
+        function onAddressFocus(event) {
+            const addressHelpText = document.getElementById('addressHelpText');
+            addressHelpText.textContent = '🔍 Comienza a escribir y selecciona de las opciones que aparecen';
+            addressHelpText.className = 'address-help-text';
+        }
+
+        function onAddressBlur(event) {
+            const value = event.target.value.trim();
+            
+            // Si hay texto pero no se seleccionó del autocomplete
+            if (value && !selectedPlace) {
+                setTimeout(() => {
+                    setAddressValidationState('invalid', '⚠️ Para mayor precisión, selecciona una dirección del menú de autocompletado');
+                }, 100);
+            }
+        }
+
+        function validateTypedAddress(address) {
+            // Esta función valida direcciones que no fueron seleccionadas del autocomplete
+            console.log('🔍 Validando dirección escrita:', address);
+            
+            // Patrones básicos para direcciones válidas
+            const hasNumber = /\d/.test(address);
+            const hasStreet = /\b(st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|ln|lane|ct|court|pl|place|way|cir|circle)\b/i.test(address);
+            const hasCity = /orlando|fl|florida/i.test(address);
+
+            if (hasNumber && hasStreet) {
+                if (hasCity) {
+                    setAddressValidationState('valid', '✅ Formato de dirección válido (recomendamos usar autocompletado)');
+                } else {
+                    setAddressValidationState('valid', '⚠️ Dirección válida, pero considera agregar "Orlando, FL"');
+                }
+            } else {
+                setAddressValidationState('invalid', '❌ Formato incompleto. Incluye número y nombre de calle.');
+            }
+        }
+
+        function isLocationInOrlando(location) {
+            // Definir bounds más específicos para Orlando y alrededores
+            const orlandoBounds = new google.maps.LatLngBounds(
+                new google.maps.LatLng(28.3000, -81.6000), // SW corner
+                new google.maps.LatLng(28.7500, -81.1000)  // NE corner
+            );
+            
+            return orlandoBounds.contains(location);
+        }
+
+        function setAddressValidationState(state, message) {
+            const addressInput = document.getElementById('direccionInput');
+            const addressIcon = document.getElementById('addressIcon');
+            const addressHelpText = document.getElementById('addressHelpText');
+
+            if (!addressInput || !addressIcon || !addressHelpText) return;
+
+            // Reset classes
+            addressInput.classList.remove('validating', 'valid', 'invalid');
+            addressIcon.classList.remove('validating', 'valid', 'invalid');
+            addressHelpText.classList.remove('validating', 'valid', 'invalid');
+
+            // Apply new state
+            addressInput.classList.add(state);
+            addressIcon.classList.add(state);
+            addressHelpText.classList.add(state);
+            
+            // Set icon and message based on state
+            switch(state) {
+                case 'validating':
+                    addressIcon.className = 'fas fa-spinner address-validation-icon validating';
+                    addressIcon.style.display = 'block';
+                    break;
+                case 'valid':
+                    addressIcon.className = 'fas fa-check-circle address-validation-icon valid';
+                    addressIcon.style.display = 'block';
+                    break;
+                case 'invalid':
+                    addressIcon.className = 'fas fa-exclamation-triangle address-validation-icon invalid';
+                    addressIcon.style.display = 'block';
+                    break;
+                default:
+                    addressIcon.style.display = 'none';
+            }
+
+            addressHelpText.textContent = message;
+        }
+
+        function resetAddressValidation() {
+            const addressInput = document.getElementById('direccionInput');
+            const addressIcon = document.getElementById('addressIcon');
+            const addressHelpText = document.getElementById('addressHelpText');
+
+            if (addressInput) addressInput.classList.remove('validating', 'valid', 'invalid');
+            if (addressIcon) {
+                addressIcon.classList.remove('validating', 'valid', 'invalid');
+                addressIcon.style.display = 'none';
+            }
+            if (addressHelpText) {
+                addressHelpText.classList.remove('validating', 'valid', 'invalid');
+                addressHelpText.textContent = '💡 Escribe y selecciona una dirección del autocompletado para mayor precisión';
+            }
+            
+            selectedPlace = null;
+        }
+
+        function mostrarNotificacionDireccion(mensaje, tipo = 'info') {
+            // Mostrar notificación especializada para direcciones
+            mostrarNotificacion(mensaje, tipo);
+        }
+
+        // ===== INICIALIZACIÓN =====
+        document.addEventListener('DOMContentLoaded', function() {
+            inicializarDragAndDrop();
+            inicializarFiltros();
+            inicializarTarjetasClick();
+            
+            // 🆕 Listener para la tecla Escape
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    // Cierra modales si están abiertos, si no, activa el modo pizarra
+                    const activeModal = document.querySelector('.modal.active');
+                    if (activeModal) {
+                        cerrarModal(activeModal.id);
+                    } else {
+                        toggleWhiteboardMode();
+                    }
+                }
+            });
+        });
+
+        // ===== FUNCIONALIDAD MODO PIZARRA (WHITEBOARD MODE) =====
+        function toggleWhiteboardMode() {
+            const kanbanContainer = document.getElementById('kanban-board');
+            const body = document.body;
+            const toggleBtn = document.getElementById('whiteboard-toggle-btn');
+            
+            isWhiteboardMode = !isWhiteboardMode;
+            
+            if (isWhiteboardMode) {
+                // Entrar al modo pizarra
+                body.classList.add('whiteboard-view-active');
+                kanbanContainer.classList.add('whiteboard-mode');
+                
+                // Actualizar botón
+                toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Vista Normal';
+                toggleBtn.title = 'Volver a la vista normal (Esc)';
+                toggleBtn.classList.add('btn-primary');
+                toggleBtn.classList.remove('btn-secondary');
+                
+                // Colapsar tarjetas para una mejor vista general
+                colapsarTodasLasTarjetas();
+                
+                // Scroll al inicio
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                mostrarNotificacion('Modo Pizarra activado. Presiona Esc para salir.', 'info');
+                
+            } else {
+                // Salir del modo pizarra
+                body.classList.remove('whiteboard-view-active');
+                kanbanContainer.classList.remove('whiteboard-mode');
+                
+                // Actualizar botón
+                toggleBtn.innerHTML = '<i class="fas fa-border-all"></i> Vista General';
+                toggleBtn.title = 'Activar modo pizarra (Esc)';
+                toggleBtn.classList.remove('btn-primary');
+                toggleBtn.classList.add('btn-secondary');
+            }
+        }
+
+        // ===== 🎯 FUNCIONALIDAD CLICK PARA TARJETAS (ACORDEÓN) =====
+
+        function inicializarTarjetasClick() {
+            // Agregar event listeners a todas las tarjetas existentes
+            document.querySelectorAll('.person-card').forEach(tarjeta => {
+                agregarEventListenerTarjeta(tarjeta);
+            });
+        }
+
+        function agregarEventListenerTarjeta(tarjeta) {
+            // Remover listener existente si lo hay
+            tarjeta.removeEventListener('click', manejarClickTarjeta);
+            tarjeta.removeEventListener('keydown', manejarKeyDownTarjeta);
+            
+            // Agregar nuevo listener
+            tarjeta.addEventListener('click', manejarClickTarjeta);
+            tarjeta.addEventListener('keydown', manejarKeyDownTarjeta);
+            
+            // 🆕 Prevenir propagación desde botones de acción
+            const botones = tarjeta.querySelectorAll('.card-actions button, .card-actions a');
+            botones.forEach(boton => {
+                boton.addEventListener('click', (e) => {
+                    console.log('🔘 Click en botón de acción - previniendo propagación');
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                });
+            });
+        }
+
+        function manejarKeyDownTarjeta(event) {
+            // Activar solo con las teclas "Enter" o "Espacio"
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                manejarClickTarjeta.call(this, event);
+            }
+        }
+
+        function manejarClickTarjeta(event) {
+            // Prevenir si se está haciendo drag or clicking en botones de acción
+            if (event.target.closest('.card-actions') || 
+                event.target.closest('.btn') || 
+                event.target.matches('.btn') ||
+                event.target.closest('button') ||
+                this.classList.contains('dragging')) {
+                console.log('🚫 Click bloqueado en botón/acción');
+                return;
+            }
+            
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const tarjeta = this;
+            const listaId = tarjeta.getAttribute('data-lista-id');
+            const estaExpandida = tarjeta.classList.contains('expanded');
+            
+            console.log('🎯 Click en tarjeta para expandir/colapsar:', {
+                tarjeta: tarjeta.querySelector('.person-name').textContent,
+                listaId: listaId,
+                estaExpandida: estaExpandida
+            });
+            
+            if (estaExpandida) {
+                // Si está expandida, colapsar
+                colapsarTarjeta(tarjeta);
+            } else {
+                // Si está colapsada, expandir y colapsar otras en la misma lista
+                expandirTarjeta(tarjeta, listaId);
+            }
+        }
+
+        function expandirTarjeta(tarjeta, listaId) {
+            // 1. Colapsar todas las otras tarjetas en la misma lista
+            document.querySelectorAll(`.person-card[data-lista-id="${listaId}"]`).forEach(otraTarjeta => {
+                if (otraTarjeta !== tarjeta && otraTarjeta.classList.contains('expanded')) {
+                    colapsarTarjeta(otraTarjeta);
+                }
+            });
+            
+            // 2. Expandir la tarjeta actual
+            tarjeta.classList.add('expanded');
+            tarjeta.setAttribute('aria-expanded', 'true');
+            
+            // 3. Animación suave de scroll si la tarjeta queda fuera de vista
+            setTimeout(() => {
+                const tarjetaRect = tarjeta.getBoundingClientRect();
+                const listaContainer = tarjeta.closest('.list-content');
+                
+                if (listaContainer && tarjetaRect.bottom > window.innerHeight) {
+                    tarjeta.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'nearest',
+                        inline: 'nearest'
+                    });
+                }
+            }, 300);
+            
+            console.log('✅ Tarjeta expandida:', tarjeta.querySelector('.person-name').textContent);
+        }
+
+        function colapsarTarjeta(tarjeta) {
+            tarjeta.classList.remove('expanded');
+            tarjeta.setAttribute('aria-expanded', 'false');
+            console.log('🔻 Tarjeta colapsada:', tarjeta.querySelector('.person-name').textContent);
+        }
+
+        // ===== UTILITY FUNCTIONS =====
+
+        function colapsarTodasLasTarjetas() {
+            document.querySelectorAll('.person-card.expanded').forEach(tarjeta => {
+                colapsarTarjeta(tarjeta);
+            });
+            console.log('🔻 Todas las tarjetas colapsadas');
+        }
+
+        function expandirTarjetaPorId(tarjetaId) {
+            const tarjeta = document.querySelector(`[data-id="${tarjetaId}"]`);
+            if (tarjeta) {
+                const listaId = tarjeta.getAttribute('data-lista-id');
+                expandirTarjeta(tarjeta, listaId);
+            }
+        }
+
+        // ===== GOOGLE MAPS =====
+        function initMap() {
+            const centro = { lat: 28.5383, lng: -81.3792 }; // Orlando, FL
+            
+            mapa = new google.maps.Map(document.getElementById('map'), {
+                zoom: 11,
+                center: centro,
+                styles: estilosMapa[estiloMapaActual],
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true,
+                zoomControl: true,
+                gestureHandling: 'cooperative',
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    position: google.maps.ControlPosition.TOP_RIGHT
+                },
+                zoomControlOptions: {
+                    position: google.maps.ControlPosition.RIGHT_CENTER
+                },
+                streetViewControlOptions: {
+                    position: google.maps.ControlPosition.RIGHT_BOTTOM
+                }
+            });
+
+            infoWindow = new google.maps.InfoWindow({
+                maxWidth: 350,
+                pixelOffset: new google.maps.Size(0, -10)
+            });
+
+            // Agregar control personalizado para centrar todas las ubicaciones
+            const centerControlDiv = document.createElement('div');
+            const centerControl = createCenterControl(mapa);
+            centerControlDiv.appendChild(centerControl);
+            mapa.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+            // Agregar control de filtros rápidos
+            const filterControlDiv = document.createElement('div');
+            const filterControl = createFilterControl();
+            filterControlDiv.appendChild(filterControl);
+            mapa.controls[google.maps.ControlPosition.TOP_LEFT].push(filterControlDiv);
+            
+            geocodificarPersonas();
+
+            // 🆕 Inicializar autocompletado después de que Google Maps esté listo
+            console.log('🗺️ Google Maps cargado, inicializando funciones adicionales...');
+        }
+
+        function createCenterControl(map) {
+            const controlButton = document.createElement('button');
+            controlButton.style.cssText = `
+                background: white;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                color: #667eea;
+                cursor: pointer;
+                font-family: Inter, sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                margin: 8px;
+                padding: 8px 16px;
+                text-align: center;
+                transition: all 0.2s ease;
+            `;
+            controlButton.innerHTML = '<i class="fas fa-crosshairs"></i> Centrar Todo';
+            controlButton.title = 'Centrar todas las ubicaciones';
+            
+            controlButton.addEventListener('mouseover', () => {
+                controlButton.style.background = '#667eea';
+                controlButton.style.color = 'white';
+            });
+            
+            controlButton.addEventListener('mouseout', () => {
+                controlButton.style.background = 'white';
+                controlButton.style.color = '#667eea';
+            });
+            
+            controlButton.addEventListener('click', centrarMapa);
+            
+            return controlButton;
+        }
+
+        function createFilterControl() {
+            const controlContainer = document.createElement('div');
+            controlContainer.style.cssText = `
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                margin: 8px;
+                padding: 12px;
+                font-family: Inter, sans-serif;
+            `;
+            
+            const title = document.createElement('div');
+            title.textContent = 'Filtros Rápidos';
+            title.style.cssText = `
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: #1f2937;
+                font-size: 12px;
+            `;
+            
+            const filtersContainer = document.createElement('div');
+            filtersContainer.style.display = 'flex';
+            filtersContainer.style.gap = '8px';
+            filtersContainer.style.flexWrap = 'wrap';
+            
+            // Botones de filtro rápido
+            const filters = [
+                { label: 'Casados', filter: 'casados', icon: '💑' },
+                { label: 'Con Hijos', filter: 'con-hijos', icon: '👶' },
+                { label: 'Jóvenes', filter: 'jovenes', icon: '🎓' }
+            ];
+            
+            filters.forEach(filterConfig => {
+                const button = document.createElement('button');
+                button.innerHTML = `${filterConfig.icon} ${filterConfig.label}`;
+                button.style.cssText = `
+                    background: #f9fafb;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 6px;
+                    color: #6b7280;
+                    cursor: pointer;
+                    font-size: 11px;
+                    padding: 4px 8px;
+                    transition: all 0.2s ease;
+                `;
+                
+                button.addEventListener('click', () => aplicarFiltroRapido(filterConfig.filter, button));
+                filtersContainer.appendChild(button);
+            });
+            
+            controlContainer.appendChild(title);
+            controlContainer.appendChild(filtersContainer);
+            return controlContainer;
+        }
+
+        function aplicarFiltroRapido(filtro, button) {
+            // Reset otros botones
+            document.querySelectorAll('[data-filter-button]').forEach(btn => {
+                btn.style.background = '#f9fafb';
+                btn.style.color = '#6b7280';
+                btn.style.borderColor = '#e5e7eb';
+            });
+            
+            // Activar botón actual
+            button.style.background = '#667eea';
+            button.style.color = 'white';
+            button.style.borderColor = '#667eea';
+            button.setAttribute('data-filter-button', 'active');
+            
+            // Aplicar filtro a marcadores
+            marcadores.forEach(marcador => {
+                let mostrar = true;
+                const persona = marcador.persona;
+                
+                switch(filtro) {
+                    case 'casados':
+                        mostrar = persona.estado_civil === 'Casado' || persona.estado_civil === 'Casada';
+                        break;
+                    case 'con-hijos':
+                        mostrar = persona.numero_hijos > 0;
+                        break;
+                    case 'jovenes':
+                        mostrar = persona.edad && persona.edad < 30;
+                        break;
+                }
+                
+                marcador.setVisible(mostrar);
+                marcador.visible = mostrar;
+            });
+            
+            actualizarContadoresMapa();
+            
+            // Auto-centrar en marcadores visibles
+            setTimeout(centrarMapa, 300);
+        }
+
+        function geocodificarPersonas() {
+            const geocoder = new google.maps.Geocoder();
+            
+            listas.forEach(lista => {
+                lista.personas.forEach(persona => {
+                    if (persona.direccion && persona.direccion.trim()) {
+                        let direccionCompleta = persona.direccion;
+                        if (!direccionCompleta.toLowerCase().includes('orlando')) {
+                            direccionCompleta += ', Orlando, FL';
+                        }
+                        
+                        geocoder.geocode({ 
+                            address: direccionCompleta,
+                            region: 'US'
+                        }, (resultados, estado) => {
+                            if (estado === 'OK' && resultados[0]) {
+                                crearMarcador(persona, lista, resultados[0].geometry.location);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        function crearMarcador(persona, lista, posicion) {
+            // Crear icono personalizado según el estado civil y edad
+            const iconConfig = getIconConfig(persona, lista);
+            
+            const marcador = new google.maps.Marker({
+                position: posicion,
+                map: mapa,
+                title: persona.nombre_completo,
+                icon: iconConfig,
+                animation: google.maps.Animation.DROP
+            });
+
+            // Crear InfoWindow mejorado
+            const infoContent = createInfoWindowContent(persona, lista);
+
+            // Eventos del marcador
+            marcador.addListener('click', () => {
+                // Cerrar otros InfoWindows
+                if (window.currentInfoWindow) {
+                    window.currentInfoWindow.close();
+                }
+                
+                infoWindow.setContent(infoContent);
+                infoWindow.open(mapa, marcador);
+                window.currentInfoWindow = infoWindow;
+                
+                // Animación al hacer click
+                marcador.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => marcador.setAnimation(null), 1500);
+            });
+
+            // Hover effects
+            marcador.addListener('mouseover', () => {
+                marcador.setIcon(getHoverIconConfig(persona, lista));
+            });
+
+            marcador.addListener('mouseout', () => {
+                marcador.setIcon(iconConfig);
+            });
+
+            // Propiedades personalizadas
+            marcador.listaId = lista.id;
+            marcador.personaId = persona.id;
+            marcador.visible = true;
+            marcador.persona = persona;
+            marcador.lista = lista;
+
+            marcadores.push(marcador);
+            actualizarContadoresMapa();
+        }
+
+        function getIconConfig(persona, lista) {
+            // Determinar el símbolo según características de la persona
+            let symbol = google.maps.SymbolPath.CIRCLE;
+            let scale = 12;
+            
+            // Diferentes formas según estado civil
+            if (persona.estado_civil === 'Casado' || persona.estado_civil === 'Casada') {
+                symbol = google.maps.SymbolPath.BACKWARD_CLOSED_ARROW; // Forma de corazón aproximada
+                scale = 8;
+            } else if (persona.numero_hijos > 0) {
+                symbol = google.maps.SymbolPath.FORWARD_CLOSED_ARROW;
+                scale = 8;
+            }
+
+            return {
+                path: symbol,
+                scale: scale,
+                fillColor: lista.color,
+                fillOpacity: 0.9,
+                strokeColor: '#ffffff',
+                strokeWeight: 3,
+                strokeOpacity: 1
+            };
+        }
+
+        function getHoverIconConfig(persona, lista) {
+            const config = getIconConfig(persona, lista);
+            return {
+                ...config,
+                scale: config.scale * 1.3,
+                fillOpacity: 1,
+                strokeWeight: 4
+            };
+        }
+
+        function createInfoWindowContent(persona, lista) {
+            return `
+                <div style="
+                    padding: 15px; 
+                    max-width: 320px; 
+                    font-family: 'Inter', sans-serif;
+                    line-height: 1.5;
+                ">
+                    <div style="
+                        display: flex; 
+                        align-items: center; 
+                        margin-bottom: 12px;
+                        padding-bottom: 8px;
+                        border-bottom: 2px solid ${lista.color};
+                    ">
+                        <div style="
+                            width: 40px; 
+                            height: 40px; 
+                            border-radius: 50%; 
+                            background: linear-gradient(135deg, ${lista.color} 0%, #667eea 100%);
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            font-size: 14px;
+                            margin-right: 10px;
+                        ">
+                            ${persona.nombre_completo.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">
+                                ${persona.nombre_completo}
+                            </h3>
+                            <div style="color: ${lista.color}; font-size: 12px; font-weight: 500;">
+                                📋 ${lista.nombre}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        ${persona.edad ? `
+                            <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                <span style="color: #6b7280; font-size: 12px; width: 20px;">🎂</span>
+                                <span style="color: #374151; font-size: 13px;">${persona.edad} años</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${persona.telefono ? `
+                            <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                <span style="color: #6b7280; font-size: 12px; width: 20px;">📱</span>
+                                <a href="tel:${persona.telefono}" style="color: #2563eb; text-decoration: none; font-size: 13px;">
+                                    ${persona.telefono}
+                                </a>
+                            </div>
+                        ` : ''}
+                        
+                        ${persona.ocupacion ? `
+                            <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                <span style="color: #6b7280; font-size: 12px; width: 20px;">💼</span>
+                                <span style="color: #374151; font-size: 13px;">${persona.ocupacion}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${persona.estado_civil || persona.numero_hijos > 0 ? `
+                        <div style="
+                            background: #f9fafb; 
+                            border-radius: 8px; 
+                            padding: 8px; 
+                            margin-bottom: 10px;
+                            border-left: 3px solid ${lista.color};
+                        ">
+                            <div style="color: #6b7280; font-size: 11px; font-weight: 600; margin-bottom: 4px;">
+                                👨‍👩‍👧‍👦 INFORMACIÓN FAMILIAR
+                            </div>
+                            ${persona.estado_civil ? `
+                                <div style="font-size: 12px; color: #374151; margin-bottom: 2px;">
+                                    <strong>Estado:</strong> ${persona.estado_civil}
+                                </div>
+                            ` : ''}
+                            ${persona.numero_hijos > 0 ? `
+                                <div style="font-size: 12px; color: #374151; margin-bottom: 2px;">
+                                    <strong>Hijos:</strong> ${persona.numero_hijos}${persona.edades_hijos ? ` (${persona.edades_hijos} años)` : ''}
+                                </div>
+                            ` : ''}
+                            ${persona.nombre_conyuge ? `
+                                <div style="font-size: 12px; color: #374151;">
+                                    <strong>Cónyuge:</strong> ${persona.nombre_conyuge}
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div style="
+                        background: #f0f9ff; 
+                        border-radius: 6px; 
+                        padding: 6px 8px; 
+                        border: 1px solid #e0f2fe;
+                    ">
+                        <div style="display: flex; align-items: flex-start;">
+                            <span style="color: #0284c7; margin-right: 6px; margin-top: 1px;">📍</span>
+                            <span style="color: #0c4a6e; font-size: 11px; line-height: 1.4;">
+                                ${persona.direccion}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="
+                        display: flex; 
+                        gap: 8px; 
+                        margin-top: 12px;
+                        justify-content: space-between;
+                    ">
+                        <button onclick="abrirDireccionesGoogle('${persona.direccion}')" style="
+                            background: #10b981; 
+                            color: white; 
+                            border: none; 
+                            padding: 6px 12px; 
+                            border-radius: 6px; 
+                            font-size: 11px; 
+                            cursor: pointer;
+                            font-weight: 500;
+                        ">
+                            🗺️ Direcciones
+                        </button>
+                        ${persona.telefono ? `
+                            <button onclick="llamarPersona('${persona.telefono}')" style="
+                                background: #3b82f6; 
+                                color: white; 
+                                border: none; 
+                                padding: 6px 12px; 
+                                border-radius: 6px; 
+                                font-size: 11px; 
+                                cursor: pointer;
+                                font-weight: 500;
+                            ">
+                                📞 Llamar
+                            </button>
+                        ` : ''}
+                        <button onclick="editarPersonaDesdeInfoWindow('${lista.id}', '${persona.id}')" style="
+                            background: #8b5cf6; 
+                            color: white; 
+                            border: none; 
+                            padding: 6px 12px; 
+                            border-radius: 6px; 
+                            font-size: 11px; 
+                            cursor: pointer;
+                            font-weight: 500;
+                        ">
+                            ✏️ Editar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function abrirDireccionesGoogle(direccion) {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(direccion + ', Orlando, FL')}`;
+            window.open(url, '_blank');
+        }
+
+        function llamarPersona(telefono) {
+            window.location.href = `tel:${telefono}`;
+        }
+
+        function editarPersonaDesdeInfoWindow(listaId, personaId) {
+            window.location.href = `/tableros/editar_tarjeta/${listaId}/${personaId}`;
+        }
+
+        function centrarMapa() {
+            const marcadoresVisibles = marcadores.filter(m => m.visible && m.getMap());
+            
+            if (marcadoresVisibles.length === 0) {
+                mostrarNotificacion('No hay ubicaciones visibles para centrar', 'warning');
+                return;
+            }
+            
+            if (marcadoresVisibles.length === 1) {
+                // Solo un marcador: centrar y hacer zoom
+                const marcador = marcadoresVisibles[0];
+                mapa.setCenter(marcador.getPosition());
+                mapa.setZoom(16);
+                
+                // Animación de rebote
+                marcador.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => marcador.setAnimation(null), 2000);
+                
+                mostrarNotificacion('Centrado en la única ubicación visible', 'success');
+                return;
+            }
+            
+            // Múltiples marcadores: ajustar bounds
+            const bounds = new google.maps.LatLngBounds();
+            marcadoresVisibles.forEach(marcador => {
+                bounds.extend(marcador.getPosition());
+            });
+            
+            // Ajustar mapa con padding
+            mapa.fitBounds(bounds, {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50
+            });
+            
+            // Animación sutil en todos los marcadores
+            marcadoresVisibles.forEach((marcador, index) => {
+                setTimeout(() => {
+                    const originalIcon = marcador.getIcon();
+                    marcador.setIcon({
+                        ...originalIcon,
+                        scale: originalIcon.scale * 1.2
+                    });
+                    
+                    setTimeout(() => {
+                        marcador.setIcon(originalIcon);
+                    }, 500);
+                }, index * 100);
+            });
+            
+            mostrarNotificacion(`Centrado en ${marcadoresVisibles.length} ubicaciones`, 'success');
+        }
+
+        function cambiarEstiloMapa() {
+            estiloMapaActual = (estiloMapaActual + 1) % estilosMapa.length;
+            mapa.setOptions({ styles: estilosMapa[estiloMapaActual] });
+            
+            const estilosNombres = ['Estándar', 'Minimalista'];
+            mostrarNotificacion(`Estilo cambiado a: ${estilosNombres[estiloMapaActual]}`, 'success');
+        }
+
+        function toggleFiltroMapa(filtro) {
+            // Actualizar botones
+            document.querySelectorAll('.map-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${filtro}"]`).classList.add('active');
+            
+            filtroMapaActivo = filtro;
+            
+            // Mostrar/ocultar marcadores con animación
+            marcadores.forEach((marcador, index) => {
+                const shouldShow = filtro === 'all' || marcador.listaId === filtro;
+                
+                if (shouldShow && !marcador.visible) {
+                    // Mostrar con delay escalonado
+                    setTimeout(() => {
+                        marcador.setMap(mapa);
+                        marcador.setAnimation(google.maps.Animation.DROP);
+                        marcador.visible = true;
+                        setTimeout(() => marcador.setAnimation(null), 1000);
+                    }, index * 50);
+                } else if (!shouldShow && marcador.visible) {
+                    // Ocultar con animación
+                    marcador.setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        marcador.setMap(null);
+                        marcador.visible = false;
+                        marcador.setAnimation(null);
+                    }, 300);
+                }
+            });
+            
+            // Actualizar contadores después de la animación
+            setTimeout(() => {
+                actualizarContadoresMapa();
+                if (filtro !== 'all') {
+                    setTimeout(centrarMapa, 500);
+                }
+            }, 1000);
+        }
+
+        function actualizarContadoresMapa() {
+            listas.forEach(lista => {
+                const count = marcadores.filter(m => m.listaId === lista.id && m.visible).length;
+                const countElement = document.getElementById(`count-${lista.id}`);
+                if (countElement) {
+                    countElement.textContent = count;
+                }
+            });
+            
+            const totalVisible = marcadores.filter(m => m.visible).length;
+            const totalElement = document.getElementById('total-visible');
+            if (totalElement) {
+                totalElement.textContent = totalVisible;
+            }
+        }
+
+        // ===== DRAG AND DROP =====
+        function inicializarDragAndDrop() {
+            // 🎯 DRAG & DROP PARA TARJETAS (existente)
+            document.querySelectorAll('.sortable-list').forEach(lista => {
+                new Sortable(lista, {
+                    group: 'kanban',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'dragging',
+                    onEnd: function(evt) {
+                        const tarjetaId = evt.item.getAttribute('data-id');
+                        const listaOrigenId = evt.from.getAttribute('data-lista-id');
+                        const listaDestinoId = evt.to.getAttribute('data-lista-id');
+                        
+                        if (evt.from !== evt.to) {
+                            moverTarjeta(tarjetaId, listaOrigenId, listaDestinoId, evt.newIndex);
+                        }
+                    }
+                });
+            });
+
+            // 🆕 DRAG & DROP PARA LISTAS (nuevo)
+            const kanbanBoard = document.getElementById('kanban-board');
+            if (kanbanBoard) {
+                new Sortable(kanbanBoard, {
+                    animation: 200,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    filter: '.kanban-list:last-child', // Excluir botón "Agregar Lista"
+                    onEnd: function(evt) {
+                        const listaId = evt.item.getAttribute('data-lista-id');
+                        const nuevaPosicion = evt.newIndex;
+                        
+                        if (listaId) {
+                            moverLista(listaId, nuevaPosicion);
+                        }
+                    }
+                });
+            }
+
+            // Reinicializar listeners de click después de drag and drop
+            setTimeout(() => {
+                inicializarTarjetasClick();
+            }, 100);
+        }
+
+        function moverLista(listaId, nuevaPosicion) {
+            fetch('/tableros/mover_lista', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lista_id: listaId,
+                    nueva_posicion: nuevaPosicion
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarNotificacion('Lista reordenada exitosamente', 'success');
+                } else {
+                    mostrarNotificacion('Error al reordenar la lista', 'error');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al reordenar la lista', 'error');
+                location.reload();
+            });
+        }
+
+        function moverTarjeta(tarjetaId, listaOrigenId, listaDestinoId, nuevaPosicion) {
+            fetch('/tableros/mover_tarjeta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tarjeta_id: tarjetaId,
+                    lista_origen_id: listaOrigenId,
+                    lista_destino_id: listaDestinoId,
+                    nueva_posicion: nuevaPosicion
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const tarjeta = document.querySelector(`[data-id="${tarjetaId}"]`);
+                    if (tarjeta) {
+                        tarjeta.setAttribute('data-lista-id', listaDestinoId);
+                    }
+                    actualizarContadores();
+                    mostrarNotificacion('Persona movida exitosamente', 'success');
+                } else {
+                    mostrarNotificacion('Error al mover la persona', 'error');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al mover la persona', 'error');
+                location.reload();
+            });
+        }
+
+        // ===== FILTROS Y BÚSQUEDA =====
+        function inicializarFiltros() {
+            const searchInput = document.getElementById('searchInput');
+            const estadoCivilFilter = document.getElementById('estadoCivilFilter');
+            const hijosFilter = document.getElementById('hijosFilter');
+            const listaFilter = document.getElementById('listaFilter');
+            
+            [searchInput, estadoCivilFilter, hijosFilter, listaFilter].forEach(elemento => {
+                elemento.addEventListener('input', aplicarFiltros);
+                elemento.addEventListener('change', aplicarFiltros);
+            });
+        }
+
+        function aplicarFiltros() {
+            // Colapsar todas las tarjetas antes de filtrar
+            colapsarTodasLasTarjetas();
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const estadoCivil = document.getElementById('estadoCivilFilter').value;
+            const hijosFilter = document.getElementById('hijosFilter').value;
+            const listaFilter = document.getElementById('listaFilter').value;
+            
+            document.querySelectorAll('.person-card').forEach(card => {
+                let mostrar = true;
+                
+                // Filtro de búsqueda
+                if (searchTerm) {
+                    const textoCompleto = card.textContent.toLowerCase();
+                    mostrar = mostrar && textoCompleto.includes(searchTerm);
+                }
+                
+                // Filtro estado civil
+                if (estadoCivil) {
+                    const estadoCard = card.querySelector('.tag') ? card.querySelector('.tag').textContent : '';
+                    mostrar = mostrar && estadoCard.includes(estadoCivil);
+                }
+                
+                // Filtro hijos
+                if (hijosFilter === 'con-hijos') {
+                    mostrar = mostrar && card.querySelector('.tiene-hijos') !== null;
+                } else if (hijosFilter === 'sin-hijos') {
+                    mostrar = mostrar && card.querySelector('.tiene-hijos') === null;
+                }
+                
+                // Filtro lista
+                if (listaFilter) {
+                    mostrar = mostrar && card.getAttribute('data-lista-id') === listaFilter;
+                }
+                
+                card.style.display = mostrar ? 'block' : 'none';
+            });
+            
+            actualizarContadores();
+        }
+
+        // ===== MODALES =====
+        function abrirModalPersona(listaId) {
+            document.getElementById('listaIdPersona').value = listaId;
+            document.getElementById('modalPersona').classList.add('active');
+            document.querySelector('#modalPersona .modal-title').textContent = 'Agregar Nueva Persona';
+            document.getElementById('formPersona').reset();
+            
+            // 🆕 Inicializar autocompletado cuando se abre el modal
+            setTimeout(() => {
+                if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                    console.log('🏠 Inicializando autocompletado en modal...');
+                    initializeAddressAutocomplete();
+                } else {
+                    console.warn('⚠️ Google Places API no está disponible aún');
+                    // Retry después de un momento
+                    setTimeout(() => {
+                        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                            initializeAddressAutocomplete();
+                        }
+                    }, 1000);
+                }
+            }, 100);
+        }
+
+        function abrirModalLista() {
+            document.getElementById('modalLista').classList.add('active');
+        }
+
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            
+            // 🆕 Limpiar autocompletado al cerrar modal
+            if (modalId === 'modalPersona') {
+                resetAddressValidation();
+                autocompleteInstance = null;
+                selectedPlace = null;
+            }
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    cerrarModal(modal.id);
+                }
+            });
+        });
+
+        // ===== FORMULARIOS =====
+        function guardarPersona(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // 🆕 Validar dirección antes de enviar
+            const addressInput = document.getElementById('direccionInput');
+            if (addressInput && addressInput.value.trim()) {
+                const hasValidAddress = addressInput.classList.contains('valid') || selectedPlace;
+                if (!hasValidAddress) {
+                    mostrarNotificacion('⚠️ Por favor, selecciona una dirección válida del autocompletado', 'warning');
+                    return;
+                }
+                
+                // Si se seleccionó del autocompletado, usar la dirección formateada
+                if (selectedPlace && selectedPlace.formatted_address) {
+                    data.direccion = selectedPlace.formatted_address;
+                    console.log('📍 Usando dirección validada:', data.direccion);
+                }
+            }
+            
+            // Convertir números
+            data.edad = data.edad ? parseInt(data.edad) : null;
+            data.numero_hijos = data.numero_hijos ? parseInt(data.numero_hijos) : 0;
+            
+            // Para compatibilidad con el backend actual
+            data.titulo = `${data.nombre} ${data.apellido}`.trim();
+            data.descripcion = data.direccion;
+            
+            fetch(`/tableros/agregar_tarjeta?lista_id=${data.lista_id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarNotificacion('Persona agregada exitosamente', 'success');
+                    cerrarModal('modalPersona');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    mostrarNotificacion('Error al agregar la persona', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al agregar la persona', 'error');
+            });
+        }
+
+        function guardarLista(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            data.tablero_id = '{{ tablero.id }}';
+            
+            fetch('/tableros/agregar_lista', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarNotificacion('Lista creada exitosamente', 'success');
+                    cerrarModal('modalLista');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    mostrarNotificacion('Error al crear la lista', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al crear la lista', 'error');
+            });
+        }
+
+        // ===== ELIMINAR =====
+        function eliminarPersona(tarjetaId) {
+            console.log('🗑️ Intentando eliminar persona con ID:', tarjetaId);
+            
+            if (!confirm('¿Estás seguro de que quieres eliminar esta persona?')) {
+                console.log('❌ Eliminación cancelada por el usuario');
+                return;
+            }
+            
+            console.log('✅ Confirmado - Eliminando persona...');
+            
+            fetch(`/tableros/eliminar_tarjeta/${tarjetaId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const card = document.querySelector(`[data-id="${tarjetaId}"]`);
+                    if (card) {
+                        card.remove();
+                    }
+                    
+                    // Eliminar marcador del mapa
+                    const marcadorIndex = marcadores.findIndex(m => m.personaId === tarjetaId);
+                    if (marcadorIndex !== -1) {
+                        marcadores[marcadorIndex].setMap(null);
+                        marcadores.splice(marcadorIndex, 1);
+                    }
+                    
+                    actualizarContadores();
+                    actualizarContadoresMapa();
+                    mostrarNotificacion('Persona eliminada exitosamente', 'success');
+                    console.log('✅ Persona eliminada exitosamente');
+                } else {
+                    mostrarNotificacion('Error al eliminar la persona', 'error');
+                    console.error('❌ Error del servidor al eliminar');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error de red al eliminar:', error);
+                mostrarNotificacion('Error al eliminar la persona', 'error');
+            });
+        }
+
+        function eliminarLista(listaId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta lista y todas sus personas?')) {
+                return;
+            }
+            
+            fetch(`/tableros/eliminar_lista/${listaId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    mostrarNotificacion('Error al eliminar la lista', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al eliminar la lista', 'error');
+            });
+        }
+
+        // ===== CONTADORES =====
+        function actualizarContadores() {
+            document.querySelectorAll('.kanban-list').forEach(lista => {
+                const listaId = lista.getAttribute('data-lista-id');
+                if (listaId) {
+                    const count = lista.querySelectorAll('.person-card[style*="display: block"], .person-card:not([style*="display: none"])').length;
+                    const counter = lista.querySelector('.list-count');
+                    if (counter) {
+                        counter.textContent = count;
+                    }
+                }
+            });
+        }
+
+        // ===== NOTIFICACIONES =====
+        function mostrarNotificacion(mensaje, tipo = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${mensaje}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ===== DROPDOWN =====
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const toggle = dropdown.previousElementSibling;
+            
+            // Cerrar otros dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu.id !== dropdownId) {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.classList.remove('active');
+                }
+            });
+            
+            // Toggle actual
+            dropdown.classList.toggle('show');
+            toggle.classList.toggle('active');
+        }
+
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.classList.remove('active');
+                });
+            }
+        });
+
+        // ===== INICIALIZACIÓN DE MAPA =====
+        window.initMap = initMap;
+
+        // ===== 🆕 AGRUPACIÓN GEOGRÁFICA MEJORADA =====
+        
+        function calcularDistancia(lat1, lng1, lat2, lng2) {
+            /**
+             * Calcula la distancia entre dos puntos usando la fórmula de Haversine
+             * Retorna la distancia en kilómetros
+             */
+            const R = 6371; // Radio de la Tierra en km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function agruparPorCercania() {
+            mostrarNotificacion('🔍 Analizando ubicaciones para crear grupos geográficos...', 'info');
+            
+            // Verificar que tenemos marcadores con coordenadas
+            if (marcadores.length < 2) {
+                mostrarNotificacion('❌ Se necesitan al menos 2 personas con direcciones para agrupar', 'warning');
+                return;
+            }
+
+            const radioMaximo = parseFloat(document.getElementById('radioAgrupacion').value);
+            const minimoPersonas = parseInt(document.getElementById('minimoPersonas').value);
+            const maximoPersonas = parseInt(document.getElementById('maximoPersonas').value);
+
+            if (minimoPersonas > maximoPersonas) {
+                mostrarNotificacion('❌ El mínimo de personas no puede ser mayor que el máximo.', 'error');
+                return;
+            }
+            
+            console.log(`🎯 Configuración: Radio ${radioMaximo}km, Mínimo ${minimoPersonas}, Máximo ${maximoPersonas} personas`);
+            
+            const personasConCoordenadas = marcadores.map(marcador => ({
+                persona: marcador.persona,
+                lista: marcador.lista,
+                lat: marcador.getPosition().lat(),
+                lng: marcador.getPosition().lng(),
+                marcador: marcador,
+                usado: false
+            }));
+
+            const grupos = [];
+            
+            personasConCoordenadas.forEach((personaBase, index) => {
+                if (personaBase.usado) return;
+
+                const zonaCompleta = [personaBase];
+                personaBase.usado = true;
+
+                personasConCoordenadas.forEach((otraPersona, otroIndex) => {
+                    if (otraPersona.usado) return;
+                    const distancia = calcularDistancia(personaBase.lat, personaBase.lng, otraPersona.lat, otraPersona.lng);
+                    if (distancia <= radioMaximo) {
+                        zonaCompleta.push(otraPersona);
+                        otraPersona.usado = true;
+                    }
+                });
+
+                // Si la zona encontrada cumple con el mínimo, la procesamos para dividirla
+                if (zonaCompleta.length >= minimoPersonas) {
+                    console.log(`🌍 Zona encontrada con ${zonaCompleta.length} personas. Dividiendo en grupos de máx. ${maximoPersonas}...`);
+                    
+                    while (zonaCompleta.length > 0) {
+                        const nuevoSubGrupo = zonaCompleta.splice(0, maximoPersonas);
+                        
+                        // Solo se crea el subgrupo si cumple con el tamaño MÍNIMO
+                        if (nuevoSubGrupo.length >= minimoPersonas) {
+                            grupos.push(nuevoSubGrupo);
+                            console.log(`✅ Subgrupo creado con ${nuevoSubGrupo.length} personas.`);
+                        } else {
+                            console.log(`❌ Subgrupo de ${nuevoSubGrupo.length} personas descartado (mínimo ${minimoPersonas}).`);
+                        }
+                    }
+                } else {
+                    // Si no, liberamos a las personas para que puedan ser parte de otro grupo
+                    zonaCompleta.forEach(p => p.usado = false);
+                }
+            });
+
+            console.log(`🎯 Resultado: ${grupos.length} grupos válidos encontrados`);
+
+            if (grupos.length === 0) {
+                mostrarNotificacion(`❌ No se encontraron grupos válidos con la configuración actual.`, 'warning');
+                return;
+            }
+
+            mostrarConfirmacionAgrupacion(grupos, radioMaximo);
+        }
+
+        function mostrarConfirmacionAgrupacion(grupos, radioMaximo) {
+            const totalPersonas = grupos.reduce((sum, grupo) => sum + grupo.length, 0);
+            
+            const gruposConInfo = grupos.map((grupo, index) => {
+                const centerLat = grupo.reduce((sum, p) => sum + p.lat, 0) / grupo.length;
+                const centerLng = grupo.reduce((sum, p) => sum + p.lng, 0) / grupo.length;
+                
+                let maxDistanciaInterna = 0;
+                grupo.forEach(p1 => {
+                    grupo.forEach(p2 => {
+                        if (p1 !== p2) {
+                            const dist = calcularDistancia(p1.lat, p1.lng, p2.lat, p2.lng);
+                            maxDistanciaInterna = Math.max(maxDistanciaInterna, dist);
+                        }
+                    });
+                });
+
+                return {
+                    numero: index + 1,
+                    personas: grupo,
+                    centro: { lat: centerLat, lng: centerLng },
+                    dispersion: maxDistanciaInterna.toFixed(2)
+                };
+            });
+            
+            const mensaje = `
+                <div style="text-align: left;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">
+                        🎯 Agrupación Inteligente por Cercanía
+                    </h4>
+                    <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p><strong>📊 Resumen del análisis:</strong></p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li><strong>${grupos.length}</strong> grupos geográficos encontrados</li>
+                            <li><strong>${totalPersonas}</strong> personas serán agrupadas</li>
+                            <li>Radio de búsqueda: <strong>${radioMaximo} km</strong></li>
+                            <li>Personas sin agrupar: <strong>${marcadores.length - totalPersonas}</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <h5 style="color: var(--text-primary); margin: 15px 0 10px 0;">📋 Grupos a crear:</h5>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${gruposConInfo.map(grupo => `
+                            <div style="background: var(--bg-secondary); padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 3px solid var(--primary-color);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <strong style="color: var(--primary-color);">📍 Zona ${grupo.numero}</strong>
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary);">
+                                        ${grupo.personas.length} personas • Dispersión: ${grupo.dispersion}km
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                    ${grupo.personas.slice(0, 4).map(p => p.persona.nombre_completo).join(' • ')}
+                                    ${grupo.personas.length > 4 ? ` • +${grupo.personas.length - 4} más` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background: #fef3c7; padding: 10px; border-radius: 6px; margin-top: 15px; border-left: 3px solid #f59e0b;">
+                        <p style="margin: 0; color: #92400e; font-size: 0.875rem;">
+                            <strong>⚠️ Importante:</strong> Se crearán ${grupos.length} listas nuevas y las personas se moverán de sus listas actuales a las nuevas zonas geográficas.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">🎯 Confirmar Agrupación Geográfica</h3>
+                        <button class="modal-close" onclick="cerrarModalConfirmacion()">×</button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        ${mensaje}
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" onclick="cerrarModalConfirmacion()">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </button>
+                        <button class="btn btn-success" onclick="confirmarCreacionGrupos()" id="btn-confirmar-grupos">
+                            <i class="fas fa-check"></i>
+                            Crear ${grupos.length} Zonas
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            window.modalConfirmacionActual = modal;
+            window.gruposTemporales = grupos; // Guardar grupos para confirmar
+        }
+
+        function cerrarModalConfirmacion() {
+            if (window.modalConfirmacionActual) {
+                window.modalConfirmacionActual.remove();
+                window.modalConfirmacionActual = null;
+                window.gruposTemporales = null;
+            }
+        }
+
+        function confirmarCreacionGrupos() {
+            if (!window.gruposTemporales) {
+                mostrarNotificacion('❌ Error: No hay grupos para crear', 'error');
+                return;
+            }
+
+            const grupos = window.gruposTemporales;
+            cerrarModalConfirmacion();
+            
+            mostrarNotificacion('🔄 Creando listas geográficas y moviendo personas...', 'info');
+
+            // Crear listas y mover personas secuencialmente para evitar conflictos
+            crearGruposSecuencial(grupos, 0);
+        }
+
+        async function crearGruposSecuencial(grupos, indiceActual) {
+            if (indiceActual >= grupos.length) {
+                // Terminamos todos los grupos
+                mostrarNotificacion(`✅ Se crearon ${grupos.length} zonas geográficas exitosamente`, 'success');
+                setTimeout(() => {
+                    location.reload(); // Recargar para ver los cambios
+                }, 2000);
+                return;
+            }
+
+            const grupo = grupos[indiceActual];
+            const numeroZona = indiceActual + 1;
+
+            try {
+                // 1. Crear nueva lista
+                console.log(`📋 Creando Zona ${numeroZona} con ${grupo.length} personas...`);
+                
+                const listaResponse = await fetch('/tableros/agregar_lista', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        titulo: `Zona ${numeroZona}`,
+                        color: obtenerColorZona(numeroZona),
+                        tablero_id: '{{ tablero.id }}'
+                    })
+                });
+
+                const listaData = await listaResponse.json();
+                if (!listaData.success) {
+                    throw new Error(`Error creando Zona ${numeroZona}: ${listaData.error || 'Unknown error'}`);
+                }
+
+                console.log(`✅ Zona ${numeroZona} creada con ID: ${listaData.lista.id}`);
+
+                // 2. Mover personas secuencialmente
+                for (let i = 0; i < grupo.length; i++) {
+                    const personaData = grupo[i];
+                    
+                    console.log(`🚚 Moviendo ${personaData.persona.nombre_completo} a Zona ${numeroZona}...`);
+                    
+                    const moveResponse = await fetch('/tableros/mover_tarjeta', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            tarjeta_id: personaData.persona.id,
+                            lista_origen_id: personaData.lista.id,
+                            lista_destino_id: listaData.lista.id,
+                            nueva_posicion: i
+                        })
+                    });
+
+                    if (!moveResponse.ok) {
+                        console.warn(`⚠️ Error moviendo ${personaData.persona.nombre_completo}`);
+                    } else {
+                        console.log(`✅ ${personaData.persona.nombre_completo} movido exitosamente`);
+                    }
+                    
+                    // Pequeña pausa para evitar sobrecarga
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                mostrarNotificacion(`✅ Zona ${numeroZona} completada (${grupo.length} personas)`, 'success');
+                
+                // Continuar con el siguiente grupo
+                setTimeout(() => {
+                    crearGruposSecuencial(grupos, indiceActual + 1);
+                }, 500);
+
+            } catch (error) {
+                console.error(`❌ Error en Zona ${numeroZona}:`, error);
+                mostrarNotificacion(`❌ Error creando Zona ${numeroZona}: ${error.message}`, 'error');
+                
+                // Continuar con el siguiente grupo aunque haya error
+                setTimeout(() => {
+                    crearGruposSecuencial(grupos, indiceActual + 1);
+                }, 1000);
+            }
+        }
+
+        function obtenerColorZona(numeroZona) {
+            // Colores disponibles para zonas
+            const coloresDisponibles = [
+                '#e74c3c',  // Rojo
+                '#3498db',  // Azul  
+                '#2ecc71',  // Verde
+                '#f39c12',  // Naranja
+                '#9b59b6',  // Púrpura
+                '#1abc9c',  // Turquesa
+                '#e67e22',  // Naranja oscuro
+                '#34495e',  // Gris azulado
+                '#16a085',  // Verde azulado
+                '#8e44ad',  // Púrpura oscuro
+                '#c0392b',  // Rojo oscuro
+                '#2980b9',  // Azul oscuro
+                '#27ae60',  // Verde oscuro
+                '#d68910',  // Amarillo oscuro
+                '#7d3c98',  // Púrpura medio
+                '#148f77',  // Turquesa oscuro
+                '#af601a',  // Marrón
+                '#2c3e50',  // Azul muy oscuro
+                '#117a65',  // Verde muy oscuro
+                '#6c3483'   // Púrpura muy oscuro
+        ];
+    
+        // Obtener colores ya usados por las listas existentes
+        const coloresUsados = listas.map(lista => lista.color.toLowerCase());
+    
+        // Filtrar colores disponibles que no estén en uso
+        const coloresLibres = coloresDisponibles.filter(color => 
+            !coloresUsados.includes(color.toLowerCase())
+        );
+    
+        // Si hay colores libres, usar uno de ellos
+        if (coloresLibres.length > 0) {
+            const indice = (numeroZona - 1) % coloresLibres.length;
+            return coloresLibres[indice];
+        }
+    
+        // Si todos los colores están en uso, generar un color único
+        console.log(`⚠️ Todos los colores predefinidos están en uso. Generando color único para Zona ${numeroZona}...`);
+    
+        // Generar color basado en HSL para mejor distribución
+        const hue = ((numeroZona - 1) * 137.5) % 360; // Distribución áurea
+        const saturation = 65 + ((numeroZona - 1) % 3) * 10; // 65%, 75%, 85%
+        const lightness = 45 + ((numeroZona - 1) % 2) * 10;  // 45%, 55%
+    
+        const hslToHex = (h, s, l) => {
+            l /= 100;
+            s /= 100;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+    };
+    
+    return hslToHex(hue, saturation, lightness);
+}
+        function mostrarAnalisisCercania() {
+            if (marcadores.length < 2) {
+                mostrarNotificacion('❌ Se necesitan al menos 2 personas con direcciones para analizar', 'warning');
+                return;
+            }
+
+            // Calcular matriz de distancias
+            const analisis = {
+                totalPersonas: marcadores.length,
+                distanciaMinima: Infinity,
+                distanciaMaxima: 0,
+                distanciaPromedio: 0,
+                parejasCercanas: [],
+                zonas: {}
+            };
+
+            let sumaDistancias = 0;
+            let totalParejas = 0;
+
+            marcadores.forEach((marcador1, i) => {
+                marcadores.forEach((marcador2, j) => {
+                    if (i >= j) return; // Evitar duplicados
+
+                    const distancia = calcularDistancia(
+                        marcador1.getPosition().lat(), marcador1.getPosition().lng(),
+                        marcador2.getPosition().lat(), marcador2.getPosition().lng()
+                    );
+
+                    analisis.distanciaMinima = Math.min(analisis.distanciaMinima, distancia);
+                    analisis.distanciaMaxima = Math.max(analisis.distanciaMaxima, distancia);
+                    sumaDistancias += distancia;
+                    totalParejas++;
+
+                    if (distancia <= 2) { // Parejas dentro de 2km
+                        analisis.parejasCercanas.push({
+                            persona1: marcador1.persona.nombre_completo,
+                            persona2: marcador2.persona.nombre_completo,
+                            distancia: distancia.toFixed(2)
+                        });
+                    }
+                });
+            });
+
+            analisis.distanciaPromedio = (sumaDistancias / totalParejas).toFixed(2);
+
+            mostrarModalAnalisis(analisis);
+        }
+
+        function mostrarModalAnalisis(analisis) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">📊 Análisis de Cercanía Geográfica</h3>
+                        <button class="modal-close" onclick="cerrarModalAnalisis()">×</button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+                                <h4 style="color: var(--primary-color); margin-bottom: 10px;">📍 Estadísticas Generales</h4>
+                                <p><strong>Total personas:</strong> ${analisis.totalPersonas}</p>
+                                <p><strong>Distancia mínima:</strong> ${analisis.distanciaMinima.toFixed(2)} km</p>
+                                <p><strong>Distancia máxima:</strong> ${analisis.distanciaMaxima.toFixed(2)} km</p>
+                                <p><strong>Distancia promedio:</strong> ${analisis.distanciaPromedio} km</p>
+                            </div>
+                            
+                            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+                                <h4 style="color: var(--success-color); margin-bottom: 10px;">👥 Personas Cercanas</h4>
+                                <p><strong>Parejas dentro de 2km:</strong> ${analisis.parejasCercanas.length}</p>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary);">
+                                    ${analisis.parejasCercanas.length > 0 ? 
+                                        'Buenas oportunidades para formar grupos.' : 
+                                        'Considera aumentar el radio de agrupación.'}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        ${analisis.parejasCercanas.length > 0 ? `
+                            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px;">
+                                <h4 style="color: var(--text-primary); margin-bottom: 10px;">🔗 Parejas Cercanas (≤ 2km)</h4>
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    ${analisis.parejasCercanas.slice(0, 10).map(pareja => `
+                                        <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border-light);">
+                                            <span style="font-size: 0.875rem;">${pareja.persona1} ↔ ${pareja.persona2}</span>
+                                            <span style="font-weight: 600; color: var(--success-color);">${pareja.distancia} km</span>
+                                        </div>
+                                    `).join('')}
+                                    ${analisis.parejasCercanas.length > 10 ? `
+                                        <p style="text-align: center; margin-top: 10px; color: var(--text-light); font-size: 0.875rem;">
+                                            ... y ${analisis.parejasCercanas.length - 10} parejas más
+                                        </p>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" onclick="cerrarModalAnalisis()">
+                            Cerrar
+                        </button>
+                        <button class="btn btn-primary" onclick="cerrarModalAnalisis(); agruparPorCercania();">
+                            <i class="fas fa-users"></i>
+                            Crear Grupos
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            window.modalAnalisisActual = modal;
+        }
+
+        function cerrarModalAnalisis() {
+            if (window.modalAnalisisActual) {
+                window.modalAnalisisActual.remove();
+                window.modalAnalisisActual = null;
+            }
+        }
+
+        // 🎯 FUNCIONES MEJORADAS DE AGRUPACIÓN (RESTO DEL CÓDIGO ORIGINAL)
+
+        // 🎯 FUNCIÓN MEJORADA: Prioriza proximidad real sobre balanceo
+function agruparPorCercaniaMejorado() {
+    console.log('🚀 Iniciando agrupación geográfica optimizada para proximidad real...');
+    
+    const radioElement = document.getElementById('radioAgrupacion');
+    const minimoElement = document.getElementById('minimoPersonas');
+    const maximoElement = document.getElementById('maximoPersonas');
+    
+    if (!radioElement || !minimoElement || !maximoElement) {
+        mostrarNotificacion('❌ Error: Controles de agrupación no encontrados', 'error');
+        return;
+    }
+    
+    mostrarNotificacion('🔍 Aplicando algoritmo optimizado para proximidad geográfica...', 'info');
+    
+    if (!marcadores || marcadores.length < 2) {
+        mostrarNotificacion('❌ Se necesitan al menos 2 personas con direcciones para agrupar', 'warning');
+        return;
+    }
+
+    const radioMaximo = parseFloat(radioElement.value) || 3;
+    const minimoPersonas = parseInt(minimoElement.value) || 4;
+    const maximoPersonas = parseInt(maximoElement.value) || 7;
+
+    if (minimoPersonas > maximoPersonas) {
+        mostrarNotificacion('❌ El mínimo de personas no puede ser mayor que el máximo.', 'error');
+        return;
+    }
+    
+    console.log(`🎯 Configuración OPTIMIZADA: Radio ${radioMaximo}km, Mínimo ${minimoPersonas}, Máximo ${maximoPersonas} personas`);
+    
+    actualizarEstadisticasAgrupacion();
+    
+    const personasConCoordenadas = marcadores.filter(marcador => marcador.getPosition()).map((marcador, index) => ({
+        id: index,
+        persona: marcador.persona,
+        lista: marcador.lista,
+        lat: marcador.getPosition().lat(),
+        lng: marcador.getPosition().lng(),
+        marcador: marcador,
+        cluster: -1,
+        visitado: false
+    }));
+
+    if (personasConCoordenadas.length < minimoPersonas) {
+        mostrarNotificacion(`❌ Se necesitan al menos ${minimoPersonas} personas con coordenadas válidas`, 'warning');
+        return;
+    }
+    
+    // 🧠 ALGORITMO OPTIMIZADO: Clustering por densidad LOCAL
+    const gruposOptimos = crearGruposCompactos(personasConCoordenadas, radioMaximo, minimoPersonas, maximoPersonas);
+    
+    console.log(`🎯 Resultado OPTIMIZADO: ${gruposOptimos.length} grupos compactos encontrados`);
+    
+    // 📊 Mostrar estadísticas de calidad
+    mostrarEstadisticasProximidad(gruposOptimos);
+
+    if (gruposOptimos.length === 0) {
+        mostrarSugerenciasInteligentes(personasConCoordenadas, radioMaximo, minimoPersonas);
+        mostrarNotificacion(`❌ No se encontraron grupos óptimos. Intenta reducir el mínimo de personas o aumentar el radio.`, 'warning');
+        return;
+    }
+
+    mostrarConfirmacionAgrupacion(gruposOptimos, radioMaximo);
+}
+
+// 🎯 NUEVO ALGORITMO: Clustering por densidad local
+function crearGruposCompactos(puntos, radioMaximo, minimoPersonas, maximoPersonas) {
+    console.log('🔬 Iniciando clustering por densidad local...');
+    
+    const grupos = [];
+    const puntosUsados = new Set();
+    
+    // Ordenar puntos por densidad local (más vecinos primero)
+    const puntosOrdenados = puntos.map(punto => ({
+        ...punto,
+        densidad: calcularDensidadLocal(punto, puntos, radioMaximo)
+    })).sort((a, b) => b.densidad - a.densidad);
+    
+    console.log('📊 Puntos ordenados por densidad local');
+    
+    for (let i = 0; i < puntosOrdenados.length; i++) {
+        const puntoSemilla = puntosOrdenados[i];
+        
+        if (puntosUsados.has(puntoSemilla.id)) continue;
+        
+        // Crear grupo compacto desde este punto semilla
+        const grupoCompacto = crearGrupoDesdeSeemilla(
+            puntoSemilla, 
+            puntos, 
+            puntosUsados, 
+            radioMaximo, 
+            minimoPersonas, 
+            maximoPersonas
+        );
+        
+        if (grupoCompacto.length >= minimoPersonas) {
+            grupos.push(grupoCompacto);
+            console.log(`✅ Grupo compacto creado: ${grupoCompacto.length} personas, radio promedio: ${calcularRadioPromedio(grupoCompacto).toFixed(2)}km`);
+            
+            // Marcar todos los puntos del grupo como usados
+            grupoCompacto.forEach(punto => puntosUsados.add(punto.id));
+        }
+    }
+    
+    // 🔄 Intentar incluir puntos restantes en grupos existentes (si están cerca)
+    asignarPuntosRestantes(puntos, grupos, puntosUsados, radioMaximo, maximoPersonas);
+    
+    return grupos;
+}
+
+function calcularDensidadLocal(punto, todosLosPuntos, radio) {
+    let vecinos = 0;
+    for (let i = 0; i < todosLosPuntos.length; i++) {
+        if (todosLosPuntos[i].id !== punto.id) {
+            const distancia = calcularDistancia(
+                punto.lat, punto.lng,
+                todosLosPuntos[i].lat, todosLosPuntos[i].lng
+            );
+            if (distancia <= radio) {
+                vecinos++;
+            }
+        }
+    }
+    return vecinos;
+}
+
+function crearGrupoDesdeSeemilla(semilla, todosLosPuntos, puntosUsados, radioMaximo, minimoPersonas, maximoPersonas) {
+    const grupo = [semilla];
+    const candidatos = [];
+    
+    // Encontrar todos los candidatos cercanos no usados
+    for (let i = 0; i < todosLosPuntos.length; i++) {
+        const punto = todosLosPuntos[i];
+        
+        if (punto.id === semilla.id || puntosUsados.has(punto.id)) continue;
+        
+        const distancia = calcularDistancia(
+            semilla.lat, semilla.lng,
+            punto.lat, punto.lng
+        );
+        
+        if (distancia <= radioMaximo) {
+            candidatos.push({ punto, distancia });
+        }
+    }
+    
+    // Ordenar candidatos por distancia (más cercanos primero)
+    candidatos.sort((a, b) => a.distancia - b.distancia);
+    
+    // Agregar candidatos mientras mantenemos compacidad
+    for (let i = 0; i < candidatos.length && grupo.length < maximoPersonas; i++) {
+        const candidato = candidatos[i].punto;
+        
+        // Verificar que el candidato mantenga la compacidad del grupo
+        if (mantiendeCompacidad(candidato, grupo, radioMaximo)) {
+            grupo.push(candidato);
+        }
+    }
+    
+    return grupo;
+}
+
+function mantiendeCompacidad(nuevoPunto, grupoActual, radioMaximo) {
+    // El nuevo punto debe estar cerca de AL MENOS la mitad del grupo
+    let conexiones = 0;
+    const umbralConexiones = Math.ceil(grupoActual.length / 2);
+    
+    for (let i = 0; i < grupoActual.length; i++) {
+        const distancia = calcularDistancia(
+            nuevoPunto.lat, nuevoPunto.lng,
+            grupoActual[i].lat, grupoActual[i].lng
+        );
+        
+        if (distancia <= radioMaximo * 0.8) { // Más estricto para mantener compacidad
+            conexiones++;
+        }
+    }
+    
+    return conexiones >= umbralConexiones;
+}
+
+function asignarPuntosRestantes(todosLosPuntos, grupos, puntosUsados, radioMaximo, maximoPersonas) {
+    const puntosRestantes = todosLosPuntos.filter(p => !puntosUsados.has(p.id));
+    
+    console.log(`🔄 Intentando asignar ${puntosRestantes.length} puntos restantes...`);
+    
+    for (let i = 0; i < puntosRestantes.length; i++) {
+        const punto = puntosRestantes[i];
+        let mejorGrupo = -1;
+        let menorDistancia = Infinity;
+        
+        // Encontrar el grupo más cercano que tenga espacio
+        for (let j = 0; j < grupos.length; j++) {
+            if (grupos[j].length >= maximoPersonas) continue;
+            
+            const distanciaAlGrupo = calcularDistanciaMinimiaAlGrupo(punto, grupos[j]);
+            
+            if (distanciaAlGrupo <= radioMaximo && distanciaAlGrupo < menorDistancia) {
+                menorDistancia = distanciaAlGrupo;
+                mejorGrupo = j;
+            }
+        }
+        
+        if (mejorGrupo !== -1) {
+            grupos[mejorGrupo].push(punto);
+            puntosUsados.add(punto.id);
+            console.log(`🔗 Punto asignado a grupo existente (distancia: ${menorDistancia.toFixed(2)}km)`);
+        }
+    }
+}
+
+function calcularDistanciaMinimiaAlGrupo(punto, grupo) {
+    let menorDistancia = Infinity;
+    
+    for (let i = 0; i < grupo.length; i++) {
+        const distancia = calcularDistancia(
+            punto.lat, punto.lng,
+            grupo[i].lat, grupo[i].lng
+        );
+        
+        if (distancia < menorDistancia) {
+            menorDistancia = distancia;
+        }
+    }
+    
+    return menorDistancia;
+}
+
+function calcularRadioPromedio(grupo) {
+    if (grupo.length <= 1) return 0;
+    
+    const centroide = {
+        lat: grupo.reduce((sum, p) => sum + p.lat, 0) / grupo.length,
+        lng: grupo.reduce((sum, p) => sum + p.lng, 0) / grupo.length
+    };
+    
+    const distancias = grupo.map(p => calcularDistancia(p.lat, p.lng, centroide.lat, centroide.lng));
+    return distancias.reduce((sum, d) => sum + d, 0) / distancias.length;
+}
+
+function mostrarEstadisticasProximidad(grupos) {
+    let distanciaPromedioTotal = 0;
+    let gruposAnalizados = 0;
+    
+    grupos.forEach((grupo, index) => {
+        const radioPromedio = calcularRadioPromedio(grupo);
+        distanciaPromedioTotal += radioPromedio;
+        gruposAnalizados++;
+        
+        console.log(`📊 Grupo ${index + 1}: ${grupo.length} personas, radio promedio: ${radioPromedio.toFixed(2)}km`);
+    });
+    
+    const distanciaPromedioGlobal = gruposAnalizados > 0 ? distanciaPromedioTotal / gruposAnalizados : 0;
+    console.log(`📈 Distancia promedio global MEJORADA: ${distanciaPromedioGlobal.toFixed(2)}km`);
+}
+
+    // 🧠 IMPLEMENTACIÓN DEL ALGORITMO DBSCAN
+     function dbscanClustering(puntos, epsilon, minPuntos) {
+         console.log(`🔬 Ejecutando DBSCAN: epsilon=${epsilon}km, minPuntos=${minPuntos}`);
+    
+         let clusterActual = 0;
+         const clusters = [];
+    
+         for (let i = 0; i < puntos.length; i++) {
+             const punto = puntos[i];
+        
+             if (punto.visitado) continue;
+             punto.visitado = true;
+        
+             // Encontrar vecinos dentro del radio
+             const vecinos = obtenerVecinos(punto, puntos, epsilon);
+        
+             if (vecinos.length < minPuntos) {
+                 // Punto de ruido - se tratará después
+                 punto.cluster = -1;
+             } else {
+                 // Punto núcleo - crear nuevo cluster
+                 clusters[clusterActual] = [];
+                 expandirCluster(punto, vecinos, clusterActual, epsilon, minPuntos, puntos, clusters);
+                 clusterActual++;
+             }
+         }
+    
+         // Asignar puntos de ruido al cluster más cercano (si existe)
+         asignarPuntosRuido(puntos, clusters, epsilon);
+    
+         console.log(`✅ DBSCAN completado: ${clusters.length} clusters encontrados`);
+         return clusters.filter(cluster => cluster.length >= minPuntos);
+     }
+
+     function obtenerVecinos(punto, puntos, epsilon) {
+         const vecinos = [];
+    
+         for (let i = 0; i < puntos.length; i++) {
+             const otroPunto = puntos[i];
+             if (punto.id !== otroPunto.id) {
+                 const distancia = calcularDistancia(punto.lat, punto.lng, otroPunto.lat, otroPunto.lng);
+                 if (distancia <= epsilon) {
+                     vecinos.push(otroPunto);
+                 }
+             }
+         }
+    
+         return vecinos;
+     }
+
+     function expandirCluster(punto, vecinos, clusterNum, epsilon, minPuntos, puntos, clusters) {
+         clusters[clusterNum].push(punto);
+         punto.cluster = clusterNum;
+    
+         for (let i = 0; i < vecinos.length; i++) {
+             const vecino = vecinos[i];
+        
+             if (!vecino.visitado) {
+                 vecino.visitado = true;
+                 const nuevosVecinos = obtenerVecinos(vecino, puntos, epsilon);
+            
+                 if (nuevosVecinos.length >= minPuntos) {
+                     // Fusionar nuevos vecinos
+                     for (let j = 0; j < nuevosVecinos.length; j++) {
+                         if (vecinos.findIndex(v => v.id === nuevosVecinos[j].id) === -1) {
+                             vecinos.push(nuevosVecinos[j]);
+                         }
+                     }
+                 }
+             }
+        
+             if (vecino.cluster === -1) {
+                 clusters[clusterNum].push(vecino);
+                 vecino.cluster = clusterNum;
+             }
+         }
+     }
+
+     function asignarPuntosRuido(puntos, clusters, epsilon) {
+         const puntosRuido = puntos.filter(p => p.cluster === -1);
+    
+         for (let i = 0; i < puntosRuido.length; i++) {
+             const puntoRuido = puntosRuido[i];
+             let clusterMasCercano = -1;
+             let distanciaMinima = Infinity;
+        
+             for (let j = 0; j < clusters.length; j++) {
+                 const cluster = clusters[j];
+                 for (let k = 0; k < cluster.length; k++) {
+                     const puntoCluster = cluster[k];
+                     const distancia = calcularDistancia(
+                         puntoRuido.lat, puntoRuido.lng, 
+                         puntoCluster.lat, puntoCluster.lng
+                     );
+                
+                     if (distancia < distanciaMinima && distancia <= epsilon * 1.5) {
+                         distanciaMinima = distancia;
+                         clusterMasCercano = j;
+                     }
+                 }
+             }
+        
+             if (clusterMasCercano !== -1) {
+                 clusters[clusterMasCercano].push(puntoRuido);
+                 puntoRuido.cluster = clusterMasCercano;
+                 console.log(`🔗 Punto de ruido asignado al cluster ${clusterMasCercano}`);
+             }
+         }
+     }
+
+     // 🔧 POST-PROCESAMIENTO DE CLUSTERS
+     function postProcesarClusters(clusters, minPersonas, maxPersonas, radioMaximo) {
+         console.log('🔧 Post-procesando clusters para optimizar tamaños...');
+    
+         const gruposFinales = [];
+    
+         for (let i = 0; i < clusters.length; i++) {
+             const cluster = clusters[i];
+        
+             if (cluster.length < minPersonas) {
+                 console.log(`❌ Cluster ${i} con ${cluster.length} personas descartado (mínimo ${minPersonas})`);
+                 continue;
+             }
+        
+             if (cluster.length <= maxPersonas) {
+                 // Cluster de tamaño óptimo
+                 gruposFinales.push(cluster);
+                 console.log(`✅ Cluster ${i} con ${cluster.length} personas aceptado`);
+             } else {
+                 // Cluster muy grande - dividir inteligentemente
+                 console.log(`🔄 Cluster ${i} con ${cluster.length} personas - dividiendo...`);
+                 const subgrupos = dividirClusterInteligente(cluster, minPersonas, maxPersonas, radioMaximo);
+                 gruposFinales.push(...subgrupos);
+             }
+         }
+    
+         // 🎯 OPTIMIZACIÓN FINAL: Balancear tamaños
+         balancearGrupos(gruposFinales, minPersonas, maxPersonas, radioMaximo);
+    
+         return gruposFinales;
+     }
+
+     function dividirClusterInteligente(cluster, minPersonas, maxPersonas, radioMaximo) {
+         console.log(`🧩 Dividiendo cluster de ${cluster.length} personas...`);
+    
+         // Usar K-means para dividir el cluster en subgrupos óptimos
+         const numGrupos = Math.ceil(cluster.length / maxPersonas);
+         const subgrupos = kmeansClustering(cluster, numGrupos, minPersonas);
+    
+         console.log(`✅ Cluster dividido en ${subgrupos.length} subgrupos`);
+         return subgrupos;
+     }
+
+     function kmeansClustering(puntos, k, minPersonas) {
+         if (puntos.length <= minPersonas || k <= 1) {
+             return [puntos];
+         }
+    
+         // Inicializar centroides aleatoriamente
+         let centroides = [];
+         for (let i = 0; i < k; i++) {
+             const index = Math.floor(Math.random() * puntos.length);
+             centroides.push({
+                 lat: puntos[index].lat,
+                 lng: puntos[index].lng
+             });
+         }
+    
+         let iteraciones = 0;
+         const maxIteraciones = 50;
+         let cambios = true;
+         let clusters = []; // Declarar clusters fuera del while para que exista después
+
+         while (cambios && iteraciones < maxIteraciones) {
+             cambios = false;
+             iteraciones++;
+        
+             // Asignar cada punto al centroide más cercano
+             clusters = Array(k).fill().map(() => []); // ← CORREGIDO: era 'grupos'
+        
+             for (let i = 0; i < puntos.length; i++) {
+                 const punto = puntos[i];
+                 let clusterMasCercano = 0;
+                 let distanciaMinima = Infinity;
+            
+                 for (let j = 0; j < centroides.length; j++) {
+                     const distancia = calcularDistancia(
+                         punto.lat, punto.lng,
+                         centroides[j].lat, centroides[j].lng
+                     );
+                
+                     if (distancia < distanciaMinima) {
+                         distanciaMinima = distancia;
+                         clusterMasCercano = j;
+                     }
+                 }
+            
+                 clusters[clusterMasCercano].push(punto); // ← CORREGIDO: era 'grupos'
+             }
+        
+             // Recalcular centroides
+             for (let i = 0; i < k; i++) {
+                 if (clusters[i].length > 0) { // ← CORREGIDO: era 'grupos'
+                     const nuevoCentroide = {
+                         lat: clusters[i].reduce((sum, p) => sum + p.lat, 0) / clusters[i].length, // ← CORREGIDO
+                         lng: clusters[i].reduce((sum, p) => sum + p.lng, 0) / clusters[i].length  // ← CORREGIDO
+                     };
+                
+                     const distanciaCambio = calcularDistancia(
+                         centroides[i].lat, centroides[i].lng,
+                         nuevoCentroide.lat, nuevoCentroide.lng
+                     );
+                
+                     if (distanciaCambio > 0.001) { // 1 metro de cambio
+                         cambios = true;
+                     }
+                
+                     centroides[i] = nuevoCentroide;
+                 }
+             }
+         }
+    
+         // Filtrar grupos que cumplen el mínimo
+         const gruposValidos = clusters.filter(cluster => cluster.length >= minPersonas); // ← CORREGIDO
+         console.log(`🎯 K-means completado en ${iteraciones} iteraciones: ${gruposValidos.length} grupos válidos`);
+    
+         return gruposValidos;
+     }
+
+     function balancearGrupos(grupos, minPersonas, maxPersonas, radioMaximo) {
+         console.log('⚖️ Balanceando tamaños de grupos...');
+    
+         // Identificar grupos muy pequeños y muy grandes
+         const gruposPequenos = grupos.filter(g => g.length < minPersonas + 1);
+         const gruposGrandes = grupos.filter(g => g.length > maxPersonas - 1);
+    
+         // Intentar redistribuir personas de grupos grandes a pequeños
+         for (let i = 0; i < gruposPequenos.length && gruposGrandes.length > 0; i++) {
+             const grupoPequeno = gruposPequenos[i];
+        
+             for (let j = 0; j < gruposGrandes.length; j++) {
+                 const grupoGrande = gruposGrandes[j];
+            
+                 if (grupoGrande.length <= minPersonas) continue;
+            
+                 // Encontrar la persona del grupo grande más cercana al grupo pequeño
+                 let personaMasCercana = null;
+                 let distanciaMinima = Infinity;
+            
+                 const centroGrupoPequeno = calcularCentroide(grupoPequeno);
+            
+                 for (let k = 0; k < grupoGrande.length; k++) {
+                     const persona = grupoGrande[k];
+                     const distancia = calcularDistancia(
+                         persona.lat, persona.lng,
+                         centroGrupoPequeno.lat, centroGrupoPequeno.lng
+                     );
+                
+                     if (distancia < distanciaMinima && distancia <= radioMaximo) {
+                         distanciaMinima = distancia;
+                         personaMasCercana = persona;
+                     }
+                 }
+            
+                 // Mover la persona si es beneficioso
+                 if (personaMasCercana && grupoPequeno.length < maxPersonas) {
+                     const index = grupoGrande.indexOf(personaMasCercana);
+                     grupoGrande.splice(index, 1);
+                     grupoPequeno.push(personaMasCercana);
+                
+                     console.log(`🔄 Persona movida de grupo grande a pequeño (distancia: ${distanciaMinima.toFixed(2)}km)`);
+                     break;
+                 }
+             }
+         }
+     }
+
+     function calcularCentroide(grupo) {
+         const lat = grupo.reduce((sum, p) => sum + p.lat, 0) / grupo.length;
+         const lng = grupo.reduce((sum, p) => sum + p.lng, 0) / grupo.length;
+         return { lat, lng };
+     }
+        function actualizarEstadisticasAgrupacion() {
+            const statsPanel = document.getElementById('statsAgrupacion');
+            if (!statsPanel) return;
+            
+            statsPanel.style.display = 'block';
+            
+            // Calcular estadísticas
+            const totalPersonas = listas.reduce((sum, lista) => sum + lista.personas.length, 0);
+            const personasConCoord = marcadores ? marcadores.length : 0;
+            
+            // Calcular distancia promedio
+            let sumaDistancias = 0;
+            let totalParejas = 0;
+            
+            if (marcadores && marcadores.length > 1) {
+                marcadores.forEach((m1, i) => {
+                    marcadores.forEach((m2, j) => {
+                        if (i >= j) return;
+                        const dist = calcularDistancia(
+                            m1.getPosition().lat(), m1.getPosition().lng(),
+                            m2.getPosition().lat(), m2.getPosition().lng()
+                        );
+                        sumaDistancias += dist;
+                        totalParejas++;
+                    });
+                });
+            }
+            
+            const distanciaPromedio = totalParejas > 0 ? (sumaDistancias / totalParejas).toFixed(1) : 0;
+            
+            // Estimar grupos posibles
+            const radioActual = parseFloat(document.getElementById('radioAgrupacion').value) || 3;
+            const gruposPosibles = Math.floor(personasConCoord / 3); // Estimación simple
+            
+            // Actualizar elementos
+            document.getElementById('totalPersonasAnalisis').textContent = totalPersonas;
+            document.getElementById('personasConCoordenadas').textContent = personasConCoord;
+            document.getElementById('gruposPosibles').textContent = gruposPosibles;
+            document.getElementById('distanciaPromedio').textContent = distanciaPromedio;
+        }
+
+        function aplicarConfiguracionOptima() {
+            if (!marcadores || marcadores.length < 2) {
+                mostrarNotificacion('❌ Se necesitan al menos 2 personas para calcular configuración óptima', 'warning');
+                return;
+            }
+            
+            mostrarNotificacion('🔄 Calculando configuración óptima...', 'info');
+            
+            // Calcular distancia promedio
+            let sumaDistancias = 0;
+            let totalParejas = 0;
+            
+            marcadores.forEach((m1, i) => {
+                marcadores.forEach((m2, j) => {
+                    if (i >= j) return;
+                    const dist = calcularDistancia(
+                        m1.getPosition().lat(), m1.getPosition().lng(),
+                        m2.getPosition().lat(), m2.getPosition().lng()
+                    );
+                    sumaDistancias += dist;
+                    totalParejas++;
+                });
+            });
+            
+            const distanciaPromedio = totalParejas > 0 ? sumaDistancias / totalParejas : 3;
+            
+            // Calcular parámetros óptimos
+            const radioOptimo = Math.max(1, Math.min(10, distanciaPromedio * 0.6));
+            const minimoOptimo = Math.max(2, Math.min(8, Math.floor(marcadores.length / 6)));
+            const maximoOptimo = Math.min(12, minimoOptimo * 2); 
+            
+            // Aplicar configuración
+            document.getElementById('radioAgrupacion').value = Math.round(radioOptimo * 2) / 2; // Redondear a 0.5
+            document.getElementById('minimoPersonas').value = minimoOptimo;
+            document.getElementById('maximoPersonas').value = maximoOptimo;
+            document.getElementById('estrategiaAgrupacion').value = 'equilibrado';
+            
+            mostrarNotificacion(`✅ Configuración aplicada: ${Math.round(radioOptimo * 2) / 2}km, mín. ${minimoOptimo}, máx. ${maximoOptimo}`, 'success');
+            
+            // Actualizar estadísticas
+            actualizarEstadisticasAgrupacion();
+        }
+
+        function mostrarSugerenciasInteligentes(personas, radioUsado, minimoUsado) {
+            const sugerenciasPanel = document.getElementById('sugerenciasPanel');
+            const sugerenciasContenido = document.getElementById('sugerenciasContenido');
+            
+            if (!sugerenciasPanel || !sugerenciasContenido) return;
+            
+            let sugerencias = [];
+            
+            // Analizar por qué no se formaron grupos
+            if (personas.length < minimoUsado) {
+                sugerencias.push(`🔢 Solo tienes ${personas.length} personas con coordenadas, pero necesitas mínimo ${minimoUsado} por grupo.`);
+                sugerencias.push(`💡 Sugerencia: Reduce el mínimo a ${Math.max(2, personas.length - 1)} personas.`);
+            } else {
+                // Calcular si el radio es muy pequeño
+                let distanciaMinima = Infinity;
+                personas.forEach(p1 => {
+                    personas.forEach(p2 => {
+                        if (p1 !== p2) {
+                            const dist = calcularDistancia(p1.lat, p1.lng, p2.lat, p2.lng);
+                            distanciaMinima = Math.min(distanciaMinima, dist);
+                        }
+                    });
+                });
+                
+                if (distanciaMinima > radioUsado) {
+                    sugerencias.push(`📏 El radio de ${radioUsado}km es muy pequeño. La distancia mínima entre personas es ${distanciaMinima.toFixed(1)}km.`);
+                    sugerencias.push(`💡 Sugerencia: Aumenta el radio a ${Math.ceil(distanciaMinima * 1.2)}km.`);
+                } else {
+                    sugerencias.push(`🎯 Las personas están muy dispersas geográficamente.`);
+                    sugerencias.push(`💡 Intenta: Radio ${radioUsado * 1.5}km o mínimo ${Math.max(2, minimoUsado - 1)} personas.`);
+                }
+            }
+            
+            sugerenciasContenido.innerHTML = sugerencias.map(s => `<div style="margin-bottom: 5px;">• ${s}</div>`).join('');
+            sugerenciasPanel.style.display = 'block';
+        }
+
+        function mostrarAyudaAgrupacion() {
+            const ayudaHTML = `
+                <div style="text-align: left; line-height: 1.6;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">
+                        <i class="fas fa-map-marked-alt"></i> ¿Cómo funciona la Agrupación Geográfica?
+                    </h4>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: var(--text-primary); margin-bottom: 10px;">🎯 ¿Qué hace?</h5>
+                        <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                            Analiza las direcciones de todas las personas y crea grupos (listas nuevas) basados en su cercanía geográfica. 
+                            Es perfecto para organizar células, grupos de estudio o ministerios por zonas.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: var(--text-primary); margin-bottom: 10px;">⚙️ Configuración:</h5>
+                        <ul style="color: var(--text-secondary); padding-left: 20px;">
+                            <li><strong>Radio:</strong> Distancia máxima entre personas del mismo grupo.</li>
+                            <li><strong>Mínimo:</strong> Cantidad mínima de personas para que un grupo sea válido.</li>
+                            <li><strong>Máximo:</strong> Límite de personas por grupo. Si se supera, se crea otro grupo en la misma zona si es posible.</li>
+                            <li><strong>Estrategia:</strong> Cómo priorizar la agrupación (equilibrado es recomendado).</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: var(--text-primary); margin-bottom: 10px;">📋 Proceso:</h5>
+                        <ol style="color: var(--text-secondary); padding-left: 20px;">
+                            <li>Configura el radio, mínimo y máximo de personas.</li>
+                            <li>Haz clic en "Auto" para configuración automática (recomendado).</li>
+                            <li>Haz clic en "Agrupar" para analizar y crear los grupos.</li>
+                            <li>Revisa la propuesta y confirma la creación.</li>
+                            <li>Se crearán listas nuevas como "Zona 1", "Zona 2", etc.</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                        <strong style="color: var(--primary-color);">💡 Consejos:</strong>
+                        <ul style="margin: 10px 0 0 20px; color: var(--text-secondary);">
+                            <li>Usa "Auto" si no estás seguro de los parámetros.</li>
+                            <li>Un máximo de 8-12 personas por grupo suele ser ideal.</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Ayuda - Agrupación Geográfica</h3>
+                        <button class="modal-close" onclick="cerrarModalAyudaAgrupacion()">×</button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        ${ayudaHTML}
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-success" onclick="aplicarConfiguracionOptima(); cerrarModalAyudaAgrupacion();">
+                            <i class="fas fa-magic"></i>
+                            Usar Configuración Automática
+                        </button>
+                        <button class="btn btn-secondary" onclick="cerrarModalAyudaAgrupacion()">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            window.modalAyudaAgrupacionActual = modal;
+        }
+
+        function cerrarModalAyudaAgrupacion() {
+            if (window.modalAyudaAgrupacionActual) {
+                window.modalAyudaAgrupacionActual.remove();
+                window.modalAyudaAgrupacionActual = null;
+            }
+        }
+
+        // 🎯 AUTO-INICIALIZAR ESTADÍSTICAS CUANDO SE CARGA EL MAPA
+        const originalInitMap = window.initMap;
+        window.initMap = function() {
+            if (originalInitMap) {
+                originalInitMap();
+            }
+            
+            // Esperar un poco para que se carguen los marcadores
+            setTimeout(() => {
+                actualizarEstadisticasAgrupacion();
+            }, 2000);
+        };
+
+        // 🎯 TAMBIÉN ACTUALIZAR CUANDO CAMBIE LA CONFIGURACIÓN
+        document.addEventListener('DOMContentLoaded', function() {
+            // Agregar listeners a los controles cuando existan
+            setTimeout(() => {
+                const radioInput = document.getElementById('radioAgrupacion');
+                const minimoInput = document.getElementById('minimoPersonas');
+                const maximoInput = document.getElementById('maximoPersonas');
+                
+                if (radioInput) {
+                    radioInput.addEventListener('input', actualizarEstadisticasAgrupacion);
+                }
+                if (minimoInput) {
+                    minimoInput.addEventListener('input', actualizarEstadisticasAgrupacion);
+                }
+                if (maximoInput) {
+                    maximoInput.addEventListener('input', actualizarEstadisticasAgrupacion);
+                }
+            }, 1000);
+        });
+
+        console.log('✅ Sistema de tarjetas click inicializado');
+        console.log('🏠 Sistema de autocompletado de direcciones listo');
+    </script>
+</body>
+</html>

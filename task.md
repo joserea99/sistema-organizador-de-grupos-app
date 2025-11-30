@@ -1,0 +1,54 @@
+# Task: Modular "Organizador de Grupos" Rewrite
+
+- [x] **Project Initialization & Planning**
+    - [x] Create `PLAN_NUEVA_VERSION.md`
+    - [x] Create `UI_MODERNA.md`
+    - [x] Create `IMPORT_INTELIGENTE.md`
+- [ ] **Core Architecture & Themes** <!-- id: 0 -->
+    - [x] Create `app/static/js/modules/themes.js` (Theme Manager)
+    - [x] Create `app/static/css/base.css` (Base Styles)
+    - [x] Create `app/static/css/themes/clasico.css`
+    - [x] Create `app/static/css/themes/moderno.css`
+    - [x] Create `app/static/css/themes/minimalista.css` <!-- id: 1 -->
+    - [x] Create Component CSS (`cards.css`, `modals.css`, `forms.css`, `maps.css`) <!-- id: 2 -->
+- [ ] **JavaScript Modules** <!-- id: 3 -->
+    - [x] Create `app/static/js/modules/app.js` (Main Entry)
+    - [x] Create `app/static/js/modules/kanban.js`
+    - [x] Create `app/static/js/modules/filters.js`
+    - [x] Create `app/static/js/modules/modals.js`
+- [ ] **Backend & Templates Refactoring** <!-- id: 4 -->
+    - [x] Create `app/tableros/routes.py`
+    - [x] Create `app/models.py`
+    - [x] Create `app/utils/excel_handler.py`
+    - [x] Refactor `app/templates/tableros/ver.html` to use new modules <!-- id: 5 -->
+    - [x] Refactor `app/templates/tableros/lista.html` <!-- id: 6 -->
+- [ ] **Verification & Debugging** <!-- id: 7 -->
+    - [ ] Verify Theme Switching (Ready for User Review)
+    - [x] **Debug Kanban Functionality**
+        - [x] Fix Drag & Drop (SortableJS initialization)
+        - [x] Fix Card Expansion/Collapse logic
+        - [x] Fix Horizontal Scrolling in Kanban view
+        - [x] Verify Spouse Information display
+        - [x] Fix Google Maps integration and visibility
+    - [x] **UI & Map Enhancements** <!-- id: 8 -->
+        - [x] Fix Layout Overlap & Move Map to Bottom
+        - [x] Implement Color-coded Map Markers (matching Lists)
+        - [x] Expand List Color Options (20+)
+        - [x] Add Map Controls (Center, Reset)
+    - [ ] **Feedback & Enhancements** <!-- id: 9 -->
+        - [ ] Fix Card Deletion (API/Event Listener)
+        - [ ] Enable Drag & Drop for Kanban Lists
+        - [ ] Fix/Implement Search Functionality
+        - [x] Implement List Editing & Deletion (Name, Color, Delete)
+        - [x] Implement Board Deletion
+    - [x] **Smart Geographic Clustering** <!-- id: 10 -->
+        - [x] Update Model for Coordinates (`latitud`, `longitud`)
+        - [x] Implement Geocoding Utility (Google Maps API)
+        - [x] Implement Clustering Algorithm (K-Means/Spatial)
+        - [x] Create UI for Clustering Configuration (Modal)
+        - [x] Implement "Create Lists from Clusters" Action
+        - [x] Enhance: Assign Unique Colors to Clusters
+        - [x] Enhance: Clean Map Style (Hide POIs)
+        - [x] Enhance: Square Map Aspect Ratio (700px Height)
+    - [ ] Implement Smart Map Clustering (MarkerClusterer)
+    - [ ] Verify Import/Export (Ready for User Review)

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suscripción Premium - Organizador de Grupos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .price-header {
+            margin-bottom: 30px;
+        }
+
+        .price-amount {
+            font-size: 48px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .price-period {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .features {
+            list-style: none;
+            padding: 0;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .features li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li i {
+            color: #10b981;
+            margin-right: 10px;
+        }
+
+        .btn-subscribe {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .btn-subscribe:hover {
+            background: #1d4ed8;
+        }
+
+        .guarantee {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pricing-card">
+        <div class="price-header">
+            <h2>Plan Premium</h2>
+            <div class="price-amount">$9.99</div>
+            <div class="price-period">/ mes</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert {{ 'alert-error' if category == 'error' else 'alert-success' }}" style="padding: 10px; margin-bottom: 20px; border-radius: 5px; 
+                    background-color: {{ '#fee2e2' if category == 'error' else '#dcfce7' }}; 
+                    color: {{ '#991b1b' if category == 'error' else '#166534' }};">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <ul class="features">
+            <li><i class="fas fa-check-circle"></i> Tableros Ilimitados</li>
+            <li><i class="fas fa-check-circle"></i> Miembros Ilimitados</li>
+            <li><i class="fas fa-check-circle"></i> Geolocalización Avanzada</li>
+            <li><i class="fas fa-check-circle"></i> Soporte Prioritario</li>
+            <li><i class="fas fa-check-circle"></i> Cancelación en cualquier momento</li>
+        </ul>
+
+        <form action="{{ url_for('billing.create_checkout_session') }}" method="POST">
+            <button type="submit" class="btn-subscribe">
+                Suscribirse Ahora
+            </button>
+        </form>
+
+        <div class="guarantee">
+            <i class="fas fa-lock"></i> Pagos seguros procesados por Stripe
+        </div>
+    </div>
+</body>
+
+</html>

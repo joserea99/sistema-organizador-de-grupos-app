@@ -1,0 +1,947 @@
+{% extends "base.html" %}
+
+{% block title %}Tablero: {{ tablero.nombre }}{% endblock %}
+
+{% block styles %}
+<!-- Estilos Base -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+
+<!-- Estilos de Componentes -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/cards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/modals.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/forms.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/maps.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/kanban-layout.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/utilities.css') }}">
+
+<!-- Tema por defecto (se gestionará via JS, pero cargamos uno por si acaso) -->
+<link rel="stylesheet" id="theme-style" href="{{ url_for('static', filename='css/themes/clasico.css') }}">
+
+<!-- Tailwind CSS for utility classes -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Librerías Externas -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="kanban-board" data-tablero-id="{{ tablero.id }}">
+    <!-- Header del Tablero -->
+    <div
+        class="header p-4 mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0 rounded-lg">
+        <div>
+            <h1 class="text-2xl font-bold header-title">{{ tablero.nombre }}</h1>
+            <p class="text-sm text-secondary">{{ tablero.descripcion }}</p>
+        </div>
+        <div class="flex gap-2">
+            <!-- Selector de Tema -->
+            <select id="theme-selector" class="form-select text-sm w-auto">
+                <option value="clasico">Tema Clásico</option>
+                <option value="moderno">Tema Moderno</option>
+                <option value="minimalista">Tema Minimalista</option>
+                <option value="oscuro">Tema Oscuro</option>
+            </select>
+
+            <button class="btn btn-warning" id="btnDeshacer" {% if not tablero.undo_stack %}disabled{% endif %}
+                onclick="deshacerAccion()">
+                <i class="fas fa-undo mr-2"></i>Deshacer
+            </button>
+
+            <button class="btn btn-secondary" id="btnToggleSelect" onclick="toggleSelectionMode()">
+                <i class="fas fa-check-square mr-2"></i>Seleccionar
+            </button>
+
+            <button class="btn btn-secondary" data-toggle="modal" data-target="#modalHistorial">
+                <i class="fas fa-history mr-2"></i>Historial
+            </button>
+
+            <button class="btn btn-secondary" onclick="toggleFocusMode()" id="btnFocusMode" title="Ver solo listas">
+                <i class="fas fa-expand mr-2"></i>Solo Listas
+            </button>
+
+            <button class="btn btn-secondary" data-toggle="modal" data-target="#modalNuevaLista">
+                <i class="fas fa-list mr-2"></i>Nueva Lista
+            </button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#modalNuevaPersona">
+                <i class="fas fa-plus mr-2"></i>Nueva Persona
+            </button>
+            <a href="{{ url_for('tableros.lista') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Buscador y Filtros -->
+    <div class="controls-section mb-6">
+        <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+            <div class="flex-1">
+                <input type="text" id="searchInput" class="form-input"
+                    placeholder="Buscar personas por nombre, teléfono...">
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button class="btn btn-secondary filter-btn active" data-filter="all">Todos</button>
+                <button class="btn btn-secondary filter-btn" data-filter="estado-casado">Casados</button>
+                <button class="btn btn-secondary filter-btn" data-filter="estado-soltero">Solteros</button>
+                <button class="btn btn-secondary filter-btn" data-filter="hijos">Con Hijos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tablero Kanban -->
+    <div class="kanban-lists-container flex gap-4 overflow-x-auto pb-4"
+        style="height: calc(100vh - 400px); min-height: 500px;">
+        {% for lista in tablero.listas %}
+        <div class="kanban-list w-80 flex-shrink-0 flex flex-col rounded-lg" data-list-id="{{ lista.id }}"
+            data-color="{{ lista.color }}">
+            <div class="list-header p-3 border-b flex justify-between items-center"
+                style="border-top: 3px solid {{ lista.color }}">
+                <h3 class="font-semibold list-title">{{ lista.nombre }}</h3>
+                <div class="flex items-center gap-2">
+                    <a href="{{ url_for('tableros.importar_excel', lista_id=lista.id) }}"
+                        class="text-gray-500 hover:text-blue-600 transition-colors" title="Importar desde Excel/CSV">
+                        <i class="fas fa-file-import"></i>
+                    </a>
+                    <button class="text-gray-500 hover:text-blue-600 transition-colors btn-edit-list"
+                        data-list-id="{{ lista.id }}" data-list-name="{{ lista.nombre }}"
+                        data-list-color="{{ lista.color }}" title="Editar Lista">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <span class="list-count px-2 py-1 rounded-full text-xs font-bold">
+                        {{ lista.tarjetas|length }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="kanban-list-items p-3 flex-1 overflow-y-auto custom-scrollbar" style="min-height: 100px;">
+                {% for tarjeta in lista.tarjetas %}
+                <div class="kanban-card person-card" data-id="{{ tarjeta.id }}"
+                    onclick="toggleCardSelection(this, event)" data-estado-civil="{{ tarjeta.estado_civil }}"
+                    data-hijos="{{ 'true' if tarjeta.tiene_hijos else 'false' }}" data-color="{{ lista.color }}"
+                    data-phone="{{ tarjeta.telefono }}" data-email="{{ tarjeta.email }}" data-list-id="{{ lista.id }}"
+                    data-list-name="{{ lista.nombre }}" data-estado="{{ tarjeta.estado_civil|lower }}"
+                    data-lat="{{ tarjeta.latitud or '' }}" data-lng="{{ tarjeta.longitud or '' }}"
+                    data-conyuge="{{ tarjeta.nombre_conyuge or '' }}"
+                    data-edad-conyuge="{{ tarjeta.edad_conyuge or '' }}"
+                    data-codigo-postal="{{ tarjeta.codigo_postal or '' }}">
+                    <div class="card-selection-overlay hidden absolute top-2 right-2 z-10">
+                        <input type="checkbox" class="card-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                            onchange="updateBulkToolbar()">
+                    </div>
+                    <div class="card-header" style="border-left: 4px solid {{ tarjeta.color or '#3b82f6' }};">
+                        <div class="person-avatar" style="color: {{ lista.color }}; background: {{ lista.color }}15;">
+                            {{ tarjeta.nombre[:2].upper() }}
+                        </div>
+                        <div class="person-details">
+                            <h4 class="person-name">{{ tarjeta.nombre_completo }}</h4>
+                            <div class="person-info">
+                                <i class="fas fa-phone text-xs w-4"></i> {{ tarjeta.telefono }}
+                            </div>
+                            <div class="person-tags">
+                                {% if tarjeta.estado_civil %}
+                                <span class="tag estado-{{ tarjeta.estado_civil|lower }}">
+                                    {{ tarjeta.estado_civil }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="expand-indicator">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+
+                    <div class="card-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Dirección:</span>
+                            <span class="detail-value">
+                                {{ tarjeta.direccion or 'No especificada' }}
+                                {% if tarjeta.codigo_postal %}
+                                <br><span class="text-xs text-gray-500">CP: {{ tarjeta.codigo_postal }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value">{{ tarjeta.email or 'No especificado' }}</span>
+                        </div>
+                        {% if tarjeta.edad %}
+                        <div class="detail-row">
+                            <span class="detail-label">Edad:</span>
+                            <span class="detail-value">{{ tarjeta.edad }} años</span>
+                        </div>
+                        {% endif %}
+                        {% if tarjeta.fecha_nacimiento %}
+                        <div class="detail-row">
+                            <span class="detail-label">Cumpleaños:</span>
+                            <span class="detail-value">{{ tarjeta.fecha_nacimiento }}</span>
+                        </div>
+                        {% endif %}
+                        {% if tarjeta.numero_hijos %}
+                        <div class="detail-row">
+                            <span class="detail-label">Hijos:</span>
+                            <span class="detail-value">{{ tarjeta.numero_hijos }} ({{ tarjeta.edades_hijos or 'edades no
+                                especificadas' }})</span>
+                        </div>
+                        {% endif %}
+
+                        {% if tarjeta.nombre_conyuge %}
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <div class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-heart text-pink-500 text-xs"></i> Datos del Cónyuge
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Nombre:</span>
+                                <span class="detail-value font-medium">{{ tarjeta.nombre_conyuge }}</span>
+                            </div>
+                            {% if tarjeta.edad_conyuge %}
+                            <div class="detail-row">
+                                <span class="detail-label">Edad:</span>
+                                <span class="detail-value">{{ tarjeta.edad_conyuge }} años</span>
+                            </div>
+                            {% endif %}
+                            {% if tarjeta.telefono_conyuge %}
+                            <div class="detail-row">
+                                <span class="detail-label">Teléfono:</span>
+                                <span class="detail-value">{{ tarjeta.telefono_conyuge }}</span>
+                            </div>
+                            {% endif %}
+                            {% if tarjeta.trabajo_conyuge %}
+                            <div class="detail-row">
+                                <span class="detail-label">Trabajo:</span>
+                                <span class="detail-value">{{ tarjeta.trabajo_conyuge }}</span>
+                            </div>
+                            {% endif %}
+                            {% if tarjeta.fecha_matrimonio %}
+                            <div class="detail-row">
+                                <span class="detail-label">Aniversario:</span>
+                                <span class="detail-value">{{ tarjeta.fecha_matrimonio }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+
+                        <div class="card-actions">
+                            <a href="{{ url_for('tableros.editar_tarjeta', lista_id=lista.id, tarjeta_id=tarjeta.id) }}"
+                                class="action-btn edit" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="action-btn delete" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Sección de Mapa (Movida al final) -->
+    <div class="maps-section mt-8 mb-6 pt-6 border-t">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Mapa de Ubicaciones</h2>
+            <div class="map-controls flex gap-2">
+                <button class="map-filter-btn" id="btnCenterMap">
+                    <i class="fas fa-crosshairs"></i> Centrar
+                </button>
+                <button class="map-filter-btn" id="btnSmartCluster"
+                    style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none;">
+                    <i class="fas fa-magic"></i> Agrupar
+                </button>
+                <button class="map-filter-btn active" data-filter="all">
+                    <i class="fas fa-map-marker-alt"></i> Ver Todos
+                </button>
+            </div>
+        </div>
+        <div id="map" class="map-container shadow-lg"></div>
+    </div>
+</div>
+
+</div>
+</div>
+
+<!-- Modal Nueva Persona -->
+<div id="modalNuevaPersona" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Nueva Persona</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formNuevaPersona">
+                <div class="form-group">
+                    <label class="form-label">Lista de Destino *</label>
+                    <select name="lista_id" class="form-select" required>
+                        <option value="">Seleccionar lista...</option>
+                        {% for lista in tablero.listas %}
+                        <option value="{{ lista.id }}">{{ lista.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" name="nombre" class="form-input" required placeholder="Nombre">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Apellido</label>
+                        <input type="text" name="apellido" class="form-input" placeholder="Apellido">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Dirección</label>
+                    <input type="text" name="direccion" class="form-input" placeholder="Calle, Número, Ciudad">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Código Postal</label>
+                        <input type="text" name="codigo_postal" class="form-input" placeholder="CP">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" name="telefono" class="form-input" placeholder="Teléfono">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-input" placeholder="correo@ejemplo.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Edad</label>
+                        <input type="number" name="edad" class="form-input" placeholder="Edad">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Estado Civil</label>
+                    <select name="estado_civil" class="form-select" onchange="toggleSpouseFields(this.value)">
+                        <option value="">Seleccionar...</option>
+                        <option value="Soltero">Soltero/a</option>
+                        <option value="Casado">Casado/a</option>
+                        <option value="Divorciado">Divorciado/a</option>
+                        <option value="Viudo">Viudo/a</option>
+                        <option value="Unión libre">Unión libre</option>
+                    </select>
+                </div>
+
+                <div id="spouseFields"
+                    style="display: none; background: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                    <h4 class="text-sm font-bold mb-2 text-gray-600">Datos del Cónyuge</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Nombre Cónyuge</label>
+                            <input type="text" name="nombre_conyuge" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Edad</label>
+                            <input type="number" name="edad_conyuge" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fecha Aniversario</label>
+                        <input type="date" name="fecha_matrimonio" class="form-input">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Hijos</label>
+                        <input type="number" name="numero_hijos" class="form-input" placeholder="Cantidad">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Edades Hijos</label>
+                        <input type="text" name="edades_hijos" class="form-input" placeholder="Ej: 5, 8, 12">
+                    </div>
+                </div>
+
+                <div class="border-t pt-4 mt-4">
+                    <h4 class="font-bold mb-3 text-gray-700">Información Eclesiástica</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="bautizado" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">¿Bautizado?</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="asiste_grupo" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">¿Asiste a Grupo Pequeño?</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="es_lider" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">¿Es Líder de Grupo?</span>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ministerio</label>
+                            <input type="text" name="ministerio" class="form-input"
+                                placeholder="Ej: Alabanza, Ujieres...">
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <script>
+                function toggleSpouseFields(status) {
+                    const fields = document.getElementById('spouseFields');
+                    if (status === 'Casado' || status === 'Unión libre') {
+                        fields.style.display = 'block';
+                    } else {
+                        fields.style.display = 'none';
+                    }
+                }
+            </script>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button class="btn btn-primary" form="formNuevaPersona">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Lista -->
+<div id="modalNuevaLista" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Nueva Lista</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formNuevaLista">
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Lista</label>
+                    <input type="text" name="titulo" class="form-input" required placeholder="Ej: Visitantes">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color Identificativo</label>
+                    <div class="flex gap-2 flex-wrap">
+                        {% for color in colores %}
+                        <label class="color-option">
+                            <input type="radio" name="color" value="{{ color }}" {% if loop.first %}checked{% endif %}>
+                            <span class="color-circle" style="background: {{ color }};"></span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" type="submit">Crear Lista</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Confirmar Eliminación -->
+<div id="modalConfirmDelete" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Confirmar Eliminación</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar esta tarjeta? Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmDelete">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Lista -->
+<div id="modalEditarLista" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Editar Lista</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="formEditarLista">
+                <input type="hidden" name="lista_id" id="editListaId">
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Lista</label>
+                    <input type="text" name="nombre" id="editListaNombre" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color Identificativo</label>
+                    <div class="flex gap-2 flex-wrap">
+                        {% for color in colores %}
+                        <label class="color-option">
+                            <input type="radio" name="color" value="{{ color }}">
+                            <span class="color-circle" style="background: {{ color }};"></span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer flex justify-between">
+                    <button type="button" class="btn btn-danger" id="btnEliminarLista">
+                        <i class="fas fa-trash mr-2"></i>Eliminar Lista
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminación de Lista -->
+<div id="modalConfirmarEliminarLista" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Eliminar Lista</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar esta lista?</p>
+            <p class="text-sm text-red-600 mt-2">⚠️ Se eliminarán todas las tarjetas contenidas en ella. Esta acción no
+                se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button class="btn btn-danger" id="btnConfirmDeleteList">Eliminar Definitivamente</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Modal Confirmación Genérica -->
+<div id="modalConfirmAction" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="confirmActionTitle">Confirmar Acción</h2>
+            <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmActionMessage">¿Estás seguro?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+            <button class="btn btn-primary" id="btnConfirmAction">Confirmar</button>
+        </div>
+    </div>
+</div>
+<!-- Modal Smart Clustering -->
+<div id="modalSmartCluster" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Agrupación Geográfica Inteligente</h2>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="text-gray-600 mb-4">
+                Agrupa automáticamente a las personas en listas basadas en su ubicación geográfica.
+            </p>
+
+            <div class="form-group">
+                <label class="form-label">Radio Máximo (millas)</label>
+                <input type="range" id="clusterRadius" min="0.5" max="10" step="0.5" value="2" class="w-full">
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>0.5 mi</span>
+                    <span id="radiusValue">2 mi</span>
+                    <span>10 mi</span>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <div class="form-group flex-1">
+                    <label class="form-label">Mínimo por Grupo</label>
+                    <input type="number" id="clusterMin" value="3" min="1" class="form-input">
+                </div>
+                <div class="form-group flex-1">
+                    <label class="form-label">Máximo por Grupo</label>
+                    <input type="number" id="clusterMax" value="12" min="1" class="form-input">
+                </div>
+            </div>
+
+            <div id="clusterPreview" class="hidden mt-4 p-4 bg-gray-50 rounded text-gray-900">
+                <h4 class="font-bold mb-2">Vista Previa</h4>
+                <p id="previewText">Calculando...</p>
+            </div>
+        </div>
+        <div class="modal-footer flex justify-end gap-2">
+            <button type="button" class="btn btn-secondary" id="btnGeocodeBatch">
+                <i class="fas fa-map-marker-alt mr-2"></i>Actualizar Coordenadas
+            </button>
+            <button type="button" class="btn btn-primary" id="btnPreviewClusters">
+                <i class="fas fa-eye mr-2"></i>Ver Vista Previa
+            </button>
+            <button type="button" class="btn btn-success hidden" id="btnApplyClusters">
+                <i class="fas fa-check mr-2"></i>Crear Listas
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Bulk Actions Toolbar -->
+<div id="bulkToolbar"
+    class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 transform translate-y-full transition-transform duration-300 z-50 hidden flex justify-between items-center">
+    <div class="flex items-center gap-4">
+        <span class="font-bold text-gray-700" id="selectionCount">0 Seleccionados</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="selectAll()">Seleccionar Todos</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">Deseleccionar</button>
+    </div>
+    <div class="flex gap-2">
+        <select id="bulkMoveSelect" class="form-select text-sm w-auto">
+            <option value="">Mover a...</option>
+        </select>
+        <button class="btn btn-primary" onclick="bulkMove()">
+            <i class="fas fa-exchange-alt mr-2"></i>Mover
+        </button>
+        <button class="btn btn-danger" onclick="bulkDelete()">
+            <i class="fas fa-trash mr-2"></i>Eliminar
+        </button>
+    </div>
+</div>
+
+<!-- Modal Historial -->
+<div class="modal fade" id="modalHistorial" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Historial de Acciones</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="history-list">
+                    {% if tablero.historial %}
+                    {% for evento in tablero.historial %}
+                    <div class="history-item p-3 border-b border-gray-100 hover:bg-gray-50">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="font-semibold text-sm text-gray-700">{{ evento.usuario }}</span>
+                                <span class="text-xs text-gray-500 ml-2">{{ evento.fecha|replace('T', ' ')|truncate(19,
+                                    True, '') }}</span>
+                            </div>
+                            <span class="badge badge-info text-xs">{{ evento.accion }}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">{{ evento.detalles }}</p>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-gray-500 py-4">No hay acciones registradas aún.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- SortableJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<!-- Google Maps MarkerClusterer -->
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+<!-- Módulos de la Aplicación -->
+<script type="module" src="{{ url_for('static', filename='js/modules/app.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/kanban.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/filters.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/modals.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/modules/maps.js') }}"></script>
+
+<script>
+    window.appConfig = {
+        tableroId: "{{ tablero.id }}",
+        tableroData: {}
+    };
+
+    // Fetch tablero data asynchronously to avoid template rendering errors
+    fetch(`/tableros/api/tablero/${window.appConfig.tableroId}/data`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error fetching tablero data:', data.error);
+            } else {
+                window.appConfig.tableroData = data;
+            }
+        })
+        .catch(err => console.error('Fetch error:', err));
+
+    function deshacerAccion() {
+        const btn = document.getElementById('btnDeshacer');
+        if (btn.disabled) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deshaciendo...';
+
+        fetch('/tableros/api/deshacer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                tablero_id: window.appConfig.tableroId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recargar página para reflejar cambios
+                    window.location.reload();
+                } else {
+                    alert('Error al deshacer: ' + (data.error || 'Error desconocido'));
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-undo mr-2"></i>Deshacer';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al deshacer acción');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-undo mr-2"></i>Deshacer';
+            });
+    }
+
+    // Bulk Actions Logic
+    let isSelectionMode = false;
+
+    function toggleSelectionMode() {
+        isSelectionMode = !isSelectionMode;
+        const btn = document.getElementById('btnToggleSelect');
+        const overlays = document.querySelectorAll('.card-selection-overlay');
+        const toolbar = document.getElementById('bulkToolbar');
+
+        if (isSelectionMode) {
+            document.body.classList.add('selection-mode'); // Add class for global state
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+            btn.innerHTML = '<i class="fas fa-check-square mr-2"></i>Cancelar';
+            overlays.forEach(el => el.classList.remove('hidden'));
+            toolbar.classList.remove('hidden');
+            setTimeout(() => toolbar.classList.remove('translate-y-full'), 10);
+
+            // Populate dropdown
+            const select = document.getElementById('bulkMoveSelect');
+            // Clear existing options except the first one
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+
+            let listas = [];
+            if (window.appConfig.tableroData && window.appConfig.tableroData.listas) {
+                listas = window.appConfig.tableroData.listas;
+            } else {
+                console.warn('Tablero data not available, parsing from DOM...');
+                // Fallback: Parse from DOM
+                document.querySelectorAll('.kanban-list').forEach(el => {
+                    const id = el.dataset.listId;
+                    const titleEl = el.querySelector('.list-title');
+                    const nombre = titleEl ? titleEl.textContent.trim() : 'Lista sin nombre';
+                    if (id) {
+                        listas.push({ id, nombre });
+                    }
+                });
+            }
+
+            listas.forEach(lista => {
+                const option = new Option(lista.nombre, lista.id);
+                select.add(option);
+            });
+        } else {
+            document.body.classList.remove('selection-mode'); // Remove class
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+            btn.innerHTML = '<i class="fas fa-check-square mr-2"></i>Seleccionar';
+            overlays.forEach(el => el.classList.add('hidden'));
+            toolbar.classList.add('translate-y-full');
+            setTimeout(() => toolbar.classList.add('hidden'), 300);
+            deselectAll();
+        }
+    }
+
+    function toggleCardSelection(card, event) {
+        if (!isSelectionMode) return;
+
+        // Prevent triggering if clicking buttons inside card
+        if (event.target.closest('button') || event.target.closest('a')) return;
+
+        const checkbox = card.querySelector('.card-checkbox');
+        if (event.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+        }
+        updateBulkToolbar();
+
+        // Detener propagación para evitar que se expanda la tarjeta
+        event.stopPropagation();
+    }
+
+    function updateBulkToolbar() {
+        const checkboxes = document.querySelectorAll('.card-checkbox:checked');
+        const count = checkboxes.length;
+        document.getElementById('selectionCount').textContent = `${count} Seleccionados`;
+    }
+
+    function selectAll() {
+        document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = true);
+        updateBulkToolbar();
+    }
+
+    function deselectAll() {
+        document.querySelectorAll('.card-checkbox').forEach(cb => cb.checked = false);
+        updateBulkToolbar();
+    }
+
+    function getSelectedCardIds() {
+        return Array.from(document.querySelectorAll('.card-checkbox:checked'))
+            .map(cb => cb.closest('.kanban-card').dataset.id);
+    }
+
+    // Helper para Modal de Confirmación
+    function showConfirmModal(title, message, onConfirm) {
+        const modal = document.getElementById('modalConfirmAction');
+        document.getElementById('confirmActionTitle').textContent = title;
+        document.getElementById('confirmActionMessage').textContent = message;
+
+        const btnConfirm = document.getElementById('btnConfirmAction');
+        // Clonar el botón para eliminar event listeners anteriores
+        const newBtn = btnConfirm.cloneNode(true);
+        btnConfirm.parentNode.replaceChild(newBtn, btnConfirm);
+
+        newBtn.addEventListener('click', () => {
+            onConfirm();
+            closeConfirmModal();
+        });
+
+        modal.classList.add('active');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('modalConfirmAction').classList.remove('active');
+    }
+
+    function bulkMove() {
+        const cardIds = getSelectedCardIds();
+        const targetListId = document.getElementById('bulkMoveSelect').value;
+
+        if (cardIds.length === 0) {
+            alert('Selecciona al menos una tarjeta');
+            return;
+        }
+        if (!targetListId) {
+            alert('Selecciona una lista de destino');
+            return;
+        }
+
+        showConfirmModal(
+            'Mover Tarjetas',
+            `¿Estás seguro de mover ${cardIds.length} tarjetas?`,
+            () => {
+                fetch('/tableros/api/bulk/move', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tablero_id: window.appConfig.tableroId,
+                        tarjeta_ids: cardIds,
+                        lista_destino_id: targetListId
+                    })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            }
+        );
+    }
+
+    function bulkDelete() {
+        const cardIds = getSelectedCardIds();
+
+        if (cardIds.length === 0) {
+            alert('Selecciona al menos una tarjeta');
+            return;
+        }
+
+        showConfirmModal(
+            'Eliminar Tarjetas',
+            `¿Estás seguro de eliminar ${cardIds.length} tarjetas? Esta acción se puede deshacer.`,
+            () => {
+                fetch('/tableros/api/bulk/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tablero_id: window.appConfig.tableroId,
+                        tarjeta_ids: cardIds
+                    })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    });
+            }
+        );
+    }
+    function toggleFocusMode() {
+        const board = document.querySelector('.kanban-board');
+        const btn = document.getElementById('btnFocusMode');
+        const icon = btn.querySelector('i');
+
+        board.classList.toggle('focus-mode');
+
+        if (board.classList.contains('focus-mode')) {
+            icon.classList.remove('fa-expand');
+            icon.classList.add('fa-compress');
+            btn.innerHTML = '<i class="fas fa-compress mr-2"></i>Ver Mapa';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+        } else {
+            icon.classList.remove('fa-compress');
+            icon.classList.add('fa-expand');
+            btn.innerHTML = '<i class="fas fa-expand mr-2"></i>Solo Listas';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+        }
+    }
+</script>
+
+<style>
+    /* Estilos para Modo Enfoque (Solo Listas) */
+    .kanban-board.focus-mode .maps-section {
+        display: none !important;
+    }
+
+    .kanban-board.focus-mode .kanban-lists-container {
+        height: calc(100vh - 180px) !important;
+        /* Ajustar según altura del header */
+        max-height: none !important;
+    }
+</style>
+
+<!-- Google Maps API -->
+<script>
+    window.initMap = function () {
+        console.log('Google Maps API loaded callback fired');
+        window.googleMapsLoaded = true;
+        window.dispatchEvent(new CustomEvent('google-maps-loaded'));
+    };
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config['GOOGLE_MAPS_API_KEY'] }}&callback=initMap" async
+    defer></script>
+{% endblock %}

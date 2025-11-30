@@ -1,0 +1,100 @@
+/* === KANBAN LAYOUT FIXES === */
+
+.kanban-board {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 64px);
+    /* Altura mínima */
+    padding: var(--space-4);
+    /* Permitir scroll de la página completa */
+    overflow: visible;
+}
+
+.kanban-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    min-width: 300px;
+    /* Asegurar ancho mínimo */
+}
+
+.kanban-list-items {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    /* Crucial para flexbox scrolling */
+    padding-right: 4px;
+    /* Espacio para scrollbar */
+}
+
+/* Asegurar que las tarjetas no se rompan */
+.person-card {
+    break-inside: avoid;
+    flex-shrink: 0;
+}
+
+/* Scrollbar personalizado para listas */
+.kanban-list-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kanban-list-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kanban-list-items::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.kanban-list-items::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* === RESPONSIVE STYLES === */
+@media (max-width: 768px) {
+    .kanban-board {
+        padding: var(--space-2);
+    }
+
+    /* Header Stack */
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-4);
+    }
+
+    .header>div:last-child {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    /* Controls Stack */
+    .controls-section .flex {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .controls-section .flex-1 {
+        width: 100%;
+    }
+
+    .controls-section .flex.gap-2 {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    /* Kanban Lists on Mobile */
+    .kanban-lists-container {
+        /* Adjust height calculation for mobile header stack */
+        height: calc(100vh - 280px) !important;
+        scroll-snap-type: x mandatory;
+    }
+
+    .kanban-list {
+        min-width: 85vw;
+        /* Almost full width */
+        scroll-snap-align: center;
+    }
+}

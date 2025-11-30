@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Organizador de Grupos de Vida</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-light: #f3f4f6;
+            --white: #ffffff;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            background-color: var(--white);
+        }
+
+        /* Left Side - Hero Section */
+        .hero-section {
+            flex: 1;
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1529070538774-1843cb3265df?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') center/cover;
+            opacity: 0.1;
+            mix-blend-mode: overlay;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+        }
+
+        .hero-content {
+            z-index: 1;
+            max-width: 480px;
+        }
+
+        .hero-content h1 {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 24px;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .features-list {
+            list-style: none;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+
+        .features-list i {
+            color: #818cf8;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        /* Right Side - Register Form */
+        .register-section {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px 60px;
+            background: var(--white);
+            overflow-y: auto;
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        .register-header {
+            margin-bottom: 32px;
+        }
+
+        .register-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .register-header p {
+            color: var(--text-secondary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input.error {
+            border-color: var(--error);
+        }
+
+        .form-input.success {
+            border-color: var(--success);
+        }
+
+        .password-strength {
+            height: 4px;
+            background: #e5e7eb;
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s, background-color 0.3s;
+        }
+
+        .terms-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .terms-check input {
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .terms-check a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-section {
+                display: none;
+            }
+
+            .register-section {
+                max-width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Left Side: Hero -->
+    <div class="hero-section">
+        <div class="brand">
+            <i class="fas fa-church"></i>
+            <span>Grupos de Vida</span>
+        </div>
+
+        <div class="hero-content">
+            <h1>Comienza tu prueba gratuita de 14 días</h1>
+            <p>Únete a cientos de líderes que ya están transformando la gestión de sus ministerios.</p>
+
+            <ul class="features-list">
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>Gestión ilimitada de miembros</span>
+                </li>
+                <li>
+                    <i class="fas fa-map-marked-alt"></i>
+                    <span>Mapas y geolocalización inteligente</span>
+                </li>
+                <li>
+                    <i class="fas fa-users"></i>
+                    <span>Organización familiar completa</span>
+                </li>
+                <li>
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Seguridad y privacidad garantizada</span>
+                </li>
+            </ul>
+        </div>
+
+        <div style="font-size: 12px; opacity: 0.6;">
+            &copy; 2025 Grupos de Vida App.
+        </div>
+    </div>
+
+    <!-- Right Side: Register Form -->
+    <div class="register-section">
+        <div class="register-container">
+            <div class="register-header">
+                <h2>Crea tu cuenta</h2>
+                <p>No se requiere tarjeta de crédito para empezar.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                <i class="fas fa-info-circle"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="post" id="registerForm">
+                <div class="form-group">
+                    <label class="form-label" for="nombre_completo">Nombre Completo</label>
+                    <input type="text" id="nombre_completo" name="nombre_completo" class="form-input"
+                        placeholder="Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="juan@iglesia.com"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Nombre de Usuario</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="juanperez"
+                        required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="••••••••"
+                            required minlength="6">
+                        <div class="password-strength">
+                            <div class="strength-bar" id="strengthBar"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="confirm_password">Confirmar</label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-input"
+                            placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <label class="terms-check">
+                    <input type="checkbox" required>
+                    <span>Acepto los <a href="#">Términos de Servicio</a> y la <a href="#">Política de
+                            Privacidad</a>.</span>
+                </label>
+
+                <button type="submit" class="btn-primary">
+                    Crear Cuenta
+                </button>
+            </form>
+
+            <div class="login-link">
+                ¿Ya tienes una cuenta?
+                <a href="{{ url_for('auth.login') }}">Inicia Sesión</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Validación simple de contraseña
+        const password = document.getElementById('password');
+        const confirm = document.getElementById('confirm_password');
+        const strengthBar = document.getElementById('strengthBar');
+
+        password.addEventListener('input', () => {
+            const val = password.value;
+            let strength = 0;
+            if (val.length > 5) strength += 25;
+            if (val.length > 8) strength += 25;
+            if (/[A-Z]/.test(val)) strength += 25;
+            if (/[0-9]/.test(val)) strength += 25;
+
+            strengthBar.style.width = strength + '%';
+
+            if (strength < 50) strengthBar.style.backgroundColor = '#ef4444';
+            else if (strength < 75) strengthBar.style.backgroundColor = '#f59e0b';
+            else strengthBar.style.backgroundColor = '#10b981';
+        });
+
+        confirm.addEventListener('input', () => {
+            if (confirm.value !== password.value) {
+                confirm.style.borderColor = '#ef4444';
+            } else {
+                confirm.style.borderColor = '#10b981';
+            }
+        });
+    </script>
+</body>
+
+</html>

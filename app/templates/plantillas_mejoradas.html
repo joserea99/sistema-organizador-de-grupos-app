@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Plantillas de Ministerios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-50: #f0f9ff;
+            --primary-500: #0ea5e9;
+            --primary-600: #0284c7;
+            --primary-700: #0369a1;
+            --secondary-500: #a855f7;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --success-500: #22c55e;
+            --warning-500: #f59e0b;
+            --error-500: #ef4444;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-50) 0%, #faf5ff 100%);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--secondary-500) 100%);
+            padding: var(--space-6) var(--space-8);
+            color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            font-weight: 500;
+            transition: var(--transition-normal);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-8);
+        }
+
+        .intro-section {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+
+        .intro-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .intro-description {
+            font-size: 1.125rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-8);
+            margin-bottom: var(--space-8);
+        }
+
+        .category-card {
+            background: white;
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            transition: var(--transition-normal);
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .plantillas-grid {
+            display: grid;
+            gap: var(--space-4);
+        }
+
+        .plantilla-item {
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plantilla-item:hover {
+            border-color: var(--primary-500);
+            background: white;
+            transform: translateX(4px);
+        }
+
+        .plantilla-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-4);
+        }
+
+        .plantilla-info h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--space-4);
+        }
+
+        .plantilla-info p {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .plantilla-listas {
+            margin-bottom: var(--space-6);
+        }
+
+        .listas-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: var(--space-4);
+        }
+
+        .listas-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-4);
+        }
+
+        .lista-tag {
+            background: var(--primary-100);
+            color: var(--primary-700);
+            padding: 4px 8px;
+            border-radius: var(--radius-lg);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .plantilla-actions {
+            display: flex;
+            gap: var(--space-4);
+        }
+
+        .btn-usar-plantilla {
+            background: linear-gradient(135deg, var(--success-500), #16a34a);
+            color: white;
+            border: none;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-usar-plantilla:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-preview {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-200);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-preview:hover {
+            background: var(--gray-200);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: var(--space-6);
+            right: var(--space-6);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .toast {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4) var(--space-6);
+            box-shadow: var(--shadow-xl);
+            border-left: 4px solid var(--success-500);
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            min-width: 300px;
+            transform: translateX(100%);
+            opacity: 0;
+            transition: var(--transition-normal);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast.error { border-left-color: var(--error-500); }
+        .toast.warning { border-left-color: var(--warning-500); }
+
+        @media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: var(--space-4);
+                text-align: center;
+            }
+            
+            .main-container {
+                padding: var(--space-4);
+            }
+            
+            .plantilla-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-title">
+                <i class="fas fa-clipboard-list"></i>
+                Plantillas de Ministerios
+            </h1>
+            <a href="{{ url_for('tableros') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Volver a Tableros
+            </a>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="intro-section">
+            <h2 class="intro-title">Crea tu Ministerio en Segundos</h2>
+            <p class="intro-description">
+                Selecciona una plantilla prediseñada y comenzarás con listas organizadas específicamente 
+                para tu tipo de ministerio. ¡Sin configuración adicional!
+            </p>
+        </section>
+
+        <div class="categories-grid">
+            {% for categoria_id, categoria_data in plantillas.items() %}
+            <div class="category-card">
+                <div class="category-header">
+                    <div class="category-icon">
+                        {% if categoria_id == 'direccion_adultos' %}
+                            <i class="fas fa-users"></i>
+                        {% elif categoria_id == 'familia' %}
+                            <i class="fas fa-home"></i>
+                        {% elif categoria_id == 'estudiantes' %}
+                            <i class="fas fa-graduation-cap"></i>
+                        {% elif categoria_id == 'crecimiento' %}
+                            <i class="fas fa-seedling"></i>
+                        {% elif categoria_id == 'servicio' %}
+                            <i class="fas fa-hands-helping"></i>
+                        {% else %}
+                            <i class="fas fa-star"></i>
+                        {% endif %}
+                    </div>
+                    <h3 class="category-title">
+                        {% if categoria_id == 'direccion_adultos' %}Dirección de Adultos
+                        {% elif categoria_id == 'familia' %}Familia
+                        {% elif categoria_id == 'estudiantes' %}Estudiantes
+                        {% elif categoria_id == 'crecimiento' %}Crecimiento
+                        {% elif categoria_id == 'servicio' %}Servicio
+                        {% else %}{{ categoria_id.title() }}
+                        {% endif %}
+                    </h3>
+                </div>
+
+                <div class="plantillas-grid">
+                    {% for plantilla_id, plantilla_data in categoria_data.items() %}
+                    <div class="plantilla-item">
+                        <div class="plantilla-header">
+                            <div class="plantilla-info">
+                                <h3>{{ plantilla_data.nombre }}</h3>
+                                <p>{{ plantilla_data.descripcion }}</p>
+                            </div>
+                        </div>
+
+                        <div class="plantilla-listas">
+                            <div class="listas-title">
+                                <i class="fas fa-list-ul"></i>
+                                Listas incluidas ({{ plantilla_data.listas|length }}):
+                            </div>
+                            <div class="listas-preview">
+                                {% for lista in plantilla_data.listas %}
+                                <span class="lista-tag">{{ lista }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="plantilla-actions">
+                            <form method="POST" action="{{ url_for('crear_desde_plantilla_directo', plantilla_id=plantilla_id) }}" style="flex: 1;">
+                                <button type="submit" class="btn-usar-plantilla">
+                                    <i class="fas fa-rocket"></i>
+                                    Crear Tablero Ahora
+                                </button>
+                            </form>
+                            <button class="btn-preview" onclick="previewPlantilla('{{ plantilla_data.nombre }}', {{ plantilla_data.listas|tojson }})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        function previewPlantilla(nombre, listas) {
+            const listasText = listas.join(', ');
+            showToast(`📋 ${nombre}: ${listasText}`, 'info');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'exclamation-triangle' : 'info-circle';
+            
+            toast.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 4000);
+        }
+
+        // Mostrar mensajes flash
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => {
+                        showToast('{{ message }}', '{{ 'error' if category == 'error' else 'success' }}');
+                    }, 500);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

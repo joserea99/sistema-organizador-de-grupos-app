@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.tablero {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.lista {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 300px;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+.lista ul {
+    list-style: none;
+    padding: 0;
+}
+
+.lista li {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.acciones {
+    margin-bottom: 20px;
+}

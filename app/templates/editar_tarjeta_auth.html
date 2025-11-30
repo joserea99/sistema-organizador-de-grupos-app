@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Persona - Organizador de Grupos de Vida</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .form-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1976d2;
+        }
+        
+        .form-header h1 {
+            color: #1976d2;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .form-header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+        
+        .form-group small {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .required {
+            color: #f44336;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #1976d2;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .info-card {
+            background: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        
+        .info-card h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+            font-size: 16px;
+        }
+        
+        .info-card p {
+            margin: 0;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .metadata {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .metadata p {
+            margin: 5px 0;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+        
+        .alert-error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+        }
+        
+        @media (max-width: 600px) {
+            .form-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .row {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+        
+        /* Estilos específicos para ministerio */
+        .ministry-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .ministry-section h3 {
+            color: #1976d2;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        
+        .help-text {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="form-header">
+            <h1>✏️ Editar Información</h1>
+            <p>Actualiza los datos de <strong>{{ tarjeta.nombre }}</strong></p>
+        </div>
+        
+        <div class="info-card">
+            <h3>🙏 Información del Ministerio</h3>
+            <p>
+                Mantén actualizada la información de los miembros de tu grupo de vida. 
+                Los campos marcados con <span class="required">*</span> son obligatorios para 
+                el seguimiento básico del ministerio.
+            </p>
+        </div>
+
+        <form method="post" id="editarForm">
+            <div class="ministry-section">
+                <h3>📋 Información Personal</h3>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo <span class="required">*</span></label>
+                    <input type="text" id="nombre" name="nombre" value="{{ tarjeta.nombre }}" required>
+                    <small>Nombre y apellido de la persona</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion">Dirección Completa <span class="required">*</span></label>
+                    <input type="text" id="direccion" name="direccion" value="{{ tarjeta.direccion }}" required>
+                    <small>Dirección completa para visitas ministeriales y ubicación en el mapa</small>
+                    <div class="help-text">
+                        💡 <strong>Tip ministerial:</strong> Una dirección completa ayuda a planificar rutas de visitas y eventos de alcance.
+                    </div>
+                </div>
+            </div>
+
+            <div class="ministry-section">
+                <h3>📞 Información de Contacto</h3>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" name="telefono" value="{{ tarjeta.telefono }}">
+                        <small>Para contacto y emergencias</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edad">Edad</label>
+                        <input type="number" id="edad" name="edad" value="{{ tarjeta.edad }}" min="0" max="120">
+                        <small>Útil para programas por edades</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ministry-section">
+                <h3>👥 Información Familiar</h3>
+                
+                <div class="form-group">
+                    <label for="estado_civil">Estado Civil</label>
+                    <select id="estado_civil" name="estado_civil">
+                        <option value="">Seleccionar...</option>
+                        <option value="Soltero" {% if tarjeta.estado_civil == "Soltero" %}selected{% endif %}>Soltero</option>
+                        <option value="Casado" {% if tarjeta.estado_civil == "Casado" %}selected{% endif %}>Casado</option>
+                        <option value="Divorciado" {% if tarjeta.estado_civil == "Divorciado" %}selected{% endif %}>Divorciado</option>
+                        <option value="Viudo" {% if tarjeta.estado_civil == "Viudo" %}selected{% endif %}>Viudo</option>
+                        <option value="Unión libre" {% if tarjeta.estado_civil == "Unión libre" %}selected{% endif %}>Unión libre</option>
+                    </select>
+                    <small>Para entender la situación familiar</small>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="num_hijos">Número de Hijos</label>
+                        <input type="number" id="num_hijos" name="num_hijos" value="{{ tarjeta.num_hijos }}" min="0" max="20">
+                        <small>Cantidad total de hijos</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edades_hijos">Edades de los Hijos</label>
+                        <input type="text" id="edades_hijos" name="edades_hijos" 
+                               value="{% if tarjeta.edades_hijos %}{{ tarjeta.edades_hijos | join(', ') }}{% endif %}"
+                               placeholder="Ej: 5, 8, 12">
+                        <small>Edades separadas por comas</small>
+                    </div>
+                </div>
+                
+                <div class="help-text">
+                    💡 <strong>Ministerio familiar:</strong> Esta información ayuda a planificar actividades específicas para niños y familias.
+                </div>
+            </div>
+
+            <div class="ministry-section">
+                <h3>📅 Seguimiento Ministerial</h3>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="fecha_ultimo_contacto">📞 Último Contacto</label>
+                        <input type="date" id="fecha_ultimo_contacto" name="fecha_ultimo_contacto" 
+                               value="{{ tarjeta.fecha_ultimo_contacto }}">
+                        <small>Cuándo fue el último contacto</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="proximo_seguimiento">⏰ Próximo Seguimiento</label>
+                        <input type="date" id="proximo_seguimiento" name="proximo_seguimiento" 
+                               value="{{ tarjeta.proximo_seguimiento }}">
+                        <small>Cuándo hacer el próximo contacto</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="estado_discipulado">🌱 Estado de Discipulado</label>
+                    <select id="estado_discipulado" name="estado_discipulado">
+                        <option value="Nuevo" {% if tarjeta.estado_discipulado == "Nuevo" %}selected{% endif %}>🌱 Nuevo</option>
+                        <option value="Creciendo" {% if tarjeta.estado_discipulado == "Creciendo" %}selected{% endif %}>🌿 Creciendo</option>
+                        <option value="Maduro" {% if tarjeta.estado_discipulado == "Maduro" %}selected{% endif %}>🌳 Maduro</option>
+                        <option value="Líder" {% if tarjeta.estado_discipulado == "Líder" %}selected{% endif %}>👑 Líder</option>
+                    </select>
+                    <small>Estado de crecimiento espiritual</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notas_seguimiento">📝 Notas de Seguimiento</label>
+                    <textarea id="notas_seguimiento" name="notas_seguimiento" rows="3">{{ tarjeta.notas_seguimiento }}</textarea>
+                    <small>Observaciones sobre el progreso espiritual</small>
+                </div>
+                
+                <div class="help-text">
+                    💡 <strong>Seguimiento efectivo:</strong> Estas fechas te ayudan a mantener contacto constante y ver el crecimiento espiritual.
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">❌ Cancelar</a>
+            </div>
+        </form>
+
+        <div class="metadata">
+            <p><strong>📅 Información de registro:</strong></p>
+            {% if tarjeta.fecha_creacion %}
+                {% if tarjeta.fecha_creacion is string %}
+                    <p>📝 Registrado: {{ tarjeta.fecha_creacion }}</p>
+                {% else %}
+                    <p>📝 Registrado: {{ tarjeta.fecha_creacion.strftime('%d de %B de %Y a las %H:%M') }}</p>
+                {% endif %}
+            {% endif %}
+            {% if tarjeta.fecha_modificacion and tarjeta.fecha_modificacion != tarjeta.fecha_creacion %}
+                {% if tarjeta.fecha_modificacion is string %}
+                    <p>✏️ Última actualización: {{ tarjeta.fecha_modificacion }}</p>
+                {% else %}
+                    <p>✏️ Última actualización: {{ tarjeta.fecha_modificacion.strftime('%d de %B de %Y a las %H:%M') }}</p>
+                {% endif %}
+            {% endif %}
+            <p><small>🔒 Esta información es privada y segura</small></p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-actualizar número de hijos basado en las edades ingresadas
+        document.getElementById('edades_hijos').addEventListener('input', function() {
+            const edades = this.value.split(',').filter(e => e.trim() !== '' && !isNaN(e.trim())).length;
+            const numHijosField = document.getElementById('num_hijos');
+            
+            if (edades > 0 && (numHijosField.value == '' || numHijosField.value == '0')) {
+                numHijosField.value = edades;
+            }
+        });
+
+        // Validación en tiempo real para edad
+        document.getElementById('edad').addEventListener('input', function() {
+            const edad = parseInt(this.value);
+            if (edad && (edad < 0 || edad > 120)) {
+                this.style.borderColor = '#f44336';
+                this.setCustomValidity('La edad debe estar entre 0 y 120 años');
+            } else {
+                this.style.borderColor = '#e0e0e0';
+                this.setCustomValidity('');
+            }
+        });
+
+        // Validación para teléfono (solo números, espacios y guiones)
+        document.getElementById('telefono').addEventListener('input', function() {
+            const phonePattern = /^[0-9\s\-\+\(\)]*$/;
+            if (!phonePattern.test(this.value) && this.value !== '') {
+                this.style.borderColor = '#f44336';
+                this.setCustomValidity('Solo se permiten números, espacios, guiones y paréntesis');
+            } else {
+                this.style.borderColor = '#e0e0e0';
+                this.setCustomValidity('');
+            }
+        });
+
+        // Formatear automáticamente el campo de edades de hijos
+        document.getElementById('edades_hijos').addEventListener('blur', function() {
+            if (this.value.trim()) {
+                // Limpiar y formatear las edades
+                const edades = this.value.split(',')
+                    .map(e => e.trim())
+                    .filter(e => e !== '' && !isNaN(e))
+                    .map(e => parseInt(e))
+                    .filter(e => e >= 0 && e <= 50)
+                    .sort((a, b) => a - b);
+                
+                this.value = edades.join(', ');
+            }
+        });
+
+        // Establecer fecha por defecto para próximo seguimiento (1 semana)
+        document.getElementById('fecha_ultimo_contacto').addEventListener('change', function() {
+            const proximoField = document.getElementById('proximo_seguimiento');
+            if (this.value && !proximoField.value) {
+                const fechaContacto = new Date(this.value);
+                fechaContacto.setDate(fechaContacto.getDate() + 7);
+                proximoField.value = fechaContacto.toISOString().split('T')[0];
+            }
+        });
+
+        // Mejorar UX con auto-focus
+        document.getElementById('nombre').focus();
+
+        // Confirmar antes de salir si hay cambios sin guardar
+        let formModified = false;
+        const form = document.getElementById('editarForm');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                formModified = true;
+            });
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (formModified) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        form.addEventListener('submit', function() {
+            formModified = false;
+        });
+    </script>
+
+    <!-- Google Maps con Places API para autocompletado -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAM44jyxplaDzn1m7bJ79RtQGCmzYNuOCg&callback=initAutocompleteEdit&libraries=places"></script>
+    
+    <script>
+        function initAutocompleteEdit() {
+            const direccionField = document.getElementById('direccion');
+            
+            if (direccionField) {
+                const autocomplete = new google.maps.places.Autocomplete(direccionField, {
+                    types: ['address'],
+                    componentRestrictions: { country: 'us' },
+                    bounds: new google.maps.LatLngBounds(
+                        new google.maps.LatLng(24.3963, -87.6349), // Southwest Florida
+                        new google.maps.LatLng(31.0009, -79.8742)  // Northeast Florida
+                    ),
+                    strictBounds: false
+                });
+                
+                autocomplete.addListener('place_changed', function() {
+                    const place = autocomplete.getPlace();
+                    if (place.formatted_address) {
+                        direccionField.value = place.formatted_address;
+                    }
+                });
+                
+                direccionField.placeholder = "🔍 Comienza a escribir una dirección...";
+                console.log('✅ Autocompletado inicializado en campo de edición');
+            }
+        }
+
+        // CSS para autocompletado en edición
+        const editStyle = document.createElement('style');
+        editStyle.textContent = `
+            #direccion {
+                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>') !important;
+                background-repeat: no-repeat !important;
+                background-position: right 15px center !important;
+                background-size: 16px 16px !important;
+                padding-right: 45px !important;
+            }
+            
+            .pac-container {
+                border-radius: 8px !important;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+                border: none !important;
+                margin-top: 2px !important;
+                font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+                z-index: 9999 !important;
+            }
+            
+            .pac-item {
+                padding: 12px 16px !important;
+                border-bottom: 1px solid #f0f0f0 !important;
+                cursor: pointer !important;
+            }
+            
+            .pac-item:hover,
+            .pac-item-selected {
+                background-color: #f8f9fa !important;
+            }
+            
+            .pac-matched {
+                font-weight: 600 !important;
+                color: #1976d2 !important;
+            }
+        `;
+        document.head.appendChild(editStyle);
+    </script>
+
+</body>
+</html>
