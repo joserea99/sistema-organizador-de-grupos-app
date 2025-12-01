@@ -1,0 +1,16 @@
+{
+  "users": [
+    {
+      "id": "19100592-5568-48e5-887b-53d32aa18035",
+      "username": "joserea",
+      "email": "media.joserea@gmail.com",
+      "password_hash": "scrypt:32768:8:1$mdDXeZ14FomDNt4a$4e3322147b59ca51b4ed653eae8d63d619b18d1eb6e1fc088974c0180f23c628f2e0f1e92eb44f4999b1701b8c90cf00aa26eae3fe1be68fff3c200bc68b7601",
+      "nombre_completo": "Jose Rea",
+      "fecha_registro": "2025-11-29T15:35:58.601534",
+      "activo": true,
+      "rol": "admin",
+      "suscripcion_activa": true,
+      "stripe_customer_id": "cus_test_simulated"
+    }
+  ]
+}

@@ -126,7 +126,9 @@ export class MapManager {
                 initials: card.querySelector('.person-avatar')?.textContent?.trim() || '??',
                 conyuge: card.dataset.conyuge,
                 edadConyuge: card.dataset.edadConyuge,
-                codigoPostal: card.dataset.codigoPostal
+                codigoPostal: card.dataset.codigoPostal,
+                estado: card.dataset.estado, // Para filtrado
+                hijos: card.dataset.hijos    // Para filtrado
             };
 
             const lat = parseFloat(card.dataset.lat);
@@ -192,6 +194,13 @@ export class MapManager {
                     <div style="margin-bottom: 4px;"><i class="fas fa-map-marker-alt" style="width: 16px; color: #666;"></i> ${personData.address}</div>
                     ${personData.phone ? `<div style="margin-bottom: 4px;"><i class="fas fa-phone" style="width: 16px; color: #666;"></i> ${personData.phone}</div>` : ''}
                     ${personData.email ? `<div style="margin-bottom: 4px;"><i class="fas fa-envelope" style="width: 16px; color: #666;"></i> ${personData.email}</div>` : ''}
+                    
+                    ${personData.conyuge ? `
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee;">
+                        <div style="font-weight: 600; margin-bottom: 2px;">Cónyuge:</div>
+                        <div><i class="fas fa-user-friends" style="width: 16px; color: #666;"></i> ${personData.conyuge} ${personData.edadConyuge ? `(${personData.edadConyuge} años)` : ''}</div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <button onclick="window.scrollToCard('${personData.listId}', '${personData.id}')" 
@@ -216,6 +225,9 @@ export class MapManager {
         if (this.markerCluster) {
             this.markerCluster.addMarker(marker);
         }
+
+        // Store data for filtering (CRITICAL FIX)
+        marker.personData = personData;
     }
 
     clearMarkers() {
@@ -295,8 +307,40 @@ export class MapManager {
 
                 this.markers.push(marker);
                 marker.setMap(this.map);
+
+                // Store data for filtering
+                marker.personData = personData;
             }
         });
+    }
+
+    filterMarkers(filter) {
+        console.log('Filtering map markers by:', filter);
+        this.markers.forEach(marker => {
+            if (!marker.personData) return;
+
+            let isVisible = false;
+
+            if (filter === 'all') {
+                isVisible = true;
+            } else if (filter === 'estado-casado') {
+                isVisible = marker.personData.estado === 'casado';
+            } else if (filter === 'estado-soltero') {
+                isVisible = marker.personData.estado === 'soltero';
+            } else if (filter === 'hijos') {
+                // Debug log for children filter
+                // console.log(`Checking children for ${marker.personData.name}: ${marker.personData.hijos}`);
+                const tieneHijos = marker.personData.hijos;
+                isVisible = tieneHijos === 'true' || tieneHijos === 'True' || tieneHijos === true;
+            }
+
+            marker.setVisible(isVisible);
+        });
+
+        // Re-cluster if clustering is enabled (optional, if using clusterer)
+        if (this.markerCluster) {
+            this.markerCluster.repaint();
+        }
     }
 
     centerMap() {
@@ -312,13 +356,17 @@ export class MapManager {
     initFilters() {
         const buttons = document.querySelectorAll('.map-filter-btn');
         buttons.forEach(btn => {
+            // Skip buttons that are not filters (like center or cluster)
+            if (!btn.dataset.filter) return;
+
             btn.addEventListener('click', (e) => {
-                // Lógica de filtrado de mapa
-                buttons.forEach(b => b.classList.remove('active'));
+                buttons.forEach(b => {
+                    if (b.dataset.filter) b.classList.remove('active');
+                });
                 e.currentTarget.classList.add('active');
 
                 const filter = e.currentTarget.dataset.filter;
-                // Implementar lógica de filtrado visual en mapa
+                this.filterMarkers(filter);
             });
         });
 

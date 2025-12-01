@@ -23,11 +23,12 @@ def check_subscription():
         return redirect(url_for('auth.login'))
         
     # Verificar suscripción (con periodo de gracia de 14 días)
-    if not user.suscripcion_activa:
-        dias_desde_registro = (datetime.now() - user.fecha_registro).days
-        if dias_desde_registro > 14:
-            flash("Tu periodo de prueba ha terminado. Por favor suscríbete para continuar.", "warning")
-            return redirect(url_for('billing.subscribe'))
+    # if not user.suscripcion_activa:
+    #     dias_desde_registro = (datetime.now() - user.fecha_registro).days
+    #     if dias_desde_registro > 14:
+    #         flash("Tu periodo de prueba ha terminado. Por favor suscríbete para continuar.", "warning")
+    #         return redirect(url_for('billing.subscribe'))
+    pass
 
 # Datos de plantillas (mantenemos las plantillas)
 PLANTILLAS_EJEMPLO = {
@@ -151,6 +152,19 @@ def ver(tablero_id):
                          listas=listas, 
                          usuario=usuario,
                          colores=KANBAN_COLORS)
+
+
+@tableros_bp.route("/api/tablero/<tablero_id>/data")
+def get_tablero_data(tablero_id):
+    """Obtener datos completos del tablero en JSON"""
+    if "user_id" not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+        
+    tablero = storage.get_tablero(tablero_id)
+    if not tablero:
+        return jsonify({'error': 'Tablero no encontrado'}), 404
+        
+    return jsonify(tablero.to_dict())
 
 
 @tableros_bp.route("/crear")
@@ -788,7 +802,7 @@ def eliminar_tarjeta(tarjeta_id):
     try:
         # Buscar la tarjeta en todos los tableros y listas
         for tablero in storage.get_all_tableros():
-            for lista in tablero.listas.values():
+            for lista in tablero.listas:
                 tarjeta = lista.get_tarjeta(tarjeta_id)
                 if tarjeta:
                     # Guardar datos para Undo
@@ -985,7 +999,7 @@ def editar_tarjeta(lista_id, tarjeta_id):
     tablero_encontrado = None
     
     for tablero in storage.get_all_tableros():
-        for lista in tablero.listas.values():
+        for lista in tablero.listas:
             tarjeta = lista.get_tarjeta(tarjeta_id)
             if tarjeta:
                 tarjeta_encontrada = tarjeta
@@ -1076,7 +1090,7 @@ def get_uncoded_people():
         for p_dict in personas:
             # Buscar la tarjeta real
             tarjeta = None
-            for lista in tablero.listas.values():
+            for lista in tablero.listas:
                 t = lista.get_tarjeta(p_dict['id'])
                 if t:
                     tarjeta = t
@@ -1127,7 +1141,7 @@ def update_person_coords():
             
         # Buscar persona
         tarjeta_encontrada = None
-        for lista in tablero.listas.values():
+        for lista in tablero.listas:
             t = lista.get_tarjeta(persona_id)
             if t:
                 tarjeta_encontrada = t
@@ -1248,7 +1262,7 @@ def apply_clustering():
                 tarjeta_mover = None
                 lista_origen = None
                 
-                for lista in tablero.listas.values():
+                for lista in tablero.listas:
                     t = lista.get_tarjeta(member['id'])
                     if t:
                         tarjeta_mover = t
@@ -1256,10 +1270,12 @@ def apply_clustering():
                         break
                 
                 if tarjeta_mover and lista_origen:
-                    # Mover
-                    lista_origen.eliminar_tarjeta(tarjeta_mover.id)
-                    nueva_lista.tarjetas.append(tarjeta_mover)
+                    # Mover actualizando la foreign key
+                    tarjeta_mover.lista_id = nueva_lista.id
                     moved_people += 1
+            
+            # Guardar cambios por cada cluster
+            storage.save_to_disk()
         
         storage.save_to_disk()
         
@@ -1531,7 +1547,7 @@ def deshacer_accion():
             lista_destino = tablero.get_lista(lista_destino_id)
             
             # Buscar tarjeta en cualquier lista (debería estar en lista_origen actual, que es la destino original)
-            for l in tablero.listas.values():
+            for l in tablero.listas:
                 t = l.get_tarjeta(tarjeta_id)
                 if t:
                     tarjeta = t
@@ -1592,7 +1608,7 @@ def deshacer_accion():
                 # Mover tarjeta de vuelta a origen
                 tarjeta = None
                 # Buscar tarjeta
-                for l in tablero.listas.values():
+                for l in tablero.listas:
                     t = l.get_tarjeta(tarjeta_id)
                     if t:
                         tarjeta = t
@@ -1673,7 +1689,7 @@ def bulk_move():
             tarjeta = None
             lista_origen = None
             
-            for l in tablero.listas.values():
+            for l in tablero.listas:
                 t = l.get_tarjeta(tarjeta_id)
                 if t:
                     tarjeta = t
@@ -1691,9 +1707,8 @@ def bulk_move():
                 except ValueError:
                     index = -1
 
-                # Mover
-                lista_origen.tarjetas.remove(tarjeta)
-                lista_destino.tarjetas.append(tarjeta)
+                # Mover actualizando foreign key
+                tarjeta.lista_id = lista_destino.id
                 
                 moves_recorded.append({
                     'tarjeta_id': tarjeta.id,
@@ -1750,7 +1765,7 @@ def bulk_delete():
         
         for tarjeta_id in tarjeta_ids:
             # Buscar tarjeta
-            for l in tablero.listas.values():
+            for l in tablero.listas:
                 t = l.get_tarjeta(tarjeta_id)
                 if t:
                     # Guardar datos para undo
@@ -1793,14 +1808,4 @@ def bulk_delete():
         return jsonify({'error': str(e)}), 500
 
 
-@tableros_bp.route("/api/tablero/<tablero_id>/data")
-def get_tablero_data(tablero_id):
-    """Obtener datos del tablero en JSON"""
-    if "user_id" not in session:
-        return jsonify({'error': 'No autorizado'}), 401
-        
-    tablero = storage.get_tablero(tablero_id)
-    if not tablero:
-        return jsonify({'error': 'Tablero no encontrado'}), 404
-        
     return jsonify(tablero.to_dict())

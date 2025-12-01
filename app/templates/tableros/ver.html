@@ -32,6 +32,14 @@
         <div>
             <h1 class="text-2xl font-bold header-title">{{ tablero.nombre }}</h1>
             <p class="text-sm text-secondary">{{ tablero.descripcion }}</p>
+            <div class="flex gap-4 mt-2 text-xs text-secondary">
+                <span><i class="fas fa-list mr-1"></i> {{ tablero.listas|length }} Listas</span>
+                {% set total_personas = 0 %}
+                {% for lista in tablero.listas %}
+                {% set total_personas = total_personas + lista.tarjetas|length %}
+                {% endfor %}
+                <span><i class="fas fa-users mr-1"></i> {{ total_personas }} Personas</span>
+            </div>
         </div>
         <div class="flex gap-2">
             <!-- Selector de Tema -->
@@ -241,15 +249,24 @@
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-xl font-bold">Mapa de Ubicaciones</h2>
             <div class="map-controls flex gap-2">
-                <button class="map-filter-btn" id="btnCenterMap">
+                <button class="map-filter-btn" id="btnCenterMap" title="Centrar Mapa">
                     <i class="fas fa-crosshairs"></i> Centrar
                 </button>
-                <button class="map-filter-btn" id="btnSmartCluster"
+                <button class="map-filter-btn" id="btnSmartCluster" title="Agrupación Inteligente"
                     style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none;">
                     <i class="fas fa-magic"></i> Agrupar
                 </button>
-                <button class="map-filter-btn active" data-filter="all">
-                    <i class="fas fa-map-marker-alt"></i> Ver Todos
+                <button class="map-filter-btn active" data-filter="all" title="Ver Todos">
+                    <i class="fas fa-users"></i>
+                </button>
+                <button class="map-filter-btn" data-filter="estado-casado" title="Casados">
+                    <i class="fas fa-ring"></i>
+                </button>
+                <button class="map-filter-btn" data-filter="estado-soltero" title="Solteros">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="map-filter-btn" data-filter="hijos" title="Con Hijos">
+                    <i class="fas fa-child"></i>
                 </button>
             </div>
         </div>
@@ -329,8 +346,7 @@
                     </select>
                 </div>
 
-                <div id="spouseFields"
-                    style="display: none; background: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                <div id="spouseFields" class="spouse-fields-container" style="display: none;">
                     <h4 class="text-sm font-bold mb-2 text-gray-600">Datos del Cónyuge</h4>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="form-group">
@@ -607,6 +623,23 @@
     </div>
 </div>
 
+<!-- Modal Confirmación Genérico -->
+<div id="modalConfirmAction" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="confirmActionTitle">Confirmar Acción</h3>
+            <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmActionMessage">¿Estás seguro de realizar esta acción?</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">Cancelar</button>
+            <button class="btn btn-primary" id="btnConfirmAction">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Historial -->
 <div class="modal fade" id="modalHistorial" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -738,20 +771,22 @@
             }
 
             let listas = [];
-            if (window.appConfig.tableroData && window.appConfig.tableroData.listas) {
+            // Siempre intentar parsear del DOM primero para asegurar datos frescos
+            document.querySelectorAll('.kanban-list').forEach(el => {
+                const id = el.dataset.listId;
+                const titleEl = el.querySelector('.list-title');
+                const nombre = titleEl ? titleEl.textContent.trim() : 'Lista sin nombre';
+                if (id) {
+                    listas.push({ id, nombre });
+                }
+            });
+
+            // Si no hay listas en el DOM (raro), intentar usar appConfig
+            if (listas.length === 0 && window.appConfig.tableroData && window.appConfig.tableroData.listas) {
                 listas = window.appConfig.tableroData.listas;
-            } else {
-                console.warn('Tablero data not available, parsing from DOM...');
-                // Fallback: Parse from DOM
-                document.querySelectorAll('.kanban-list').forEach(el => {
-                    const id = el.dataset.listId;
-                    const titleEl = el.querySelector('.list-title');
-                    const nombre = titleEl ? titleEl.textContent.trim() : 'Lista sin nombre';
-                    if (id) {
-                        listas.push({ id, nombre });
-                    }
-                });
             }
+
+            console.log('Listas encontradas para mover:', listas);
 
             listas.forEach(lista => {
                 const option = new Option(lista.nombre, lista.id);
@@ -831,16 +866,19 @@
 
     function bulkMove() {
         const cardIds = getSelectedCardIds();
-        const targetListId = document.getElementById('bulkMoveSelect').value;
+        const select = document.getElementById('bulkMoveSelect');
+        const targetListId = select.value;
 
         if (cardIds.length === 0) {
             alert('Selecciona al menos una tarjeta');
             return;
         }
         if (!targetListId) {
-            alert('Selecciona una lista de destino');
+            select.style.border = "2px solid red";
+            alert('Por favor selecciona una lista de destino en el menú desplegable.');
             return;
         }
+        select.style.border = "";
 
         showConfirmModal(
             'Mover Tarjetas',

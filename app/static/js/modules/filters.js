@@ -74,7 +74,9 @@ export class FilterManager {
                 const estado = filterType.replace('estado-', '');
                 match = card.dataset.estado === estado;
             } else if (filterType === 'hijos') {
-                match = card.dataset.hijos === 'true';
+                const tieneHijos = card.dataset.hijos;
+                console.log(`Card: ${card.querySelector('.person-name').textContent}, data-hijos: ${tieneHijos}`);
+                match = tieneHijos === 'true' || tieneHijos === 'True';
             } else {
                 // Fallback generic check
                 match = card.dataset[filterType] === 'true' || card.dataset.category === filterType;

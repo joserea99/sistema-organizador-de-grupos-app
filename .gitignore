@@ -1,10 +1,18 @@
-__pycache__/
-*.pyc
 venv/
 .env
-*.db
-.DS_Store
+.env.production
+__pycache__/
 instance/
-*.log
-data/*.json
-venv/bin/activate && python run.py.png
+.DS_Store
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+coverage.xml
+*.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+*.db
+*.sqlite3

@@ -55,14 +55,86 @@ class Tablero(db.Model):
     listas = db.relationship('Lista', backref='tablero', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
+        total_tarjetas = sum(len(l.tarjetas) for l in self.listas)
         return {
             'id': self.id,
             'nombre': self.nombre,
             'descripcion': self.descripcion,
             'icono': self.icono,
             'tipo': self.tipo,
-            'listas': [l.to_dict() for l in self.listas]
+            'listas': [l.to_dict() for l in self.listas],
+            'total_listas': len(self.listas),
+            'total_tarjetas': total_tarjetas,
+            'undo_stack': getattr(self, 'undo_stack', []),
+            'historial': getattr(self, 'historial', [])
         }
+
+    def agregar_lista(self, nombre, color="#e2e8f0"):
+        lista = Lista(nombre=nombre, color=color, tablero_id=self.id)
+        db.session.add(lista)
+        return lista
+
+    def get_lista(self, lista_id):
+        return Lista.query.filter_by(id=lista_id, tablero_id=self.id).first()
+
+    def eliminar_lista(self, lista_id):
+        lista = self.get_lista(lista_id)
+        if lista:
+            db.session.delete(lista)
+            return True
+        return False
+            
+    def registrar_accion(self, usuario, accion, detalle):
+        if not hasattr(self, 'historial'):
+            self.historial = []
+        
+        evento = {
+            'usuario': usuario,
+            'accion': accion,
+            'detalles': detalle,
+            'fecha': datetime.now().isoformat()
+        }
+        self.historial.insert(0, evento)
+        # Limitar historial a 50 eventos
+        self.historial = self.historial[:50]
+        
+    def registrar_undo(self, tipo, datos):
+        if not hasattr(self, 'undo_stack'):
+            self.undo_stack = []
+            
+        self.undo_stack.append({
+            'type': tipo,
+            'data': datos
+        })
+
+    def get_todas_las_personas(self):
+        personas = []
+        for lista in self.listas:
+            for tarjeta in lista.tarjetas:
+                personas.append(tarjeta.to_dict())
+        return personas
+
+    @property
+    def orden_listas(self):
+        # Return list IDs sorted by 'orden'
+        # Since 'orden' is not fully implemented in DB update logic yet, we rely on default order
+        # But for reordering to work, we need a list we can manipulate in memory if we want transient reordering
+        # Or we should query sorted.
+        # For now, let's return a list of IDs that matches self.listas order
+        if not hasattr(self, '_orden_listas'):
+            self._orden_listas = [l.id for l in self.listas]
+        return self._orden_listas
+    
+    @orden_listas.setter
+    def orden_listas(self, value):
+        self._orden_listas = value
+        # Here we should update the 'orden' field in DB for each list
+        # But for now, let's just keep it in memory or update DB immediately
+        for index, lista_id in enumerate(value):
+            lista = self.get_lista(lista_id)
+            if lista:
+                lista.orden = index
+
 
 class Lista(db.Model):
     __tablename__ = 'listas'
@@ -86,6 +158,23 @@ class Lista(db.Model):
             'descripcion': self.descripcion,
             'tarjetas': [t.to_dict() for t in self.tarjetas]
         }
+
+    def agregar_persona(self, **kwargs):
+        # Filter kwargs to only match Tarjeta columns to avoid errors
+        valid_columns = [c.key for c in Tarjeta.__table__.columns]
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_columns}
+        
+        tarjeta = Tarjeta(lista_id=self.id, **filtered_kwargs)
+        db.session.add(tarjeta)
+        return tarjeta
+
+    def get_tarjeta(self, tarjeta_id):
+        return Tarjeta.query.filter_by(id=tarjeta_id, lista_id=self.id).first()
+
+    def eliminar_tarjeta(self, tarjeta_id):
+        tarjeta = self.get_tarjeta(tarjeta_id)
+        if tarjeta:
+            db.session.delete(tarjeta)
 
 class Tarjeta(db.Model):
     __tablename__ = 'tarjetas'
@@ -127,6 +216,10 @@ class Tarjeta(db.Model):
     def nombre_completo(self):
         return f"{self.nombre} {self.apellido or ''}".strip()
 
+    @property
+    def tiene_hijos(self):
+        return self.numero_hijos is not None and self.numero_hijos > 0
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -141,7 +234,20 @@ class Tarjeta(db.Model):
             'ocupacion': self.ocupacion,
             'latitud': self.latitud,
             'longitud': self.longitud,
-            'lista_id': self.lista_id
+            'lista_id': self.lista_id,
+            # Campos adicionales para exportación y edición
+            'numero_hijos': self.numero_hijos,
+            'edades_hijos': self.edades_hijos,
+            'nombre_conyuge': self.nombre_conyuge,
+            'edad_conyuge': self.edad_conyuge if hasattr(self, 'edad_conyuge') else None, # Handle potential missing attr
+            'telefono_conyuge': self.telefono_conyuge if hasattr(self, 'telefono_conyuge') else None,
+            'trabajo_conyuge': self.trabajo_conyuge if hasattr(self, 'trabajo_conyuge') else None,
+            'fecha_matrimonio': str(self.fecha_matrimonio) if hasattr(self, 'fecha_matrimonio') and self.fecha_matrimonio else None,
+            'bautizado': self.bautizado,
+            'es_lider': self.es_lider,
+            'ministerio': self.ministerio,
+            'notas': self.notas if hasattr(self, 'notas') else '',
+            'tiene_hijos': self.tiene_hijos
         }
 
 # Clases de compatibilidad para no romper el código existente
@@ -172,5 +278,69 @@ class UserStorage:
     def save_to_disk(self):
         db.session.commit()
 
+    def load_from_disk(self):
+        pass
+
+class TableroStorage:
+    def __init__(self):
+        self._runtime_data = {} # Cache for transient data (undo_stack, history) keyed by tablero_id
+
+    def get_all_tableros(self):
+        return Tablero.query.all()
+        
+    def get_tablero(self, tablero_id):
+        tablero = Tablero.query.get(tablero_id)
+        if tablero:
+            # Ensure runtime data storage exists for this tablero
+            if tablero_id not in self._runtime_data:
+                self._runtime_data[tablero_id] = {
+                    'undo_stack': [],
+                    'historial': []
+                }
+            
+            # Attach the persistent list objects to the transient tablero instance
+            # This works because lists are mutable references
+            tablero.undo_stack = self._runtime_data[tablero_id]['undo_stack']
+            tablero.historial = self._runtime_data[tablero_id]['historial']
+            
+        return tablero
+        
+    def crear_tablero(self, nombre, descripcion, icono, creador_id):
+        tablero = Tablero(nombre=nombre, descripcion=descripcion, icono=icono, creador_id=creador_id)
+        db.session.add(tablero)
+        db.session.commit()
+        return tablero
+        
+    def get_stats(self):
+        return {
+            "total_tableros": Tablero.query.count(),
+            "total_listas": Lista.query.count(),
+            "total_personas": Tarjeta.query.count()
+        }
+        
+    def save_to_disk(self):
+        db.session.commit()
+
+    def eliminar_tablero(self, tablero_id):
+        tablero = self.get_tablero(tablero_id)
+        if tablero:
+            db.session.delete(tablero)
+            db.session.commit()
+            if tablero_id in self._runtime_data:
+                del self._runtime_data[tablero_id]
+
+    # Helper methods for Undo/Redo
+    def _deserialize_tarjeta(self, data):
+        # Create a new Tarjeta instance from dict data
+        # Filter keys that match Tarjeta columns
+        valid_keys = [c.key for c in Tarjeta.__table__.columns]
+        filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+        return Tarjeta(**filtered_data)
+
+    def _deserialize_lista(self, data):
+        valid_keys = [c.key for c in Lista.__table__.columns]
+        filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+        return Lista(**filtered_data)
+
 # Instancia global para compatibilidad
-storage = None # Se inicializará en create_app
+storage = TableroStorage()

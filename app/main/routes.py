@@ -41,3 +41,8 @@ def recordatorios():
     recordatorios = []  # Lista vacía por ahora
     
     return render_template("main/recordatorios.html", contadores=contadores, recordatorios=recordatorios)
+
+
+@main_bp.route('/favicon.ico')
+def favicon():
+    return "", 204

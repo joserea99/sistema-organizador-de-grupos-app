@@ -257,6 +257,12 @@ body {
     background: rgba(139, 92, 246, 0.1);
 }
 
+.form-select option {
+    background-color: #1e1b4b;
+    /* Color de fondo oscuro sólido para opciones */
+    color: var(--text-primary);
+}
+
 /* === TOAST/NOTIFICACIONES === */
 .toast {
     background: var(--glass-bg);
@@ -402,4 +408,56 @@ body {
 .btn-primary:active,
 .person-card.expanded {
     animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* === MAP INFO WINDOW FIX FOR MODERN THEME === */
+.map-info-window {
+    background-color: #1e1b4b;
+    /* Fondo oscuro sólido */
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.map-info-window h3 {
+    color: var(--text-primary) !important;
+}
+
+.map-info-window i {
+    color: var(--color-primary-light) !important;
+}
+
+.gm-style-iw {
+    background-color: #1e1b4b !important;
+    padding: 0 !important;
+}
+
+.gm-style-iw-d {
+    overflow: hidden !important;
+    background-color: #1e1b4b !important;
+    color: var(--text-primary) !important;
+}
+
+.gm-style-iw-tc::after {
+    background: #1e1b4b !important;
+}
+
+.gm-ui-hover-effect {
+    filter: invert(1) !important;
+    /* Hace blanca la X de cerrar */
+}
+
+/* === SPOUSE FIELDS CONTAINER === */
+.spouse-fields-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.spouse-fields-container h4 {
+    color: var(--text-primary) !important;
+    margin-bottom: 10px;
 }
