@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Directorio de Personas{% endblock %}
+
+{% block content %}
+<div class="main-container p-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <span class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-lg">
+                    <span class="material-symbols-outlined">groups</span>
+                </span>
+                Directorio de Personas
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">Gestiona tu base de datos global de miembros</p>
+        </div>
+        <div class="flex gap-3">
+            <button class="btn btn-secondary" onclick="window.print()">
+                <span class="material-symbols-outlined mr-2">print</span>Imprimir
+            </button>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                <span class="material-symbols-outlined mr-2">dashboard</span>Dashboard
+            </a>
+        </div>
+    </header>
+
+    <!-- Search & Filters -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
+        <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <span class="material-symbols-outlined">search</span>
+            </span>
+            <input type="text" id="directorySearch"
+                class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Buscar por nombre, email, teléfono, ministerio...">
+        </div>
+    </div>
+
+    <!-- People Table -->
+    <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Nombre</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Contacto</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Ubicación</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Ministerio</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Tablero/Lista</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="directoryTableBody">
+                    {% for persona in personas %}
+                    <tr
+                        class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                                    {{ persona.nombre[0] }}{{ persona.apellido[0] if persona.apellido else '' }}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900 dark:text-white">{{ persona.nombre_completo
+                                        }}</div>
+                                    <div class="text-xs text-gray-500">{{ persona.estado_civil or 'No especificado' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm text-gray-600 dark:text-gray-300">
+                                {% if persona.email %}
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="material-symbols-outlined text-[16px] text-gray-400">mail</span>
+                                    {{ persona.email }}
+                                </div>
+                                {% endif %}
+                                {% if persona.telefono %}
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[16px] text-gray-400">call</span>
+                                    {{ persona.telefono }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm text-gray-600 dark:text-gray-300 max-w-[200px] truncate"
+                                title="{{ persona.direccion }}">
+                                {{ persona.direccion or 'Sin dirección' }}
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            {% if persona.ministerio %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                {{ persona.ministerio }}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400 text-sm">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <div class="text-sm">
+                                <div class="font-medium text-gray-700 dark:text-gray-300">
+                                    {{ persona.lista.tablero.nombre if persona.lista and persona.lista.tablero else 'Sin
+                                    Tablero' }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    {{ persona.lista.nombre if persona.lista else 'Sin Lista' }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-right">
+                            <a href="{{ url_for('tableros.ver', tablero_id=persona.lista.tablero.id) if persona.lista and persona.lista.tablero else '#' }}"
+                                class="text-gray-400 hover:text-blue-600 transition-colors p-2 inline-block"
+                                title="Ir al tablero">
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if not personas %}
+        <div class="p-12 text-center text-gray-500">
+            <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">groups_2</span>
+            <p class="text-lg">No hay personas registradas aún.</p>
+            <p class="text-sm mt-2">Agrega personas desde tus tableros.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.getElementById('directorySearch').addEventListener('keyup', function (e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#directoryTableBody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

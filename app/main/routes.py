@@ -75,7 +75,16 @@ def recordatorios():
     recordatorios = []  # Lista vacía por ahora
     
     return render_template("main/recordatorios.html", contadores=contadores, recordatorios=recordatorios)
-
+@main_bp.route("/personas")
+def personas():
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+    
+    # Obtener todas las personas
+    from app.models import Tarjeta
+    personas = Tarjeta.query.order_by(Tarjeta.nombre, Tarjeta.apellido).all()
+    
+    return render_template("main/personas.html", personas=personas)
 
 @main_bp.route('/favicon.ico')
 def favicon():
