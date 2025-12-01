@@ -8,21 +8,81 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Cargar tema por defecto para evitar flash -->
+    <link rel="stylesheet" id="theme-stylesheet" href="{{ url_for('static', filename='css/themes/clasico.css') }}">
     <style>
+        /* Adaptador de Temas para Dashboard */
+        :root {
+            --bg-body: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+            --hover-bg: #f9fafb;
+            --sidebar-bg: #ffffff;
+            --sidebar-border: #e5e7eb;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+            background: var(--bg-body);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Clases semánticas que usan variables CSS del tema */
+        .dashboard-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            /* Fallback para temas que usan glassmorphism */
+            background: var(--glass-bg, var(--card-bg));
+            border-color: var(--glass-border, var(--card-border));
+            backdrop-filter: var(--glass-blur, none);
+        }
+
+        .text-theme-primary {
+            color: var(--text-primary);
+        }
+
+        .text-theme-secondary {
+            color: var(--text-secondary);
+        }
+
+        .sidebar-container {
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            /* Fallback */
+            background: var(--glass-bg, var(--sidebar-bg));
+            border-color: var(--glass-border, var(--sidebar-border));
+        }
+
+        .sidebar-link {
+            color: var(--text-secondary);
+        }
+
+        .sidebar-link:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            /* Fallback */
+            background: var(--bg-hover, var(--hover-bg));
         }
 
         .sidebar-link.active {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border-right: 3px solid #2563eb;
+            background: var(--bg-secondary, #eff6ff);
+            color: var(--color-primary, #2563eb);
+            border-right: 3px solid var(--color-primary, #2563eb);
         }
 
         .card-hover:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Ajustes para inputs de formulario en temas oscuros */
+        .form-select {
+            background-color: var(--bg-secondary, #fff);
+            color: var(--text-primary);
+            border-color: var(--border-color, #e5e7eb);
         }
     </style>
 </head>
@@ -30,27 +90,28 @@
 <body class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
+    <aside class="w-64 sidebar-container hidden md:flex flex-col transition-colors duration-300">
         <div class="p-6 flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+            <div
+                class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 <i class="fas fa-church"></i>
             </div>
-            <span class="text-xl font-bold text-gray-800">Mi Ministerio</span>
+            <span class="text-xl font-bold text-theme-primary">Mi Ministerio</span>
         </div>
 
         <nav class="flex-1 px-4 py-4 space-y-1">
             <a href="{{ url_for('main.dashboard') }}"
-                class="sidebar-link active flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:bg-gray-50 transition-all">
+                class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
                 <i class="fas fa-chart-pie w-5"></i>
                 <span class="font-medium">Dashboard</span>
             </a>
             <a href="{{ url_for('tableros.lista') }}"
-                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:bg-gray-50 transition-all">
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
                 <i class="fas fa-columns w-5"></i>
                 <span class="font-medium">Tableros</span>
             </a>
             <a href="{{ url_for('main.recordatorios') }}"
-                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:bg-gray-50 transition-all">
+                class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition-all">
                 <i class="fas fa-bell w-5"></i>
                 <span class="font-medium">Recordatorios</span>
                 {% if stats.recordatorios_pendientes > 0 %}
@@ -69,33 +130,43 @@
                 <i class="fas fa-cog w-5"></i>
                 <span class="font-medium">Configuración</span>
             </a>
+
+            <div class="mt-8 px-4">
+                <p class="text-xs font-semibold text-theme-secondary uppercase tracking-wider mb-2">Apariencia</p>
+                <select id="theme-selector"
+                    class="w-full form-select text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2">
+                    <option value="clasico">Clásico</option>
+                    <option value="moderno">Moderno (Dark)</option>
+                    <option value="minimalista">Minimalista</option>
+                    <option value="oscuro">Oscuro</option>
+                </select>
+            </div>
         </nav>
 
-        <div class="p-4 border-t border-gray-200">
+        <div class="p-4 border-t" style="border-color: var(--border-color, #e5e7eb);">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
                     <i class="fas fa-user"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-gray-700">Usuario</p>
-                    <p class="text-xs text-gray-500">Líder de Ministerio</p>
+                    <p class="text-sm font-medium text-theme-primary">Usuario</p>
+                    <p class="text-xs text-theme-secondary">Líder de Ministerio</p>
                 </div>
             </div>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto transition-colors duration-300">
         <!-- Mobile Header -->
-        <header
-            class="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-10">
+        <header class="md:hidden sidebar-container border-b p-4 flex justify-between items-center sticky top-0 z-10">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                     <i class="fas fa-church"></i>
                 </div>
-                <span class="font-bold text-gray-800">Mi Ministerio</span>
+                <span class="font-bold text-theme-primary">Mi Ministerio</span>
             </div>
-            <button class="text-gray-500 hover:text-gray-700">
+            <button class="text-theme-secondary hover:text-theme-primary">
                 <i class="fas fa-bars text-xl"></i>
             </button>
         </header>
@@ -104,8 +175,8 @@
             <!-- Welcome Section -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">¡Hola, Bendiciones! 👋</h1>
-                    <p class="text-gray-500 mt-1">Aquí tienes un resumen de la actividad de tu ministerio.</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-theme-primary">¡Hola, Bendiciones! 👋</h1>
+                    <p class="text-theme-secondary mt-1">Aquí tienes un resumen de la actividad de tu ministerio.</p>
                 </div>
                 <div class="flex gap-3">
                     <a href="{{ url_for('tableros.crear') }}"
@@ -118,60 +189,66 @@
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <!-- Stat Card 1 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                <div class="dashboard-card p-6 rounded-xl shadow-sm card-hover transition-all">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-blue-50 rounded-lg text-blue-600">
+                        <div class="p-3 bg-blue-50 rounded-lg text-blue-600"
+                            style="background-color: rgba(37, 99, 235, 0.1);">
                             <i class="fas fa-users text-xl"></i>
                         </div>
                         <!-- <span class="text-green-500 text-xs font-bold flex items-center bg-green-50 px-2 py-1 rounded-full">
                             <i class="fas fa-arrow-up mr-1"></i> +12%
                         </span> -->
                     </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Total Personas</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.total_personas }}</p>
+                    <h3 class="text-theme-secondary text-sm font-medium">Total Personas</h3>
+                    <p class="text-3xl font-bold text-theme-primary mt-1">{{ stats.total_personas }}</p>
                 </div>
 
                 <!-- Stat Card 2 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                <div class="dashboard-card p-6 rounded-xl shadow-sm card-hover transition-all">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-purple-50 rounded-lg text-purple-600">
+                        <div class="p-3 bg-purple-50 rounded-lg text-purple-600"
+                            style="background-color: rgba(147, 51, 234, 0.1);">
                             <i class="fas fa-columns text-xl"></i>
                         </div>
                     </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Tableros Activos</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.total_tableros }}</p>
+                    <h3 class="text-theme-secondary text-sm font-medium">Tableros Activos</h3>
+                    <p class="text-3xl font-bold text-theme-primary mt-1">{{ stats.total_tableros }}</p>
                 </div>
 
                 <!-- Stat Card 3 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                <div class="dashboard-card p-6 rounded-xl shadow-sm card-hover transition-all">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-green-50 rounded-lg text-green-600">
+                        <div class="p-3 bg-green-50 rounded-lg text-green-600"
+                            style="background-color: rgba(22, 163, 74, 0.1);">
                             <i class="fas fa-user-plus text-xl"></i>
                         </div>
                         <span
-                            class="text-green-500 text-xs font-bold flex items-center bg-green-50 px-2 py-1 rounded-full">
+                            class="text-green-500 text-xs font-bold flex items-center bg-green-50 px-2 py-1 rounded-full"
+                            style="background-color: rgba(22, 163, 74, 0.1);">
                             Este Mes
                         </span>
                     </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Nuevos Miembros</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.nuevos_mes }}</p>
+                    <h3 class="text-theme-secondary text-sm font-medium">Nuevos Miembros</h3>
+                    <p class="text-3xl font-bold text-theme-primary mt-1">{{ stats.nuevos_mes }}</p>
                 </div>
 
                 <!-- Stat Card 4 -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                <div class="dashboard-card p-6 rounded-xl shadow-sm card-hover transition-all">
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-orange-50 rounded-lg text-orange-600">
+                        <div class="p-3 bg-orange-50 rounded-lg text-orange-600"
+                            style="background-color: rgba(234, 88, 12, 0.1);">
                             <i class="fas fa-bell text-xl"></i>
                         </div>
                         {% if stats.recordatorios_pendientes > 0 %}
                         <span
-                            class="text-orange-500 text-xs font-bold flex items-center bg-orange-50 px-2 py-1 rounded-full">
+                            class="text-orange-500 text-xs font-bold flex items-center bg-orange-50 px-2 py-1 rounded-full"
+                            style="background-color: rgba(234, 88, 12, 0.1);">
                             Acción Requerida
                         </span>
                         {% endif %}
                     </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Recordatorios</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.recordatorios_pendientes }}</p>
+                    <h3 class="text-theme-secondary text-sm font-medium">Recordatorios</h3>
+                    <p class="text-3xl font-bold text-theme-primary mt-1">{{ stats.recordatorios_pendientes }}</p>
                 </div>
             </div>
 
@@ -180,26 +257,30 @@
                 <div class="lg:col-span-2 space-y-8">
 
                     <!-- Tableros Activos -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h2 class="text-lg font-bold text-gray-800">Tableros Recientes</h2>
+                    <div class="dashboard-card rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b flex justify-between items-center"
+                            style="border-color: var(--border-color, #e5e7eb);">
+                            <h2 class="text-lg font-bold text-theme-primary">Tableros Recientes</h2>
                             <a href="{{ url_for('tableros.lista') }}"
                                 class="text-blue-600 text-sm font-medium hover:text-blue-700">Ver todos</a>
                         </div>
 
                         {% if tableros_activos %}
-                        <div class="divide-y divide-gray-100">
+                        <div class="divide-y" style="border-color: var(--border-color, #e5e7eb);">
                             {% for tablero in tableros_activos %}
                             <div class="p-4 hover:bg-gray-50 transition-colors flex items-center gap-4 group cursor-pointer"
-                                onclick="window.location.href='{{ url_for('tableros.ver_tablero', id=tablero.id) }}'">
+                                onclick="window.location.href='{{ url_for('tableros.ver_tablero', id=tablero.id) }}'"
+                                style="background-color: var(--bg-hover, var(--hover-bg));">
                                 <div class="w-12 h-12 rounded-lg flex items-center justify-center text-xl text-white shadow-sm group-hover:scale-105 transition-transform"
                                     style="background-color: {{ tablero.color }};">
                                     {{ tablero.icono }}
                                 </div>
                                 <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                    <h3
+                                        class="font-semibold text-theme-primary group-hover:text-blue-600 transition-colors">
                                         {{ tablero.nombre }}</h3>
-                                    <p class="text-sm text-gray-500">{{ tablero.total_personas }} personas &bull; {{
+                                    <p class="text-sm text-theme-secondary">{{ tablero.total_personas }} personas &bull;
+                                        {{
                                         tablero.nuevos_mes }} nuevos</p>
                                 </div>
                                 <div class="text-gray-400">
@@ -209,7 +290,7 @@
                             {% endfor %}
                         </div>
                         {% else %}
-                        <div class="p-8 text-center text-gray-500">
+                        <div class="p-8 text-center text-theme-secondary">
                             <div class="mb-3 text-4xl">📭</div>
                             <p>No hay tableros activos aún.</p>
                             <a href="{{ url_for('tableros.crear') }}"
@@ -220,16 +301,17 @@
 
                     <!-- Estados de Discipulado (Chart Placeholder) -->
                     {% if estados_discipulado %}
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <h2 class="text-lg font-bold text-gray-800 mb-4">Crecimiento Espiritual</h2>
+                    <div class="dashboard-card rounded-xl shadow-sm p-6">
+                        <h2 class="text-lg font-bold text-theme-primary mb-4">Crecimiento Espiritual</h2>
                         <div class="space-y-4">
                             {% for estado in estados_discipulado %}
                             <div>
                                 <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-medium text-gray-700">{{ estado.estado_discipulado }}</span>
-                                    <span class="text-gray-500">{{ estado.total }} personas</span>
+                                    <span class="font-medium text-theme-primary">{{ estado.estado_discipulado }}</span>
+                                    <span class="text-theme-secondary">{{ estado.total }} personas</span>
                                 </div>
-                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                <div class="w-full bg-gray-100 rounded-full h-2.5"
+                                    style="background-color: var(--bg-secondary, #f3f4f6);">
                                     <div class="bg-blue-600 h-2.5 rounded-full"
                                         style="width: {{ (estado.total / stats.total_personas * 100) if stats.total_personas > 0 else 0 }}%">
                                     </div>
@@ -268,13 +350,14 @@
                     </div>
 
                     <!-- Reminders -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="p-6 border-b border-gray-100">
-                            <h2 class="text-lg font-bold text-gray-800">Próximos Eventos</h2>
+                    <div class="dashboard-card rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-6 border-b flex justify-between items-center"
+                            style="border-color: var(--border-color, #e5e7eb);">
+                            <h2 class="text-lg font-bold text-theme-primary">Próximos Eventos</h2>
                         </div>
 
                         {% if recordatorios_urgentes %}
-                        <div class="divide-y divide-gray-100">
+                        <div class="divide-y" style="border-color: var(--border-color, #e5e7eb);">
                             {% for recordatorio in recordatorios_urgentes[:5] %}
                             <div class="p-4 flex gap-3 items-start">
                                 <div class="mt-1">
@@ -287,11 +370,12 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-800">{{ recordatorio.nombre }}</p>
-                                    <p class="text-xs text-gray-500">{{ recordatorio.tablero_nombre }} &bull; {{
+                                    <p class="text-sm font-medium text-theme-primary">{{ recordatorio.nombre }}</p>
+                                    <p class="text-xs text-theme-secondary">{{ recordatorio.tablero_nombre }} &bull; {{
                                         recordatorio.lista_nombre }}</p>
                                     <span
-                                        class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                                        class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600"
+                                        style="background-color: var(--bg-secondary, #f3f4f6); color: var(--text-secondary);">
                                         {{ recordatorio.urgencia|title }}
                                     </span>
                                 </div>
@@ -312,6 +396,15 @@
         </div>
     </main>
 
+    <!-- Inicializar ThemeManager -->
+    <script type="module">
+        import { ThemeManager } from "{{ url_for('static', filename='js/modules/themes.js') }}";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeManager = new ThemeManager();
+            themeManager.init();
+        });
+    </script>
 </body>
 
 </html>
