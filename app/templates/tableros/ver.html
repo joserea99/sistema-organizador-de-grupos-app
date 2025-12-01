@@ -286,6 +286,19 @@
         </div>
         <div class="modal-body">
             <form id="formNuevaPersona">
+                <div class="form-group relative mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <label class="form-label font-bold text-primary">
+                        <i class="fas fa-search mr-2"></i>Buscar Persona Existente
+                    </label>
+                    <input type="text" id="buscarPersonaInput" class="form-input"
+                        placeholder="Escribe nombre o email para buscar..." autocomplete="off">
+                    <div id="resultadosBusqueda"
+                        class="absolute w-full bg-white border border-gray-200 rounded-lg shadow-xl mt-1 hidden z-50 max-h-60 overflow-y-auto left-0">
+                        <!-- Resultados aquí -->
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Selecciona una persona para autocompletar sus datos.</p>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Lista de Destino *</label>
                     <select name="lista_id" class="form-select" required>

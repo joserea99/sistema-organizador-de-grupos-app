@@ -427,6 +427,56 @@ def mover_tarjeta():
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
 
+@tableros_bp.route("/api/buscar_personas")
+def buscar_personas():
+    """Buscar personas existentes en la base de datos para autocompletar"""
+    if "user_id" not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+    
+    query = request.args.get('q', '').strip()
+    if not query or len(query) < 2:
+        return jsonify([])
+    
+    # Buscar en Tarjetas por nombre, apellido o email
+    from app.models import Tarjeta
+    from sqlalchemy import or_
+    
+    resultados = Tarjeta.query.filter(
+        or_(
+            Tarjeta.nombre.ilike(f"%{query}%"),
+            Tarjeta.apellido.ilike(f"%{query}%"),
+            Tarjeta.email.ilike(f"%{query}%")
+        )
+    ).limit(20).all()
+    
+    # Filtrar duplicados (por email o nombre completo)
+    unicos = {}
+    personas = []
+    
+    for p in resultados:
+        clave = p.email if p.email else p.nombre_completo
+        if clave not in unicos:
+            unicos[clave] = True
+            personas.append({
+                'id': p.id,
+                'nombre': p.nombre,
+                'apellido': p.apellido,
+                'email': p.email,
+                'telefono': p.telefono,
+                'direccion': p.direccion,
+                'fecha_nacimiento': p.fecha_nacimiento.isoformat() if p.fecha_nacimiento else None,
+                'estado_civil': p.estado_civil,
+                'ocupacion': p.ocupacion,
+                'nombre_conyuge': p.nombre_conyuge,
+                'numero_hijos': p.numero_hijos,
+                'bautizado': p.bautizado,
+                'es_lider': p.es_lider,
+                'ministerio': p.ministerio
+            })
+            
+    return jsonify(personas)
+
+
 @tableros_bp.route("/agregar_lista", methods=["POST"])
 def agregar_lista():
     """Agregar nueva lista a un tablero (AJAX)"""

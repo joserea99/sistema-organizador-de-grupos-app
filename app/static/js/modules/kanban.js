@@ -27,9 +27,108 @@ export class KanbanBoard {
         this.initCreateList();
         this.initCreatePerson(); // Inicializar creación de personas
         this.initListEditing(); // Inicializar edición de listas
-        this.initSearch(); // Inicializar funcionalidad de búsqueda
+        this.initPersonSearch();
         this.initCardInteractions();
         console.log('KanbanBoard initialized');
+    }
+
+    initPersonSearch() {
+        const input = document.getElementById('buscarPersonaInput');
+        const resultsDiv = document.getElementById('resultadosBusqueda');
+        const form = document.getElementById('formNuevaPersona');
+
+        if (!input || !resultsDiv || !form) return;
+
+        let debounceTimer;
+
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+
+            clearTimeout(debounceTimer);
+
+            if (query.length < 2) {
+                resultsDiv.classList.add('hidden');
+                resultsDiv.innerHTML = '';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/tableros/api/buscar_personas?q=${encodeURIComponent(query)}`);
+                    const personas = await response.json();
+
+                    resultsDiv.innerHTML = '';
+
+                    if (personas.length > 0) {
+                        personas.forEach(p => {
+                            const div = document.createElement('div');
+                            div.className = 'p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0';
+                            div.innerHTML = `
+                                <div class="font-bold text-sm">${p.nombre} ${p.apellido || ''}</div>
+                                <div class="text-xs text-gray-500">${p.email || 'Sin email'} • ${p.telefono || 'Sin teléfono'}</div>
+                            `;
+                            div.addEventListener('click', () => {
+                                // Rellenar formulario
+                                form.querySelector('[name="nombre"]').value = p.nombre || '';
+                                form.querySelector('[name="apellido"]').value = p.apellido || '';
+                                form.querySelector('[name="email"]').value = p.email || '';
+                                form.querySelector('[name="telefono"]').value = p.telefono || '';
+                                form.querySelector('[name="direccion"]').value = p.direccion || '';
+
+                                if (p.fecha_nacimiento) {
+                                    form.querySelector('[name="fecha_nacimiento"]').value = p.fecha_nacimiento;
+                                }
+
+                                // Estado civil y cónyuge
+                                const estadoSelect = form.querySelector('[name="estado_civil"]');
+                                if (estadoSelect) {
+                                    estadoSelect.value = p.estado_civil || 'Soltero';
+                                    // Disparar evento change para mostrar campos de cónyuge si es necesario
+                                    const event = new Event('change');
+                                    estadoSelect.dispatchEvent(event);
+
+                                    // Llamar manualmente a toggleSpouseFields si existe en el scope global
+                                    if (typeof window.toggleSpouseFields === 'function') {
+                                        window.toggleSpouseFields(p.estado_civil);
+                                    }
+                                }
+
+                                if (p.nombre_conyuge) form.querySelector('[name="nombre_conyuge"]').value = p.nombre_conyuge;
+                                if (p.numero_hijos) form.querySelector('[name="numero_hijos"]').value = p.numero_hijos;
+
+                                // Checkboxes
+                                if (p.bautizado) form.querySelector('[name="bautizado"]').checked = true;
+                                if (p.es_lider) form.querySelector('[name="es_lider"]').checked = true;
+                                if (p.ministerio) form.querySelector('[name="ministerio"]').value = p.ministerio;
+
+                                // Ocultar resultados y limpiar buscador
+                                resultsDiv.classList.add('hidden');
+                                input.value = '';
+
+                                // Visual feedback
+                                input.placeholder = `Datos de ${p.nombre} cargados`;
+                                input.classList.add('bg-green-50');
+                                setTimeout(() => input.classList.remove('bg-green-50'), 1000);
+                            });
+                            resultsDiv.appendChild(div);
+                        });
+                        resultsDiv.classList.remove('hidden');
+                    } else {
+                        resultsDiv.innerHTML = '<div class="p-3 text-sm text-gray-500">No se encontraron personas</div>';
+                        resultsDiv.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Error buscando personas:', error);
+                }
+            }, 300);
+        });
+
+        // Cerrar resultados al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !resultsDiv.contains(e.target)) {
+                resultsDiv.classList.add('hidden');
+            }
+        });
     }
 
     initCreateList() {
