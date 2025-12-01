@@ -60,19 +60,17 @@ export class ThemeManager {
             themeName = 'clasico';
         }
 
-        // Remover tema anterior
-        const existingThemeLink = document.getElementById('theme-stylesheet');
-        if (existingThemeLink) {
-            existingThemeLink.remove();
+        // Actualizar hoja de estilos
+        const themeLink = document.getElementById('theme-style');
+        if (themeLink) {
+            themeLink.href = `/static/css/themes/${this.themes[themeName].file}`;
+        } else {
+            const linkElement = document.createElement('link');
+            linkElement.id = 'theme-style';
+            linkElement.rel = 'stylesheet';
+            linkElement.href = `/static/css/themes/${this.themes[themeName].file}`;
+            document.head.appendChild(linkElement);
         }
-
-        // Agregar nuevo tema
-        const linkElement = document.createElement('link');
-        linkElement.id = 'theme-stylesheet';
-        linkElement.rel = 'stylesheet';
-        linkElement.href = `/static/css/themes/${this.themes[themeName].file}`;
-
-        document.head.appendChild(linkElement);
 
         // Guardar preferencia
         this.currentTheme = themeName;
