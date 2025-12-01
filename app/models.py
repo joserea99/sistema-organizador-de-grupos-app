@@ -281,6 +281,8 @@ class UserStorage:
     def load_from_disk(self):
         pass
 
+from sqlalchemy import extract, func
+
 class TableroStorage:
     def __init__(self):
         self._runtime_data = {} # Cache for transient data (undo_stack, history) keyed by tablero_id
@@ -312,11 +314,31 @@ class TableroStorage:
         return tablero
         
     def get_stats(self):
+        now = datetime.now()
+        nuevos_mes = Tarjeta.query.filter(
+            extract('year', Tarjeta.fecha_creacion) == now.year,
+            extract('month', Tarjeta.fecha_creacion) == now.month
+        ).count()
+        
         return {
             "total_tableros": Tablero.query.count(),
             "total_listas": Lista.query.count(),
-            "total_personas": Tarjeta.query.count()
+            "total_personas": Tarjeta.query.count(),
+            "nuevos_mes": nuevos_mes,
+            "recordatorios_pendientes": 0 # Placeholder, will be calculated in route or separate method
         }
+
+    def get_recent_tableros(self, limit=4):
+        return Tablero.query.order_by(Tablero.fecha_creacion.desc()).limit(limit).all()
+
+    def get_upcoming_birthdays(self, limit=5):
+        # Simple implementation: get birthdays in current month
+        # A more complex implementation would handle year wrapping
+        now = datetime.now()
+        return Tarjeta.query.filter(
+            extract('month', Tarjeta.fecha_nacimiento) == now.month,
+            extract('day', Tarjeta.fecha_nacimiento) >= now.day
+        ).order_by(extract('day', Tarjeta.fecha_nacimiento)).limit(limit).all()
         
     def save_to_disk(self):
         db.session.commit()
