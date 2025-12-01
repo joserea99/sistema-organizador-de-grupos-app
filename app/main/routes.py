@@ -8,7 +8,7 @@ main_bp = Blueprint("main", __name__)
 def index():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
-    return redirect(url_for("tableros.lista"))
+    return redirect(url_for("main.dashboard"))
 
 
 @main_bp.route("/dashboard")

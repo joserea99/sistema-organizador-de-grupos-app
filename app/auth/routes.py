@@ -32,7 +32,7 @@ def login():
             session.permanent = remember
             
             flash(f"¡Bienvenido de nuevo, {user.nombre_completo or user.username}!", "success")
-            return redirect(url_for("main.index"))
+            return redirect(url_for("main.dashboard"))
         else:
             flash("Usuario o contraseña incorrectos.", "error")
 
