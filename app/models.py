@@ -3,6 +3,7 @@ from datetime import datetime
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy import extract, func
 
 db = SQLAlchemy()
 
@@ -281,7 +282,7 @@ class UserStorage:
     def load_from_disk(self):
         pass
 
-from sqlalchemy import extract, func
+
 
 class TableroStorage:
     def __init__(self):
@@ -336,6 +337,7 @@ class TableroStorage:
         # A more complex implementation would handle year wrapping
         now = datetime.now()
         return Tarjeta.query.filter(
+            Tarjeta.fecha_nacimiento != None,
             extract('month', Tarjeta.fecha_nacimiento) == now.month,
             extract('day', Tarjeta.fecha_nacimiento) >= now.day
         ).order_by(extract('day', Tarjeta.fecha_nacimiento)).limit(limit).all()
