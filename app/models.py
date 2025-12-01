@@ -59,6 +59,13 @@ class Tablero(db.Model):
     def total_personas(self):
         return sum(len(l.tarjetas) for l in self.listas)
 
+    @property
+    def color(self):
+        # Generar un color consistente basado en el nombre
+        colors = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"]
+        if not self.nombre: return colors[0]
+        return colors[sum(ord(c) for c in self.nombre) % len(colors)]
+
     def to_dict(self):
         total_tarjetas = sum(len(l.tarjetas) for l in self.listas)
         return {
