@@ -247,7 +247,7 @@
                     {% if tableros_activos %}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {% for tablero in tableros_activos %}
-                        <div onclick="window.location.href='{{ url_for('tableros.ver_tablero', id=tablero.id) }}'"
+                        <div onclick="window.location.href='{{ url_for('tableros.ver', tablero_id=tablero.id) }}'"
                             class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl border border-border-light dark:border-border-dark shadow-sm cursor-pointer hover:shadow-md transition-shadow group">
                             <!-- Placeholder for image, using color block -->
                             <div class="w-full h-24 rounded-lg mb-3 flex items-center justify-center text-4xl text-white shadow-inner"
