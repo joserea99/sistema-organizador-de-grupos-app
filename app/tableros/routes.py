@@ -197,7 +197,7 @@ def procesar():
     )
     
     # Agregar listas iniciales si se especificaron
-    listas_nombres = request.form.getlist("listas[]")
+    listas_nombres = request.form.getlist("nombres_listas[]")
     for lista_nombre in listas_nombres:
         if lista_nombre.strip():
             tablero.agregar_lista(lista_nombre.strip())
