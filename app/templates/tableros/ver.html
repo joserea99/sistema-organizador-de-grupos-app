@@ -63,9 +63,23 @@
                 <i class="fas fa-history mr-2"></i>Historial
             </button>
 
-            <button class="btn btn-secondary" onclick="toggleFocusMode()" id="btnFocusMode" title="Ver solo listas">
-                <i class="fas fa-expand mr-2"></i>Solo Listas
-            </button>
+            <div class="flex bg-gray-200 rounded-lg p-1 gap-1">
+                <button
+                    class="px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-gray-800"
+                    onclick="setViewMode('both')" id="viewBtnBoth" title="Ver Ambos">
+                    <i class="fas fa-columns"></i>
+                </button>
+                <button
+                    class="px-3 py-1 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-300"
+                    onclick="setViewMode('lists')" id="viewBtnLists" title="Solo Listas">
+                    <i class="fas fa-list"></i>
+                </button>
+                <button
+                    class="px-3 py-1 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-300"
+                    onclick="setViewMode('map')" id="viewBtnMap" title="Solo Mapa">
+                    <i class="fas fa-map-marked-alt"></i>
+                </button>
+            </div>
 
             <button class="btn btn-secondary" data-toggle="modal" data-target="#modalNuevaLista">
                 <i class="fas fa-list mr-2"></i>Nueva Lista
@@ -936,39 +950,76 @@
             }
         );
     }
-    function toggleFocusMode() {
+    function setViewMode(mode) {
         const board = document.querySelector('.kanban-board');
-        const btn = document.getElementById('btnFocusMode');
-        const icon = btn.querySelector('i');
+        const btnBoth = document.getElementById('viewBtnBoth');
+        const btnLists = document.getElementById('viewBtnLists');
+        const btnMap = document.getElementById('viewBtnMap');
 
-        board.classList.toggle('focus-mode');
+        // Reset classes
+        board.classList.remove('view-lists', 'view-map');
 
-        if (board.classList.contains('focus-mode')) {
-            icon.classList.remove('fa-expand');
-            icon.classList.add('fa-compress');
-            btn.innerHTML = '<i class="fas fa-compress mr-2"></i>Ver Mapa';
-            btn.classList.remove('btn-secondary');
-            btn.classList.add('btn-primary');
+        // Reset buttons
+        [btnBoth, btnLists, btnMap].forEach(btn => {
+            btn.className = 'px-3 py-1 rounded-md text-sm font-medium transition-colors text-gray-600 hover:bg-gray-300';
+        });
+
+        // Set active mode
+        if (mode === 'lists') {
+            board.classList.add('view-lists');
+            btnLists.className = 'px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-gray-800';
+        } else if (mode === 'map') {
+            board.classList.add('view-map');
+            btnMap.className = 'px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-gray-800';
+            // Trigger map resize
+            setTimeout(() => {
+                const mapInstance = window.mapManager?.map;
+                if (mapInstance) google.maps.event.trigger(mapInstance, 'resize');
+            }, 100);
         } else {
-            icon.classList.remove('fa-compress');
-            icon.classList.add('fa-expand');
-            btn.innerHTML = '<i class="fas fa-expand mr-2"></i>Solo Listas';
-            btn.classList.remove('btn-primary');
-            btn.classList.add('btn-secondary');
+            // Both
+            btnBoth.className = 'px-3 py-1 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-gray-800';
+            // Trigger map resize
+            setTimeout(() => {
+                const mapInstance = window.mapManager?.map;
+                if (mapInstance) google.maps.event.trigger(mapInstance, 'resize');
+            }, 100);
         }
     }
 </script>
 
 <style>
-    /* Estilos para Modo Enfoque (Solo Listas) */
-    .kanban-board.focus-mode .maps-section {
+    /* Estilos para Modos de Vista */
+
+    /* MODO SOLO LISTAS */
+    .kanban-board.view-lists .maps-section {
         display: none !important;
     }
 
-    .kanban-board.focus-mode .kanban-lists-container {
+    .kanban-board.view-lists .kanban-lists-container {
         height: calc(100vh - 180px) !important;
-        /* Ajustar según altura del header */
         max-height: none !important;
+    }
+
+    /* MODO SOLO MAPA */
+    .kanban-board.view-map .kanban-lists-container,
+    .kanban-board.view-map .controls-section {
+        display: none !important;
+    }
+
+    .kanban-board.view-map .maps-section {
+        margin-top: 0 !important;
+        border-top: none !important;
+        padding-top: 0 !important;
+        height: calc(100vh - 140px) !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .kanban-board.view-map .map-container {
+        flex: 1;
+        height: 100% !important;
+        min-height: 0 !important;
     }
 </style>
 
