@@ -198,9 +198,15 @@ def procesar():
     
     # Agregar listas iniciales si se especificaron
     listas_nombres = request.form.getlist("nombres_listas[]")
-    for lista_nombre in listas_nombres:
-        if lista_nombre.strip():
-            tablero.agregar_lista(lista_nombre.strip())
+    print(f"DEBUG: Listas recibidas del formulario: {listas_nombres}")
+    
+    if listas_nombres:
+        for lista_nombre in listas_nombres:
+            if lista_nombre.strip():
+                tablero.agregar_lista(lista_nombre.strip())
+        
+        # Guardar cambios en la base de datos (commit de las listas)
+        storage.save_to_disk()
     
     flash(f"¡Tablero '{nombre}' creado exitosamente!", "success")
     return redirect(url_for("tableros.ver", tablero_id=tablero.id))
