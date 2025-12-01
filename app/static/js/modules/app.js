@@ -49,7 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cargar módulo Mapas dinámicamente
         import('./maps.js').then(module => {
             console.log('Maps module loaded successfully');
-            window.app.mapManager = new module.MapManager();
+            console.log('Maps module loaded successfully');
+            window.mapManager = new module.MapManager();
+            window.app.mapManager = window.mapManager; // Keep reference in app just in case
         }).catch(err => {
             console.error('Error loading Maps module:', err);
         });
