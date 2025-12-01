@@ -81,6 +81,13 @@ export class ThemeManager {
         // Actualizar atributo en body para CSS específico
         document.body.setAttribute('data-theme', themeName);
 
+        // Toggle 'dark' class for Tailwind
+        if (['oscuro', 'moderno'].includes(themeName)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
         // Disparar evento para notificar el cambio
         document.dispatchEvent(new CustomEvent('themeChanged', {
             detail: { theme: themeName }
