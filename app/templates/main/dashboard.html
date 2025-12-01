@@ -1,422 +1,317 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <title>📊 Dashboard - Organizador de Grupos Pequeños</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Organizador de Grupos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background: #f5f5f5;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
+
+        .sidebar-link.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-right: 3px solid #2563eb;
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .header h1 {
-            font-size: 36px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 15px;
-        }
-        
-        .header p {
-            font-size: 18px;
-            color: #6b7280;
-            margin-bottom: 30px;
-        }
-        
-        .nav-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        
-        .nav-link {
-            padding: 12px 24px;
-            background: white;
-            border-radius: 12px;
-            text-decoration: none;
-            color: #1976d2;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover {
+
+        .card-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-        }
-        
-        .nav-link.active {
-            background: #1976d2;
-            color: white;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--accent-color, #1976d2);
-        }
-        
-        .stat-number {
-            font-size: 48px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 8px;
-        }
-        
-        .stat-label {
-            font-size: 16px;
-            color: #6b7280;
-            font-weight: 600;
-        }
-        
-        .stat-icon {
-            font-size: 24px;
-            margin-bottom: 16px;
-        }
-        
-        .section {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-        
-        .section h3 {
-            margin: 0 0 24px 0;
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-        
-        .recordatorio-item {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border-left: 4px solid var(--urgencia-color);
-        }
-        
-        .recordatorio-item.vencido {
-            --urgencia-color: #dc2626;
-            background: #fef2f2;
-        }
-        
-        .recordatorio-item.hoy {
-            --urgencia-color: #f59e0b;
-            background: #fffbeb;
-        }
-        
-        .recordatorio-item.mañana {
-            --urgencia-color: #10b981;
-            background: #f0fdf4;
-        }
-        
-        .recordatorio-info {
-            flex: 1;
-        }
-        
-        .recordatorio-nombre {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-        }
-        
-        .recordatorio-detalle {
-            font-size: 14px;
-            color: #6b7280;
-        }
-        
-        .recordatorio-urgencia {
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            color: white;
-            background: var(--urgencia-color);
-        }
-        
-        .tablero-activo {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin-bottom: 12px;
-        }
-        
-        .tablero-icono {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: white;
-            margin-right: 16px;
-        }
-        
-        .tablero-info {
-            flex: 1;
-        }
-        
-        .tablero-nombre {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-        }
-        
-        .tablero-stats {
-            font-size: 14px;
-            color: #6b7280;
-        }
-        
-        .estado-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .estado-item:last-child {
-            border-bottom: none;
-        }
-        
-        .estado-nombre {
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-        
-        .estado-count {
-            background: #1976d2;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6b7280;
-        }
-        
-        .btn-primary {
-            background: #1976d2;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background: #1565c0;
-        }
-        
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .nav-links {
-                flex-wrap: wrap;
-                gap: 12px;
-            }
-            
-            .nav-link {
-                padding: 8px 16px;
-                font-size: 14px;
-            }
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Dashboard</h1>
-            <p>Resumen completo de tu ministerio</p>
+
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col">
+        <div class="p-6 flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                <i class="fas fa-church"></i>
+            </div>
+            <span class="text-xl font-bold text-gray-800">Mi Ministerio</span>
         </div>
-        
-        <div class="nav-links">
-            <a href="{{ url_for('main.dashboard') }}" class="nav-link active">📊 Dashboard</a>
-            <a href="{{ url_for('main.recordatorios') }}" class="nav-link">
-                🔔 Recordatorios 
+
+        <nav class="flex-1 px-4 py-4 space-y-1">
+            <a href="{{ url_for('main.dashboard') }}"
+                class="sidebar-link active flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:bg-gray-50 transition-all">
+                <i class="fas fa-chart-pie w-5"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="{{ url_for('tableros.lista') }}"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:bg-gray-50 transition-all">
+                <i class="fas fa-columns w-5"></i>
+                <span class="font-medium">Tableros</span>
+            </a>
+            <a href="{{ url_for('main.recordatorios') }}"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:bg-gray-50 transition-all">
+                <i class="fas fa-bell w-5"></i>
+                <span class="font-medium">Recordatorios</span>
                 {% if stats.recordatorios_pendientes > 0 %}
-                    <span style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px;">
-                        {{ stats.recordatorios_pendientes }}
-                    </span>
+                <span class="ml-auto bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">{{
+                    stats.recordatorios_pendientes }}</span>
                 {% endif %}
             </a>
-            <a href="{{ url_for('tableros.lista') }}" class="nav-link">🗂️ Tableros</a>
-        </div>
-        
-        <!-- Estadísticas Principales -->
-        <div class="stats-grid">
-            <div class="stat-card" style="--accent-color: #1976d2;">
-                <div class="stat-icon">👥</div>
-                <div class="stat-number">{{ stats.total_personas }}</div>
-                <div class="stat-label">Total Personas</div>
-            </div>
-            
-            <div class="stat-card" style="--accent-color: #10b981;">
-                <div class="stat-icon">📋</div>
-                <div class="stat-number">{{ stats.total_tableros }}</div>
-                <div class="stat-label">Tableros Activos</div>
-            </div>
-            
-            <div class="stat-card" style="--accent-color: #f59e0b;">
-                <div class="stat-icon">✨</div>
-                <div class="stat-number">{{ stats.nuevos_mes }}</div>
-                <div class="stat-label">Nuevos este Mes</div>
-            </div>
-            
-            <div class="stat-card" style="--accent-color: #dc2626;">
-                <div class="stat-icon">🔔</div>
-                <div class="stat-number">{{ stats.recordatorios_pendientes }}</div>
-                <div class="stat-label">Recordatorios Pendientes</div>
-            </div>
-            
-            <div class="stat-card" style="--accent-color: #8b5cf6;">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-number">{{ stats.tableros_favoritos }}</div>
-                <div class="stat-label">Tableros Favoritos</div>
-            </div>
-        </div>
-        
-        <!-- Recordatorios Urgentes -->
-        {% if recordatorios_urgentes %}
-        <div class="section">
-            <h3>🔔 Recordatorios Urgentes</h3>
-            {% for recordatorio in recordatorios_urgentes[:5] %}
-            <div class="recordatorio-item {{ recordatorio.urgencia }}">
-                <div class="recordatorio-info">
-                    <div class="recordatorio-nombre">{{ recordatorio.nombre }}</div>
-                    <div class="recordatorio-detalle">
-                        {{ recordatorio.tablero_nombre }} → {{ recordatorio.lista_nombre }}
-                    </div>
+            <!-- Placeholder links for future features -->
+            <a href="#"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg hover:bg-gray-50 transition-all cursor-not-allowed">
+                <i class="fas fa-users w-5"></i>
+                <span class="font-medium">Personas (Pronto)</span>
+            </a>
+            <a href="#"
+                class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-400 rounded-lg hover:bg-gray-50 transition-all cursor-not-allowed">
+                <i class="fas fa-cog w-5"></i>
+                <span class="font-medium">Configuración</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <i class="fas fa-user"></i>
                 </div>
-                <div class="recordatorio-urgencia">
-                    {% if recordatorio.urgencia == 'vencido' %}
-                        Vencido
-                    {% elif recordatorio.urgencia == 'hoy' %}
-                        Hoy
-                    {% elif recordatorio.urgencia == 'mañana' %}
-                        Mañana
-                    {% else %}
-                        Próximo
+                <div>
+                    <p class="text-sm font-medium text-gray-700">Usuario</p>
+                    <p class="text-xs text-gray-500">Líder de Ministerio</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+        <!-- Mobile Header -->
+        <header
+            class="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-10">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                    <i class="fas fa-church"></i>
+                </div>
+                <span class="font-bold text-gray-800">Mi Ministerio</span>
+            </div>
+            <button class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <div class="p-6 md:p-10 max-w-7xl mx-auto">
+            <!-- Welcome Section -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-800">¡Hola, Bendiciones! 👋</h1>
+                    <p class="text-gray-500 mt-1">Aquí tienes un resumen de la actividad de tu ministerio.</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="{{ url_for('tableros.crear') }}"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Nuevo Tablero
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Stat Card 1 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-blue-50 rounded-lg text-blue-600">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                        <!-- <span class="text-green-500 text-xs font-bold flex items-center bg-green-50 px-2 py-1 rounded-full">
+                            <i class="fas fa-arrow-up mr-1"></i> +12%
+                        </span> -->
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Total Personas</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.total_personas }}</p>
+                </div>
+
+                <!-- Stat Card 2 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-purple-50 rounded-lg text-purple-600">
+                            <i class="fas fa-columns text-xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Tableros Activos</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.total_tableros }}</p>
+                </div>
+
+                <!-- Stat Card 3 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-green-50 rounded-lg text-green-600">
+                            <i class="fas fa-user-plus text-xl"></i>
+                        </div>
+                        <span
+                            class="text-green-500 text-xs font-bold flex items-center bg-green-50 px-2 py-1 rounded-full">
+                            Este Mes
+                        </span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Nuevos Miembros</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.nuevos_mes }}</p>
+                </div>
+
+                <!-- Stat Card 4 -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 card-hover transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-orange-50 rounded-lg text-orange-600">
+                            <i class="fas fa-bell text-xl"></i>
+                        </div>
+                        {% if stats.recordatorios_pendientes > 0 %}
+                        <span
+                            class="text-orange-500 text-xs font-bold flex items-center bg-orange-50 px-2 py-1 rounded-full">
+                            Acción Requerida
+                        </span>
+                        {% endif %}
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Recordatorios</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1">{{ stats.recordatorios_pendientes }}</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column: Recent Boards & Activity -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- Tableros Activos -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <h2 class="text-lg font-bold text-gray-800">Tableros Recientes</h2>
+                            <a href="{{ url_for('tableros.lista') }}"
+                                class="text-blue-600 text-sm font-medium hover:text-blue-700">Ver todos</a>
+                        </div>
+
+                        {% if tableros_activos %}
+                        <div class="divide-y divide-gray-100">
+                            {% for tablero in tableros_activos %}
+                            <div class="p-4 hover:bg-gray-50 transition-colors flex items-center gap-4 group cursor-pointer"
+                                onclick="window.location.href='{{ url_for('tableros.ver_tablero', id=tablero.id) }}'">
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center text-xl text-white shadow-sm group-hover:scale-105 transition-transform"
+                                    style="background-color: {{ tablero.color }};">
+                                    {{ tablero.icono }}
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                        {{ tablero.nombre }}</h3>
+                                    <p class="text-sm text-gray-500">{{ tablero.total_personas }} personas &bull; {{
+                                        tablero.nuevos_mes }} nuevos</p>
+                                </div>
+                                <div class="text-gray-400">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="p-8 text-center text-gray-500">
+                            <div class="mb-3 text-4xl">📭</div>
+                            <p>No hay tableros activos aún.</p>
+                            <a href="{{ url_for('tableros.crear') }}"
+                                class="text-blue-600 font-medium mt-2 inline-block">Crear uno ahora</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Estados de Discipulado (Chart Placeholder) -->
+                    {% if estados_discipulado %}
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">Crecimiento Espiritual</h2>
+                        <div class="space-y-4">
+                            {% for estado in estados_discipulado %}
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="font-medium text-gray-700">{{ estado.estado_discipulado }}</span>
+                                    <span class="text-gray-500">{{ estado.total }} personas</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                    <div class="bg-blue-600 h-2.5 rounded-full"
+                                        style="width: {{ (estado.total / stats.total_personas * 100) if stats.total_personas > 0 else 0 }}%">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                     {% endif %}
                 </div>
-            </div>
-            {% endfor %}
-            
-            {% if recordatorios_urgentes|length > 5 %}
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="{{ url_for('main.recordatorios') }}" class="btn-primary">
-                    Ver todos los recordatorios ({{ recordatorios_urgentes|length }})
-                </a>
-            </div>
-            {% endif %}
-        </div>
-        {% endif %}
-        
-        <!-- Tableros Más Activos -->
-        {% if tableros_activos %}
-        <div class="section">
-            <h3>🏆 Tableros Más Activos</h3>
-            {% for tablero in tableros_activos %}
-            <div class="tablero-activo">
-                <div class="tablero-icono" style="background: {{ tablero.color }};">
-                    {{ tablero.icono }}
-                </div>
-                <div class="tablero-info">
-                    <div class="tablero-nombre">{{ tablero.nombre }}</div>
-                    <div class="tablero-stats">
-                        {{ tablero.total_personas }} personas
-                        {% if tablero.nuevos_mes > 0 %}
-                            • {{ tablero.nuevos_mes }} nuevos este mes
+
+                <!-- Right Column: Reminders & Quick Actions -->
+                <div class="space-y-8">
+                    <!-- Quick Actions -->
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg p-6 text-white">
+                        <h2 class="text-lg font-bold mb-4">Acciones Rápidas</h2>
+                        <div class="space-y-3">
+                            <a href="{{ url_for('tableros.crear') }}"
+                                class="flex items-center gap-3 bg-white/10 hover:bg-white/20 p-3 rounded-lg transition-colors backdrop-blur-sm">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <span class="font-medium">Crear Nuevo Tablero</span>
+                            </a>
+                            <!-- Add Person Modal Trigger (needs JS implementation or link to a board) -->
+                            <button onclick="alert('Por favor ve a un tablero específico para agregar personas.')"
+                                class="w-full flex items-center gap-3 bg-white/10 hover:bg-white/20 p-3 rounded-lg transition-colors backdrop-blur-sm text-left">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <span class="font-medium">Agregar Persona</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reminders -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-6 border-b border-gray-100">
+                            <h2 class="text-lg font-bold text-gray-800">Próximos Eventos</h2>
+                        </div>
+
+                        {% if recordatorios_urgentes %}
+                        <div class="divide-y divide-gray-100">
+                            {% for recordatorio in recordatorios_urgentes[:5] %}
+                            <div class="p-4 flex gap-3 items-start">
+                                <div class="mt-1">
+                                    {% if recordatorio.urgencia == 'vencido' %}
+                                    <i class="fas fa-exclamation-circle text-red-500"></i>
+                                    {% elif recordatorio.urgencia == 'hoy' %}
+                                    <i class="fas fa-clock text-orange-500"></i>
+                                    {% else %}
+                                    <i class="fas fa-calendar-alt text-blue-500"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-800">{{ recordatorio.nombre }}</p>
+                                    <p class="text-xs text-gray-500">{{ recordatorio.tablero_nombre }} &bull; {{
+                                        recordatorio.lista_nombre }}</p>
+                                    <span
+                                        class="inline-block mt-1 text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+                                        {{ recordatorio.urgencia|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <a href="{{ url_for('main.recordatorios') }}"
+                                class="block p-3 text-center text-sm text-blue-600 font-medium hover:bg-gray-50 transition-colors">Ver
+                                todos</a>
+                        </div>
+                        {% else %}
+                        <div class="p-6 text-center text-gray-400 text-sm">
+                            <p>No hay recordatorios pendientes. ¡Todo al día! 🎉</p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
-        
-        <!-- Estados de Discipulado -->
-        {% if estados_discipulado %}
-        <div class="section">
-            <h3>🌱 Estados de Discipulado</h3>
-            {% for estado in estados_discipulado %}
-            <div class="estado-item">
-                <div class="estado-nombre">
-                    {% if estado.estado_discipulado == 'Nuevo' %}
-                        🌱 Nuevo
-                    {% elif estado.estado_discipulado == 'Creciendo' %}
-                        🌿 Creciendo
-                    {% elif estado.estado_discipulado == 'Maduro' %}
-                        🌳 Maduro
-                    {% elif estado.estado_discipulado == 'Líder' %}
-                        👑 Líder
-                    {% else %}
-                        📝 {{ estado.estado_discipulado }}
-                    {% endif %}
-                </div>
-                <div class="estado-count">{{ estado.total }}</div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        <!-- Si no hay datos -->
-        {% if stats.total_personas == 0 %}
-        <div class="empty-state">
-            <h3>👋 ¡Bienvenido al Dashboard!</h3>
-            <p>Aún no tienes personas registradas. Crea tu primer tablero y comienza a organizar tu ministerio.</p>
-            <a href="{{ url_for('tableros.crear') }}" class="btn-primary">
-                ➕ Crear Mi Primer Tablero
-            </a>
-        </div>
-        {% endif %}
-    </div>
+    </main>
+
 </body>
+
 </html>
