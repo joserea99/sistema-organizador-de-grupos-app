@@ -659,6 +659,25 @@ export class MapManager {
         statusDiv.className = `mt-4 p-3 rounded text-sm ${type === 'error' ? 'bg-red-100 text-red-700' : type === 'success' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`;
         statusDiv.textContent = message;
     }
+    highlightMarker(cardId) {
+        const marker = this.markers.find(m => m.personData.id === cardId);
+        if (marker) {
+            // Centrar mapa en el marcador
+            this.map.panTo(marker.getPosition());
+            this.map.setZoom(15); // Acercar un poco
+
+            // Animación de rebote
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(() => {
+                marker.setAnimation(null);
+            }, 1500);
+
+            // Abrir InfoWindow
+            google.maps.event.trigger(marker, 'click');
+        } else {
+            console.warn('Marker not found for card:', cardId);
+        }
+    }
 }
 
 // Función global para scroll
@@ -687,5 +706,12 @@ window.scrollToCard = function (listId, cardId) {
         }, 1500);
     } else {
         console.warn('List or card not found:', listId, cardId);
+    }
+};
+
+// Expose highlight function globally
+window.highlightMapMarker = function (cardId) {
+    if (window.mapManager) {
+        window.mapManager.highlightMarker(cardId);
     }
 };

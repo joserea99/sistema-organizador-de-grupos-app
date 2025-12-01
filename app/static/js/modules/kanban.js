@@ -390,6 +390,13 @@ export class KanbanBoard {
         console.log('Toggle card class. Current classes:', card.className);
         card.classList.toggle('expanded');
         console.log('New classes:', card.className);
+
+        // Si se expande, resaltar en el mapa
+        if (card.classList.contains('expanded')) {
+            if (typeof window.highlightMapMarker === 'function') {
+                window.highlightMapMarker(card.dataset.id);
+            }
+        }
     }
 
     initListEditing() {
