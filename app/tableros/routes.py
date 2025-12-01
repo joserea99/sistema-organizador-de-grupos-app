@@ -398,93 +398,25 @@ def mover_tarjeta():
             return jsonify({'error': 'No se enviaron datos'}), 400
         
         tarjeta_id = data.get('tarjeta_id')
-        lista_origen_id = data.get('lista_origen_id')
         lista_destino_id = data.get('lista_destino_id')
-        nueva_posicion = data.get('nueva_posicion', 0)
         
-        if not all([tarjeta_id, lista_origen_id, lista_destino_id]):
+        if not all([tarjeta_id, lista_destino_id]):
             return jsonify({'error': 'Datos incompletos'}), 400
-        
-        # Buscar tarjeta en lista origen
-        tarjeta_encontrada = None
-        lista_origen = None
-        lista_destino = None
-        
-        for tablero in storage.get_all_tableros():
-            # Buscar lista origen
-            if not lista_origen:
-                lista_origen = tablero.get_lista(lista_origen_id)
-            # Buscar lista destino
-            if not lista_destino:
-                lista_destino = tablero.get_lista(lista_destino_id)
             
-            # Buscar tarjeta
-            if lista_origen and not tarjeta_encontrada:
-                tarjeta_encontrada = lista_origen.get_tarjeta(tarjeta_id)
-
-            if lista_origen and lista_destino and tarjeta_encontrada:
-                tablero_encontrado = tablero
-                break
+        # Buscar tarjeta y lista destino usando SQLAlchemy
+        from app.models import Tarjeta, Lista, db
         
-        if not all([tarjeta_encontrada, lista_origen, lista_destino]):
-            return jsonify({'error': 'Elementos no encontrados'}), 404
+        tarjeta = Tarjeta.query.get(tarjeta_id)
+        lista_destino = Lista.query.get(lista_destino_id)
         
-        # Mover tarjeta
-        # Guardar posición original para Undo
-        posicion_original = -1
-        try:
-            posicion_original = lista_origen.tarjetas.index(tarjeta_encontrada)
-        except ValueError:
-            pass
-
-        if lista_origen_id != lista_destino_id:
-            # Mover entre listas
-            lista_origen.eliminar_tarjeta(tarjeta_id)
-            # Agregar a lista destino
-            lista_destino.tarjetas.insert(nueva_posicion, tarjeta_encontrada)
+        if not tarjeta or not lista_destino:
+            return jsonify({'error': 'Tarjeta o lista no encontrada'}), 404
             
-            # Registrar Undo
-            tablero_encontrado.registrar_undo(
-                'mover_tarjeta',
-                {
-                    'tarjeta_id': tarjeta_id,
-                    'lista_origen_id': lista_destino_id, # Invertido
-                    'lista_destino_id': lista_origen_id, # Invertido
-                    'nueva_posicion': posicion_original
-                }
-            )
-        else:
-            # Reordenar dentro de la misma lista
-            lista_origen.tarjetas.remove(tarjeta_encontrada)
-            lista_origen.tarjetas.insert(nueva_posicion, tarjeta_encontrada)
-            
-            # Registrar Undo
-            tablero_encontrado.registrar_undo(
-                'mover_tarjeta',
-                {
-                    'tarjeta_id': tarjeta_id,
-                    'lista_origen_id': lista_origen_id,
-                    'lista_destino_id': lista_origen_id,
-                    'nueva_posicion': posicion_original
-                }
-            )
-            
-            # Registrar en historial (reordenamiento)
-            tablero_encontrado.registrar_accion(
-                session.get('username', 'Usuario'),
-                'Reordenar Tarjeta',
-                f'Se reordenó la tarjeta "{tarjeta_encontrada.nombre_completo}" en la lista "{lista_origen.nombre}"'
-            )
+        # Actualizar lista_id
+        tarjeta.lista_id = lista_destino.id
         
-        # Registrar en historial (movimiento entre listas)
-        if lista_origen_id != lista_destino_id:
-             tablero_encontrado.registrar_accion(
-                session.get('username', 'Usuario'),
-                'Mover Tarjeta',
-                f'Se movió a "{tarjeta_encontrada.nombre_completo}" de "{lista_origen.nombre}" a "{lista_destino.nombre}"'
-            )
-
-        storage.save_to_disk()
+        # Guardar cambios
+        db.session.commit()
         
         return jsonify({
             'success': True,
