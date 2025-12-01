@@ -42,6 +42,31 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+/* === DARK MODE === */
+body.dark {
+    /* === COLORES PRIMARIOS (Ajustados para Dark) === */
+    --color-primary: #3b82f6;
+    --color-primary-light: #60a5fa;
+    --color-primary-dark: #2563eb;
+
+    /* === COLORES DE TEXTO === */
+    --text-primary: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-light: #9ca3af;
+    --text-on-primary: #ffffff;
+
+    /* === COLORES DE FONDO === */
+    --bg-body: #111827;
+    --bg-primary: #1f2937;
+    --bg-secondary: #374151;
+    --bg-tertiary: #4b5563;
+    --bg-hover: #374151;
+
+    /* === BORDES === */
+    --border-color: #374151;
+    --border-light: #4b5563;
+}
+
 /* === BODY === */
 body {
     background: var(--bg-body);
