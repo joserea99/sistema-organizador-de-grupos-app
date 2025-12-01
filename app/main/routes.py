@@ -80,11 +80,61 @@ def personas():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    # Obtener todas las personas
     from app.models import Tarjeta
-    personas = Tarjeta.query.order_by(Tarjeta.nombre, Tarjeta.apellido).all()
     
-    return render_template("main/personas.html", personas=personas)
+    # Obtener todas las tarjetas
+    todas_tarjetas = Tarjeta.query.all()
+    
+    # Diccionario para agrupar miembros únicos
+    miembros = {}
+    
+    for t in todas_tarjetas:
+        # Normalizar clave para agrupación (Email > Nombre Completo)
+        email = t.email.strip().lower() if t.email else None
+        nombre_completo = f"{t.nombre} {t.apellido or ''}".strip().lower()
+        
+        # Usar email como clave primaria, o nombre si no hay email
+        clave = email if email else nombre_completo
+        
+        if not clave:
+            continue
+            
+        if clave not in miembros:
+            miembros[clave] = {
+                'id': t.id, # ID de referencia (usamos el de la primera tarjeta encontrada)
+                'datos': t, # Objeto tarjeta para acceder a propiedades
+                'grupos': [],
+                'ids_tarjetas': [] # Para saber qué tarjetas son de esta persona
+            }
+        
+        # Agregar ID de tarjeta a la lista de IDs de esta persona
+        miembros[clave]['ids_tarjetas'].append(t.id)
+        
+        # Agregar información de membresía (Tablero/Lista)
+        if t.lista and t.lista.tablero:
+            miembros[clave]['grupos'].append({
+                'tablero': t.lista.tablero.nombre,
+                'lista': t.lista.nombre,
+                'tablero_id': t.lista.tablero.id,
+                'lista_id': t.lista.id,
+                'color': t.lista.tablero.color
+            })
+            
+        # Lógica básica de fusión de datos:
+        # Si la tarjeta actual tiene información que le falta a la principal, la actualizamos
+        main_data = miembros[clave]['datos']
+        if not main_data.telefono and t.telefono:
+            main_data.telefono = t.telefono
+        if not main_data.direccion and t.direccion:
+            main_data.direccion = t.direccion
+        if not main_data.fecha_nacimiento and t.fecha_nacimiento:
+            main_data.fecha_nacimiento = t.fecha_nacimiento
+
+    # Convertir a lista y ordenar alfabéticamente
+    lista_miembros = list(miembros.values())
+    lista_miembros.sort(key=lambda x: x['datos'].nombre_completo)
+    
+    return render_template("main/personas.html", personas=lista_miembros)
 
 @main_bp.route('/favicon.ico')
 def favicon():

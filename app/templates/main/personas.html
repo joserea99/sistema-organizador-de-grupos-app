@@ -48,77 +48,90 @@
                         <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Contacto</th>
                         <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Ubicación</th>
                         <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Ministerio</th>
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Tablero/Lista</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Membresías</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300 text-center">Total Grupos</th>
                         <th class="p-4 font-semibold text-gray-600 dark:text-gray-300 text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="directoryTableBody">
-                    {% for persona in personas %}
+                    {% for miembro in personas %}
                     <tr
                         class="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
                         <td class="p-4">
                             <div class="flex items-center gap-3">
                                 <div
-                                    class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-                                    {{ persona.nombre[0] }}{{ persona.apellido[0] if persona.apellido else '' }}
+                                    class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                                    {{ miembro.datos.nombre[0] }}{{ miembro.datos.apellido[0] if miembro.datos.apellido
+                                    else '' }}
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-gray-900 dark:text-white">{{ persona.nombre_completo
-                                        }}</div>
-                                    <div class="text-xs text-gray-500">{{ persona.estado_civil or 'No especificado' }}
-                                    </div>
+                                    <div class="font-semibold text-gray-900 dark:text-white">{{
+                                        miembro.datos.nombre_completo }}</div>
+                                    <div class="text-xs text-gray-500">{{ miembro.datos.estado_civil or 'No
+                                        especificado' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="p-4">
                             <div class="text-sm text-gray-600 dark:text-gray-300">
-                                {% if persona.email %}
-                                <div class="flex items-center gap-2 mb-1">
+                                {% if miembro.datos.email %}
+                                <div class="flex items-center gap-2 mb-1" title="Email">
                                     <span class="material-symbols-outlined text-[16px] text-gray-400">mail</span>
-                                    {{ persona.email }}
+                                    {{ miembro.datos.email }}
                                 </div>
                                 {% endif %}
-                                {% if persona.telefono %}
-                                <div class="flex items-center gap-2">
+                                {% if miembro.datos.telefono %}
+                                <div class="flex items-center gap-2" title="Teléfono">
                                     <span class="material-symbols-outlined text-[16px] text-gray-400">call</span>
-                                    {{ persona.telefono }}
+                                    {{ miembro.datos.telefono }}
                                 </div>
                                 {% endif %}
                             </div>
                         </td>
                         <td class="p-4">
                             <div class="text-sm text-gray-600 dark:text-gray-300 max-w-[200px] truncate"
-                                title="{{ persona.direccion }}">
-                                {{ persona.direccion or 'Sin dirección' }}
+                                title="{{ miembro.datos.direccion }}">
+                                {{ miembro.datos.direccion or 'Sin dirección' }}
                             </div>
                         </td>
                         <td class="p-4">
-                            {% if persona.ministerio %}
+                            {% if miembro.datos.ministerio %}
                             <span
                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                                {{ persona.ministerio }}
+                                {{ miembro.datos.ministerio }}
                             </span>
                             {% else %}
                             <span class="text-gray-400 text-sm">-</span>
                             {% endif %}
                         </td>
                         <td class="p-4">
-                            <div class="text-sm">
-                                <div class="font-medium text-gray-700 dark:text-gray-300">
-                                    {{ persona.lista.tablero.nombre if persona.lista and persona.lista.tablero else 'Sin
-                                    Tablero' }}
-                                </div>
-                                <div class="text-xs text-gray-500">
-                                    {{ persona.lista.nombre if persona.lista else 'Sin Lista' }}
-                                </div>
+                            <div class="flex flex-wrap gap-2">
+                                {% for grupo in miembro.grupos %}
+                                <a href="{{ url_for('tableros.ver', tablero_id=grupo.tablero_id) }}"
+                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
+                                    title="Ir al tablero">
+                                    <span class="w-2 h-2 rounded-full mr-1.5"
+                                        style="background-color: {{ grupo.color }};"></span>
+                                    {{ grupo.tablero }} <span class="text-gray-400 mx-1">/</span> {{ grupo.lista }}
+                                </a>
+                                {% endfor %}
                             </div>
                         </td>
+                        <td class="p-4 text-center">
+                            {% if miembro.grupos|length > 0 %}
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                {{ miembro.grupos|length }}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400 text-sm">-</span>
+                            {% endif %}
+                        </td>
                         <td class="p-4 text-right">
-                            <a href="{{ url_for('tableros.ver', tablero_id=persona.lista.tablero.id) if persona.lista and persona.lista.tablero else '#' }}"
-                                class="text-gray-400 hover:text-blue-600 transition-colors p-2 inline-block"
-                                title="Ir al tablero">
-                                <span class="material-symbols-outlined">open_in_new</span>
-                            </a>
+                            <button class="text-gray-400 hover:text-blue-600 transition-colors p-2"
+                                title="Ver detalles completos">
+                                <span class="material-symbols-outlined">visibility</span>
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
