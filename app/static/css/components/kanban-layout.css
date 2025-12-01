@@ -98,3 +98,44 @@
         scroll-snap-align: center;
     }
 }
+
+/* === COMPACT VIEW ADJUSTMENTS (ZOOM FIX) === */
+.kanban-board .kanban-list {
+    min-width: 270px;
+    /* Reduced from 300px/350px */
+}
+
+.kanban-lists-container {
+    gap: var(--space-3) !important;
+    /* Reduced gap between lists */
+}
+
+/* Override card styles for compact view */
+.kanban-board .person-card {
+    padding: var(--space-2) var(--space-3);
+    /* Reduced padding */
+    margin-bottom: var(--space-2);
+}
+
+.kanban-board .person-name {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.kanban-board .person-info {
+    font-size: 0.8rem;
+}
+
+.kanban-board .person-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+}
+
+.kanban-board .list-header {
+    padding: var(--space-3) var(--space-4);
+}
+
+.kanban-board .list-title {
+    font-size: 1rem;
+}
