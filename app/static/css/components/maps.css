@@ -110,3 +110,12 @@
     margin-top: var(--space-2);
     width: 100%;
 }
+
+/* Fix close button visibility in dark mode */
+.dark .gm-ui-hover-effect {
+    filter: invert(1) !important;
+}
+
+.dark .gm-ui-hover-effect:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
