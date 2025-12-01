@@ -103,6 +103,9 @@
                 <option value="minimalista">Tema Minimalista</option>
                 <option value="oscuro">Tema Oscuro</option>
             </select>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-home mr-2"></i>Dashboard
+            </a>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">
                 <i class="fas fa-sign-out-alt mr-2"></i>Salir
             </a>
