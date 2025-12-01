@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -54,7 +55,9 @@
             color: #374151;
         }
 
-        .form-group input, .form-group textarea, .form-group select {
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e5e7eb;
@@ -63,7 +66,9 @@
             transition: border-color 0.3s;
         }
 
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #3b82f6;
         }
@@ -94,7 +99,7 @@
             transition: all 0.3s;
         }
 
-        .radio-option input[type="radio"]:checked + label {
+        .radio-option input[type="radio"]:checked+label {
             border-color: #3b82f6;
             background-color: #eff6ff;
         }
@@ -244,6 +249,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -254,23 +260,23 @@
         <form action="{{ url_for('tableros.procesar') }}" method="POST" class="form-container">
             <div class="form-group">
                 <label for="nombre">📝 Nombre del Tablero</label>
-                <input type="text" id="nombre" name="nombre" required 
-                       value="{% if plantilla_seleccionada %}{{ plantilla_seleccionada.nombre }}{% endif %}"
-                       placeholder="Ej: Ministerio de Jóvenes 2025">
+                <input type="text" id="nombre" name="nombre" required
+                    value="{% if plantilla_seleccionada %}{{ plantilla_seleccionada.nombre }}{% endif %}"
+                    placeholder="Ej: Ministerio de Jóvenes 2025">
             </div>
 
             <div class="form-group">
                 <label for="descripcion">📋 Descripción</label>
-                <textarea id="descripcion" name="descripcion" rows="3" 
-                          placeholder="Describe el propósito de este tablero...">{% if plantilla_seleccionada %}{{ plantilla_seleccionada.descripcion }}{% endif %}</textarea>
+                <textarea id="descripcion" name="descripcion" rows="3"
+                    placeholder="Describe el propósito de este tablero...">{% if plantilla_seleccionada %}{{ plantilla_seleccionada.descripcion }}{% endif %}</textarea>
             </div>
 
             <div class="form-group">
                 <label>🎯 Tipo de Creación</label>
                 <div class="radio-group">
                     <div class="radio-option">
-                        <input type="radio" id="plantilla" name="tipo_creacion" value="plantilla" 
-                               {% if plantilla_seleccionada %}checked{% endif %}>
+                        <input type="radio" id="plantilla" name="tipo_creacion" value="plantilla" {% if
+                            plantilla_seleccionada %}checked{% endif %}>
                         <label for="plantilla">
                             <div>
                                 <strong>📋 Usar Plantilla</strong><br>
@@ -279,8 +285,8 @@
                         </label>
                     </div>
                     <div class="radio-option">
-                        <input type="radio" id="personalizado" name="tipo_creacion" value="personalizado"
-                               {% if not plantilla_seleccionada %}checked{% endif %}>
+                        <input type="radio" id="personalizado" name="tipo_creacion" value="personalizado" {% if not
+                            plantilla_seleccionada %}checked{% endif %}>
                         <label for="personalizado">
                             <div>
                                 <strong>✨ Personalizado</strong><br>
@@ -299,23 +305,23 @@
                     <div class="categoria">
                         <div class="categoria-header">
                             {% if categoria_key == 'direccion_adultos' %}
-                                👥 Dirección de Adultos
+                            👥 Dirección de Adultos
                             {% elif categoria_key == 'familia' %}
-                                👨‍👩‍👧‍👦 Familia
+                            👨‍👩‍👧‍👦 Familia
                             {% elif categoria_key == 'estudiantes' %}
-                                🎓 Estudiantes
+                            🎓 Estudiantes
                             {% elif categoria_key == 'crecimiento' %}
-                                🌱 Crecimiento
+                            🌱 Crecimiento
                             {% elif categoria_key == 'servicio' %}
-                                🤲 Servicio
+                            🤲 Servicio
                             {% endif %}
                         </div>
                         <div class="plantillas-list">
                             {% for plantilla_key, plantilla in categoria.items() %}
                             <div class="plantilla-item" onclick="selectPlantilla('{{ plantilla_key }}')">
-                                <input type="radio" name="plantilla_seleccionada" value="{{ plantilla_key }}" 
-                                       id="plantilla_{{ plantilla_key }}"
-                                       {% if plantilla_seleccionada and plantilla_key in request.endpoint %}checked{% endif %}>
+                                <input type="radio" name="plantilla_seleccionada" value="{{ plantilla_key }}"
+                                    id="plantilla_{{ plantilla_key }}" {% if plantilla_seleccionada and plantilla_key in
+                                    request.endpoint %}checked{% endif %}>
                                 <div class="plantilla-info">
                                     <h4>{{ plantilla.nombre }}</h4>
                                     <p>{{ plantilla.descripcion }}</p>
@@ -336,8 +342,9 @@
                 <h3>📝 Listas Personalizadas</h3>
                 <div id="listas-container">
                     <div class="lista-input">
-                        <input type="text" name="nombres_listas[]" placeholder="Nombre de la lista" required>
-                        <button type="button" class="btn-remove" onclick="removeLista(this)" style="display: none;">❌</button>
+                        <input type="text" name="nombres_listas[]" placeholder="Nombre de la lista">
+                        <button type="button" class="btn-remove" onclick="removeLista(this)"
+                            style="display: none;">❌</button>
                     </div>
                 </div>
                 <button type="button" class="btn-add" onclick="addLista()">➕ Agregar Lista</button>
@@ -353,10 +360,10 @@
     <script>
         // Mostrar/ocultar secciones según tipo de creación
         document.querySelectorAll('input[name="tipo_creacion"]').forEach(radio => {
-            radio.addEventListener('change', function() {
+            radio.addEventListener('change', function () {
                 const plantillasSection = document.getElementById('plantillas-section');
                 const listasSection = document.getElementById('listas-personalizadas');
-                
+
                 if (this.value === 'plantilla') {
                     plantillasSection.style.display = 'block';
                     listasSection.style.display = 'none';
@@ -368,7 +375,7 @@
                     listasSection.style.display = 'block';
                     // Hacer required las listas personalizadas
                     document.querySelectorAll('input[name="plantilla_seleccionada"]').forEach(p => p.required = false);
-                    document.querySelectorAll('input[name="nombres_listas[]"]').forEach(l => l.required = true);
+                    // document.querySelectorAll('input[name="nombres_listas[]"]').forEach(l => l.required = true);
                 }
             });
         });
@@ -376,12 +383,12 @@
         // Función para seleccionar plantilla
         function selectPlantilla(plantillaKey) {
             document.getElementById('plantilla_' + plantillaKey).checked = true;
-            
+
             // Remover clase selected de todos
             document.querySelectorAll('.plantilla-item').forEach(item => {
                 item.classList.remove('selected');
             });
-            
+
             // Agregar clase selected al seleccionado
             event.currentTarget.classList.add('selected');
         }
@@ -392,11 +399,11 @@
             const newDiv = document.createElement('div');
             newDiv.className = 'lista-input';
             newDiv.innerHTML = `
-                <input type="text" name="nombres_listas[]" placeholder="Nombre de la lista" required>
+                <input type="text" name="nombres_listas[]" placeholder="Nombre de la lista">
                 <button type="button" class="btn-remove" onclick="removeLista(this)">❌</button>
             `;
             container.appendChild(newDiv);
-            
+
             // Mostrar botones de remover si hay más de una lista
             updateRemoveButtons();
         }
@@ -421,7 +428,7 @@
         }
 
         // Inicializar la vista
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const tipoSeleccionado = document.querySelector('input[name="tipo_creacion"]:checked');
             if (tipoSeleccionado) {
                 tipoSeleccionado.dispatchEvent(new Event('change'));
@@ -429,4 +436,5 @@
         });
     </script>
 </body>
+
 </html>
