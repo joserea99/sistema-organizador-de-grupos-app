@@ -55,6 +55,10 @@ class Tablero(db.Model):
     # Relaciones
     listas = db.relationship('Lista', backref='tablero', lazy=True, cascade="all, delete-orphan")
 
+    @property
+    def total_personas(self):
+        return sum(len(l.tarjetas) for l in self.listas)
+
     def to_dict(self):
         total_tarjetas = sum(len(l.tarjetas) for l in self.listas)
         return {
