@@ -100,10 +100,9 @@ def handle_checkout_session(session_data):
 
 def handle_subscription_deleted(subscription):
     customer_id = subscription.get('customer')
-    # Buscar usuario por stripe_customer_id (necesitaríamos implementar búsqueda inversa o iterar)
-    for user in user_storage.users.values():
-        if user.stripe_customer_id == customer_id:
-            user.suscripcion_activa = False
-            user_storage.save_to_disk()
-            print(f"Suscripción desactivada para usuario {user.username}")
-            break
+    # Buscar usuario por stripe_customer_id
+    user = user_storage.get_user_by_stripe_id(customer_id)
+    if user:
+        user.suscripcion_activa = False
+        user_storage.save_to_disk()
+        print(f"Suscripción desactivada para usuario {user.username}")

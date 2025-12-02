@@ -106,3 +106,30 @@ def profile():
     }
 
     return render_template("auth/profile.html", usuario=usuario, stats=stats)
+
+
+@auth_bp.route("/change-password", methods=["GET", "POST"])
+def change_password():
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+        
+    if request.method == "POST":
+        current_password = request.form.get("current_password")
+        new_password = request.form.get("new_password")
+        confirm_password = request.form.get("confirm_password")
+        
+        user = user_storage.get_user(session["user_id"])
+        
+        if not user or not user.check_password(current_password):
+            flash("La contraseña actual es incorrecta.", "error")
+        elif new_password != confirm_password:
+            flash("Las nuevas contraseñas no coinciden.", "error")
+        elif len(new_password) < 6:
+            flash("La nueva contraseña debe tener al menos 6 caracteres.", "error")
+        else:
+            user.set_password(new_password)
+            user_storage.save_to_disk()
+            flash("Contraseña actualizada exitosamente.", "success")
+            return redirect(url_for("auth.profile"))
+            
+    return render_template("auth/change_password.html")

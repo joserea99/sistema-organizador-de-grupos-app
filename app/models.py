@@ -272,6 +272,9 @@ class UserStorage:
         
     def get_user_by_email(self, email):
         return Usuario.query.filter_by(email=email).first()
+
+    def get_user_by_stripe_id(self, stripe_id):
+        return Usuario.query.filter_by(stripe_customer_id=stripe_id).first()
         
     def create_user(self, username, email, password, nombre_completo=""):
         if self.get_user_by_username(username) or self.get_user_by_email(email):

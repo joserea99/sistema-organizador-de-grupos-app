@@ -56,31 +56,4 @@ def create_app():
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(billing_bp, url_prefix="/billing")
 
-    # --- BYPASS DE SEGURIDAD (SOLICITADO POR EL USUARIO) ---
-    from flask import session
-    from app.models import UserStorage
-    
-    @app.before_request
-    def auto_login():
-        if 'user_id' not in session:
-            print("⚠️ MODO SIN SEGURIDAD: Iniciando sesión automática...")
-            storage = UserStorage()
-            # Crear usuario admin por defecto si no existe
-            admin_user = storage.get_user_by_username("admin")
-            if not admin_user:
-                print("Creando usuario admin por defecto...")
-                admin_user = storage.create_user("admin", "admin@example.com", "admin", "Administrador")
-            
-            if admin_user:
-                session["user_id"] = admin_user.id
-                session["username"] = admin_user.username
-                session["rol"] = admin_user.rol
-                session["suscripcion_activa"] = True # Forzar suscripción activa
-                admin_user.suscripcion_activa = True
-                try:
-                    db.session.commit()
-                except:
-                    db.session.rollback()
-    # -------------------------------------------------------
-
     return app
