@@ -142,6 +142,7 @@
 </div>
 
 <script>
+    // Search functionality
     document.getElementById('directorySearch').addEventListener('keyup', function (e) {
         const searchTerm = e.target.value.toLowerCase();
         const rows = document.querySelectorAll('#directoryTableBody tr');
@@ -151,5 +152,37 @@
             row.style.display = text.includes(searchTerm) ? '' : 'none';
         });
     });
+
+    // Theme Toggle Logic
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+        const themeIcon = themeBtn.querySelector('span');
+
+        function updateThemeIcon(theme) {
+            if (theme === 'oscuro' || theme === 'moderno') {
+                themeIcon.textContent = 'light_mode';
+            } else {
+                themeIcon.textContent = 'dark_mode';
+            }
+        }
+
+        // Initialize icon
+        const savedTheme = localStorage.getItem('selectedTheme') || 'clasico';
+        updateThemeIcon(savedTheme);
+
+        // Handle click
+        themeBtn.addEventListener('click', () => {
+            if (window.app && window.app.themeManager) {
+                const current = window.app.themeManager.currentTheme;
+                const newTheme = (current === 'oscuro' || current === 'moderno') ? 'clasico' : 'oscuro';
+                window.app.themeManager.applyTheme(newTheme);
+            }
+        });
+
+        // Listen for global changes
+        document.addEventListener('themeChanged', (e) => {
+            updateThemeIcon(e.detail.theme);
+        });
+    }
 </script>
 {% endblock %}
