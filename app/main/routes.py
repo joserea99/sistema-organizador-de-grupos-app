@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, session, url_for
+from flask import Blueprint, redirect, render_template, session, url_for, current_app
 from app.models import storage
 
 main_bp = Blueprint("main", __name__)
@@ -139,6 +139,31 @@ def personas():
 @main_bp.route('/favicon.ico')
 def favicon():
     return "", 204
+
+@main_bp.route('/stripe-info')
+def stripe_info():
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+    
+    import stripe
+    stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
+    
+    try:
+        account = stripe.Account.retrieve()
+        mode = "TEST" if "test" in stripe.api_key else "LIVE"
+        return f"""
+        <div style="font-family: sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <h1 style="color: #635bff;">Stripe Connection Status</h1>
+            <p><strong>Mode:</strong> <span style="background: {'#ffeb3b' if mode=='TEST' else '#4caf50'}; padding: 2px 6px; border-radius: 4px;">{mode}</span></p>
+            <p><strong>Account ID:</strong> {account.id}</p>
+            <p><strong>Business Name:</strong> {account.settings.dashboard.display_name or 'N/A'}</p>
+            <p><strong>Email:</strong> {account.email or 'N/A'}</p>
+            <hr>
+            <a href="/dashboard" style="color: #2563eb; text-decoration: none;">&larr; Back to Dashboard</a>
+        </div>
+        """
+    except Exception as e:
+        return f"Error connecting to Stripe: {str(e)}"
 
 @main_bp.route('/favicon.ico')
 def favicon():
