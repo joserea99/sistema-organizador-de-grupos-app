@@ -17,6 +17,17 @@
     <link rel="stylesheet" id="theme-style" href="{{ url_for('static', filename='css/themes/clasico.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     {% endblock %}
+
+    <script>
+        // Aplicar tema inmediatamente para evitar flash
+        (function () {
+            const theme = localStorage.getItem('selectedTheme') || 'clasico';
+            if (['oscuro', 'moderno'].includes(theme)) {
+                document.documentElement.classList.add('dark');
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 
 <body>

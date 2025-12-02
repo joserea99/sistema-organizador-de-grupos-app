@@ -77,6 +77,7 @@ export class ThemeManager {
         this.saveTheme(themeName);
 
         // Actualizar atributo en body para CSS específico
+        document.documentElement.setAttribute('data-theme', themeName);
         document.body.setAttribute('data-theme', themeName);
 
         // Toggle 'dark' class for Tailwind
