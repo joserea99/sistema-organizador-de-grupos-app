@@ -60,32 +60,26 @@ export class ThemeManager {
             themeName = 'clasico';
         }
 
-        // Actualizar hoja de estilos
-        const themeLink = document.getElementById('theme-style');
-        if (themeLink) {
-            themeLink.href = `/static/css/themes/${this.themes[themeName].file}`;
-        } else {
-            const linkElement = document.createElement('link');
-            linkElement.id = 'theme-style';
-            linkElement.rel = 'stylesheet';
-            linkElement.href = `/static/css/themes/${this.themes[themeName].file}`;
-            document.head.appendChild(linkElement);
+        // Remover tema anterior
+        const existingThemeLink = document.getElementById('theme-stylesheet');
+        if (existingThemeLink) {
+            existingThemeLink.remove();
         }
+
+        // Agregar nuevo tema
+        const linkElement = document.createElement('link');
+        linkElement.id = 'theme-stylesheet';
+        linkElement.rel = 'stylesheet';
+        linkElement.href = `/static/css/themes/${this.themes[themeName].file}`;
+
+        document.head.appendChild(linkElement);
 
         // Guardar preferencia
         this.currentTheme = themeName;
         this.saveTheme(themeName);
 
         // Actualizar atributo en body para CSS específico
-        document.documentElement.setAttribute('data-theme', themeName);
         document.body.setAttribute('data-theme', themeName);
-
-        // Toggle 'dark' class for Tailwind
-        if (['oscuro', 'moderno'].includes(themeName)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
 
         // Disparar evento para notificar el cambio
         document.dispatchEvent(new CustomEvent('themeChanged', {
