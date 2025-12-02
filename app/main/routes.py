@@ -140,26 +140,6 @@ def personas():
 def favicon():
     return "", 204
 
-@main_bp.route('/debug-config')
-def debug_config():
-    if "user_id" not in session:
-        return redirect(url_for("auth.login"))
-        
-    import os
-    keys = [
-        'STRIPE_PUBLIC_KEY',
-        'STRIPE_SECRET_KEY',
-        'STRIPE_PRICE_ID',
-        'STRIPE_WEBHOOK_SECRET'
-    ]
-    
-    html = "<h1>Estado de Configuración (Debug)</h1><ul>"
-    for key in keys:
-        val = os.environ.get(key)
-        status = "✅ Configurado" if val and val.strip() else "❌ FALTANTE"
-        # Show first 4 chars for verification if configured
-        preview = f"({val[:4]}...)" if val and len(val) > 4 else ""
-        html += f"<li><strong>{key}:</strong> {status} {preview}</li>"
-    html += "</ul><a href='/dashboard'>Volver</a>"
-    
-    return html
+@main_bp.route('/favicon.ico')
+def favicon():
+    return "", 204
