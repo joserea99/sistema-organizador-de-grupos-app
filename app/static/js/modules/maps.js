@@ -521,7 +521,10 @@ export class MapManager {
         previewText.textContent = 'Calculando clusters...';
 
         try {
-            const tableroId = window.location.pathname.split('/').pop();
+            // Obtener ID del tablero de la URL de forma robusta
+            const pathParts = window.location.pathname.split('/');
+            let tableroId = pathParts.pop();
+            if (!tableroId) tableroId = pathParts.pop(); // Manejar trailing slash
             const maxDistance = document.getElementById('clusterRadius').value;
             const minSize = document.getElementById('clusterMin').value;
             const maxSize = document.getElementById('clusterMax').value;
@@ -615,7 +618,11 @@ export class MapManager {
         this.showStatus('Creando listas...', 'info');
 
         try {
-            const tableroId = window.location.pathname.split('/').pop();
+            // Obtener ID del tablero de la URL de forma robusta
+            const pathParts = window.location.pathname.split('/');
+            let tableroId = pathParts.pop();
+            if (!tableroId) tableroId = pathParts.pop(); // Manejar trailing slash
+
             console.log('Sending apply request for tablero:', tableroId);
 
             const response = await fetch('/tableros/api/clustering/apply', {

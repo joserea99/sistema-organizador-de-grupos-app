@@ -165,6 +165,4 @@ def stripe_info():
     except Exception as e:
         return f"Error connecting to Stripe: {str(e)}"
 
-@main_bp.route('/favicon.ico')
-def favicon():
-    return "", 204
+

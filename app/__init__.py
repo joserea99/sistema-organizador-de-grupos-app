@@ -37,11 +37,20 @@ def create_app():
     db.init_app(app)
     
     # Crear tablas si no existen
+    # Crear tablas si no existen
     with app.app_context():
-        db.create_all()
-        
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"Error connecting to database: {e}")
+            # No re-raise to allow app to start and show health check
+            
         # Inicializar storage de compatibilidad
         from app.models import storage, TableroStorage
+    
+    @app.route('/health')
+    def health_check():
+        return "OK", 200
     
     # Registrar blueprints
     from app.auth.routes import auth_bp

@@ -1204,7 +1204,7 @@ def apply_clustering():
             return jsonify({'error': 'Tablero no encontrado'}), 404
             
         if not clusters:
-             print("DEBUG: No clusters provided")
+             print("DEBUG: No clusters provided in request body")
              return jsonify({'success': False, 'message': 'No hay grupos para crear.'})
             
         created_lists = 0
