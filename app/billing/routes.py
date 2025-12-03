@@ -63,14 +63,18 @@ def cancel():
 @billing_bp.route('/webhook', methods=['POST'])
 def webhook():
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
-    payload = request.data  # Changed from get_data(as_text=True) to data for proper signature verification
+    payload = request.get_data()  # Get raw bytes without decoding
     sig_header = request.headers.get('Stripe-Signature')
     endpoint_secret = current_app.config['STRIPE_WEBHOOK_SECRET']
+    
+    current_app.logger.info(f"Webhook received. Signature header present: {sig_header is not None}")
+    current_app.logger.info(f"Endpoint secret configured: {endpoint_secret is not None}")
 
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
+        current_app.logger.info(f"Webhook event constructed successfully: {event['type']}")
     except ValueError as e:
         current_app.logger.error(f"Webhook ValueError: {e}")
         return 'Invalid payload', 400
