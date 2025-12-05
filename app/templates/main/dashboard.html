@@ -229,6 +229,17 @@
                 <div class="col-span-12 lg:col-span-3">
                     <h2 class="text-xl font-bold mb-4">Acciones Rápidas</h2>
                     <div class="space-y-4">
+                        <!-- Premium Subscription Button -->
+                        <a href="{{ url_for('billing.subscribe') }}"
+                            class="w-full flex items-center gap-3 p-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl shadow-lg shadow-orange-500/40 hover:shadow-xl hover:from-amber-600 hover:to-orange-600 transition-all transform hover:scale-[1.02]">
+                            <span class="material-symbols-outlined"
+                                style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                            <div class="text-left">
+                                <span class="font-bold text-sm block">Suscripción Premium</span>
+                                <span class="text-xs opacity-90">Desbloquea todas las funciones</span>
+                            </div>
+                        </a>
+
                         <a href="{{ url_for('tableros.crear') }}"
                             class="w-full flex items-center gap-3 p-4 bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-600 transition-colors">
                             <span class="material-symbols-outlined">add</span>
