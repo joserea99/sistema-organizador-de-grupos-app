@@ -6,26 +6,8 @@ except ImportError:
     def load_dotenv():
         pass
 
-from flask import Flask, request, session
-from flask_babel import Babel
+from flask import Flask
 from app.models import db
-
-def get_locale():
-    """Determine the best language to use for the request"""
-    # 1. Check if user is authenticated and has a language preference
-    if 'user_id' in session:
-        from app.models import Usuario
-        user = Usuario.query.filter_by(id=session['user_id']).first()
-        if user and user.preferred_language:
-            return user.preferred_language
-    
-    # 2. Check session for temporary language selection
-    if 'language' in session:
-        return session['language']
-    
-    # 3. Fall back to browser's accept_languages
-    return request.accept_languages.best_match(['es', 'en']) or 'es'
-
 
 def create_app():
     # Cargar variables de entorno
@@ -51,17 +33,8 @@ def create_app():
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Babel/i18n Config
-    app.config['BABEL_DEFAULT_LOCALE'] = 'es'
-    app.config['BABEL_SUPPORTED_LOCALES'] = ['es', 'en']
-    app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
-
     # Inicializar extensiones
     db.init_app(app)
-    
-    # Initialize Babel
-    babel = Babel(app, locale_selector=get_locale)
-
     
     # Crear tablas si no existen
     # Crear tablas si no existen

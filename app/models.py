@@ -20,8 +20,6 @@ class Usuario(db.Model):
     rol = db.Column(db.String(20), default='user')
     suscripcion_activa = db.Column(db.Boolean, default=False)
     stripe_customer_id = db.Column(db.String(120))
-    preferred_language = db.Column(db.String(5), default='es')
-
     
     # Relaciones
     tableros = db.relationship('Tablero', backref='creador', lazy=True)
