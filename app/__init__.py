@@ -12,25 +12,19 @@ from app.models import db
 
 def get_locale():
     """Determine the best language to use for the request"""
-    try:
-        # 1. Check if user is authenticated and has a language preference
-        if 'user_id' in session:
-            from app.models import Usuario
-            user = Usuario.query.filter_by(id=session['user_id']).first()
-            if user and hasattr(user, 'preferred_language') and user.preferred_language:
-                return user.preferred_language
-        
-        # 2. Check session for temporary language selection
-        if 'language' in session:
-            return session['language']
-        
-        # 3. Fall back to browser's accept_languages
-        return request.accept_languages.best_match(['es', 'en']) or 'es'
-    except Exception as e:
-        # Fallback to Spanish if any error occurs
-        print(f"Error in get_locale: {e}")
-        return 'es'
-
+    # 1. Check if user is authenticated and has a language preference
+    if 'user_id' in session:
+        from app.models import Usuario
+        user = Usuario.query.filter_by(id=session['user_id']).first()
+        if user and user.preferred_language:
+            return user.preferred_language
+    
+    # 2. Check session for temporary language selection
+    if 'language' in session:
+        return session['language']
+    
+    # 3. Fall back to browser's accept_languages
+    return request.accept_languages.best_match(['es', 'en']) or 'es'
 
 
 def create_app():
