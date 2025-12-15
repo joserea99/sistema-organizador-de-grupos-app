@@ -17,9 +17,14 @@ depends_on = None
 
 
 def upgrade():
-    # Add preferred_language column to usuarios table
-    with op.batch_alter_table('usuarios', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('preferred_language', sa.String(length=5), nullable=True, server_default='es'))
+    # Add preferred_language column to usuarios table cautiously
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = [col['name'] for col in inspector.get_columns('usuarios')]
+    
+    if 'preferred_language' not in columns:
+        with op.batch_alter_table('usuarios', schema=None) as batch_op:
+            batch_op.add_column(sa.Column('preferred_language', sa.String(length=5), nullable=True, server_default='es'))
 
 
 def downgrade():
