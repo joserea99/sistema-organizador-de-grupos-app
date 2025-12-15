@@ -228,30 +228,33 @@
 
                         {% if tarjeta.nombre_conyuge %}
                         <div class="mt-3 pt-3 border-t border-gray-100 bg-pink-50 rounded-lg p-2 -mx-2">
-                            <div class="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <div class="font-semibold text-gray-900 !text-gray-900 mb-2 flex items-center gap-2">
                                 <i class="fas fa-heart text-pink-500 text-xs"></i> {{ _('Datos del Cónyuge') }}
                             </div>
                             <div class="grid grid-cols-1 gap-1 text-sm">
                                 <div class="detail-row">
-                                    <span class="detail-label font-medium text-gray-600">{{ _('Nombre') }}:</span>
-                                    <span class="detail-value font-bold text-gray-800">{{ tarjeta.nombre_conyuge
+                                    <span class="detail-label font-medium text-gray-800 !text-gray-800">{{ _('Nombre')
+                                        }}:</span>
+                                    <span class="detail-value font-bold text-gray-900 !text-gray-900">{{
+                                        tarjeta.nombre_conyuge
                                         }}</span>
                                 </div>
 
                                 {% if tarjeta.edad_conyuge %}
                                 <div class="detail-row">
-                                    <span class="detail-label text-gray-600">{{ _('Edad') }}:</span>
-                                    <span class="detail-value">{{ tarjeta.edad_conyuge }} {{ _('años') }}</span>
+                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Edad') }}:</span>
+                                    <span class="detail-value text-gray-900 !text-gray-900">{{ tarjeta.edad_conyuge }}
+                                        {{ _('años') }}</span>
                                 </div>
                                 {% endif %}
 
                                 {% if tarjeta.telefono_conyuge %}
                                 <div class="detail-row">
-                                    <span class="detail-label text-gray-600">{{ _('Teléfono') }}:</span>
+                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Teléfono') }}:</span>
                                     <span class="detail-value flex items-center gap-1">
-                                        <i class="fas fa-phone-alt text-gray-400 text-xs"></i>
+                                        <i class="fas fa-phone-alt text-gray-600 !text-gray-600 text-xs"></i>
                                         <a href="tel:{{ tarjeta.telefono_conyuge }}"
-                                            class="hover:underline hover:text-blue-600">
+                                            class="hover:underline hover:text-blue-600 text-gray-900 !text-gray-900">
                                             {{ tarjeta.telefono_conyuge }}
                                         </a>
                                     </span>
@@ -260,11 +263,11 @@
 
                                 {% if tarjeta.email_conyuge %}
                                 <div class="detail-row">
-                                    <span class="detail-label text-gray-600">{{ _('Email') }}:</span>
+                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Email') }}:</span>
                                     <span class="detail-value flex items-center gap-1">
-                                        <i class="fas fa-envelope text-gray-400 text-xs"></i>
+                                        <i class="fas fa-envelope text-gray-600 !text-gray-600 text-xs"></i>
                                         <a href="mailto:{{ tarjeta.email_conyuge }}"
-                                            class="hover:underline hover:text-blue-600">
+                                            class="hover:underline hover:text-blue-600 text-gray-900 !text-gray-900">
                                             {{ tarjeta.email_conyuge }}
                                         </a>
                                     </span>
@@ -273,16 +276,19 @@
 
                                 {% if tarjeta.trabajo_conyuge %}
                                 <div class="detail-row">
-                                    <span class="detail-label text-gray-600">{{ _('Trabajo/Ocupación') }}:</span>
-                                    <span class="detail-value">{{ tarjeta.trabajo_conyuge }}</span>
+                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Trabajo/Ocupación')
+                                        }}:</span>
+                                    <span class="detail-value text-gray-900 !text-gray-900">{{ tarjeta.trabajo_conyuge
+                                        }}</span>
                                 </div>
                                 {% endif %}
 
                                 {% if tarjeta.fecha_matrimonio %}
                                 <div class="detail-row">
-                                    <span class="detail-label text-gray-600">{{ _('Aniversario') }}:</span>
-                                    <span class="detail-value">
-                                        <i class="fas fa-calendar-alt text-gray-400 text-xs"></i> {{
+                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Aniversario')
+                                        }}:</span>
+                                    <span class="detail-value text-gray-900 !text-gray-900">
+                                        <i class="fas fa-calendar-alt text-gray-600 !text-gray-600 text-xs"></i> {{
                                         tarjeta.fecha_matrimonio }}
                                     </span>
                                 </div>
