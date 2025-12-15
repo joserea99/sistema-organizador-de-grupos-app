@@ -6,22 +6,18 @@ echo "Starting Railway Deployment"
 echo "========================================="
 
 echo "Step 1: Running database migrations..."
-python - <<'PYTHON_SCRIPT'
 import os
+import sys
 os.environ.setdefault('FLASK_APP', 'run.py')
 
-try:
-    from app import create_app
-    from flask_migrate import upgrade
-    
-    app = create_app()
-    with app.app_context():
-        print("Applying database migrations...")
-        upgrade()
-        print("✓ Migrations completed successfully")
-except Exception as e:
-    print(f"Note: Migration step encountered an issue: {e}")
-    print("Continuing deployment...")
+from app import create_app
+from flask_migrate import upgrade
+
+app = create_app()
+with app.app_context():
+    print("Applying database migrations...")
+    upgrade()
+    print("✓ Migrations completed successfully")
 PYTHON_SCRIPT
 
 echo ""
