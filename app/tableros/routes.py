@@ -625,6 +625,8 @@ def importar_excel(lista_id):
                     
     except Exception as e:
         flash(f'Error en la importación: {str(e)}', 'error')
+        if tablero_encontrado:
+            return redirect(url_for('tableros.ver', tablero_id=tablero_encontrado.id))
         return redirect(url_for('tableros.lista'))
 
 
@@ -644,6 +646,7 @@ def descargar_plantilla_excel():
                 'Nombre': ['Juan Pérez', 'María García', 'Carlos López', 'Ana Martínez', 'Pedro Sánchez'],
                 'Dirección': ['Calle 123 Col. Centro', 'Av. Principal 456', 'Blvd. Sur 789', 'Col. Norte 321', 'Calle Centro 654'],
                 'Teléfono': ['555-0123', '555-0124', '555-0125', '555-0126', '555-0127'],
+                'Email': ['juan@example.com', 'maria@example.com', '', 'ana@example.com', ''],
                 'Edad': [35, 28, 42, 31, 29],
                 'Estado Civil': ['Casado', 'Soltera', 'Casado', 'Casada', 'Soltero'],
                 'Num Hijos': [2, 0, 3, 1, 0],
@@ -651,6 +654,7 @@ def descargar_plantilla_excel():
                 'Nombre Cónyuge': ['María Pérez', '', 'Ana López', 'Roberto Martínez', ''],
                 'Edad Cónyuge': [32, '', 38, 33, ''],
                 'Teléfono Cónyuge': ['555-0130', '', '555-0131', '555-0132', ''],
+                'Email Cónyuge': ['maria.perez@example.com', '', 'ana.lopez@example.com', '', ''],
                 'Trabajo Cónyuge': ['Maestra', '', 'Doctora', 'Ingeniero', ''],
                 'Fecha Matrimonio': ['2018-06-15', '', '2005-03-20', '2015-09-10', '']
             }
@@ -696,12 +700,12 @@ def descargar_plantilla_excel():
             flash('⚠️ Generando CSV (pandas no disponible)', 'warning')
             
             # Tu contenido CSV original exacto
-            contenido_csv = """Nombre,Dirección,Teléfono,Edad,Estado Civil,Num Hijos,Edades Hijos,Nombre Cónyuge,Edad Cónyuge,Teléfono Cónyuge,Trabajo Cónyuge,Fecha Matrimonio
-Juan Pérez,Calle 123 Col. Centro,555-0123,35,Casado,2,"5,8",María Pérez,32,555-0130,Maestra,2018-06-15
-María García,Av. Principal 456,555-0124,28,Soltera,0,,,,,
-Carlos López,Blvd. Sur 789,555-0125,42,Casado,3,"10,12,15",Ana López,38,555-0131,Doctora,2005-03-20
-Ana Martínez,Col. Norte 321,555-0126,31,Casada,1,"7",Roberto Martínez,33,555-0132,Ingeniero,2015-09-10
-Pedro Sánchez,Calle Centro 654,555-0127,29,Soltero,0,,,,,"""
+            contenido_csv = """Nombre,Dirección,Teléfono,Email,Edad,Estado Civil,Num Hijos,Edades Hijos,Nombre Cónyuge,Edad Cónyuge,Teléfono Cónyuge,Email Cónyuge,Trabajo Cónyuge,Fecha Matrimonio
+Juan Pérez,Calle 123 Col. Centro,555-0123,juan@example.com,35,Casado,2,"5,8",María Pérez,32,555-0130,maria.perez@example.com,Maestra,2018-06-15
+María García,Av. Principal 456,555-0124,maria@example.com,28,Soltera,0,,,,,,,
+Carlos López,Blvd. Sur 789,555-0125,,42,Casado,3,"10,12,15",Ana López,38,555-0131,ana.lopez@example.com,Doctora,2005-03-20
+Ana Martínez,Col. Norte 321,555-0126,ana@example.com,31,Casada,1,"7",Roberto Martínez,33,555-0132,,Ingeniero,2015-09-10
+Pedro Sánchez,Calle Centro 654,555-0127,,29,Soltero,0,,,,,,,"""
             
             output = BytesIO()
             output.write(contenido_csv.encode('utf-8'))

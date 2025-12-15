@@ -46,7 +46,47 @@ def normalizar_nombre_columna(nombre: str) -> str:
     # Convertir a minúsculas y quitar espacios/caracteres especiales
     nombre_normalizado = re.sub(r'[^a-z0-9]', '', nombre_sin_tildes.lower())
     
+    nombre_normalizado = re.sub(r'[^a-z0-9]', '', nombre_sin_tildes.lower())
+    
     return nombre_normalizado
+
+def parse_date(date_val) -> Optional[object]:
+    """
+    Intenta convertir un valor a objeto date de Python.
+    Soporta strings (YYYY-MM-DD, DD/MM/YYYY) y objetos datetime/date.
+    """
+    if not date_val:
+        return None
+        
+    from datetime import datetime, date
+    
+    # Si ya es date o datetime
+    if isinstance(date_val, datetime):
+        return date_val.date()
+    if isinstance(date_val, date):
+        return date_val
+        
+    date_str = str(date_val).strip()
+    if not date_str:
+        return None
+        
+    # Intentar varios formatos
+    formats = [
+        '%Y-%m-%d',       # 2023-12-25
+        '%d/%m/%Y',       # 25/12/2023
+        '%d-%m-%Y',       # 25-12-2023
+        '%Y/%m/%d',       # 2023/12/25
+        '%d/%m/%y',       # 25/12/23
+        '%Y-%m-%d %H:%M:%S' # Timestamp string
+    ]
+    
+    for fmt in formats:
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+            
+    return None
 
 
 def mapear_columnas(headers: List[str]) -> Dict[str, str]:
@@ -136,6 +176,12 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
             'ocupacion', 'trabajo', 'empleo', 'profession', 
             'job', 'profesion', 'oficio', 'carrera',
             'profesionoficio', 'prof', 'profesionooficio'
+        ],
+
+        'email_conyuge': [
+            'emailconyuge', 'correoconyuge', 'correodelconyuge', 
+            'emaildelconyuge', 'correoelectronicodelconyuge', 
+            'correoelectronicoconyuge', 'mailconyuge'
         ],
         'email': [
             'email', 'correo', 'correoelectronico', 'mail', 
@@ -280,8 +326,23 @@ def process_csv_file(archivo) -> Tuple[List[Dict], List[str]]:
     errores = []
     
     try:
-        # Leer el archivo
-        archivo_contenido = archivo.read().decode('utf-8')
+        # Leer el archivo como bytes
+        content_bytes = archivo.read()
+        archivo_contenido = None
+        
+        # Intentar decodificar con diferentes encodings
+        encodings = ['utf-8', 'latin-1', 'cp1252']
+        for encoding in encodings:
+            try:
+                archivo_contenido = content_bytes.decode(encoding)
+                print(f"✅ Archivo CSV decodificado con {encoding}")
+                break
+            except UnicodeDecodeError:
+                continue
+                
+        if archivo_contenido is None:
+            errores.append('Error de codificación: El archivo no es UTF-8 ni Latin-1 válido.')
+            return filas_datos, errores
         
         # Validar mínimo de líneas
         lineas = archivo_contenido.strip().split('\n')
@@ -291,20 +352,63 @@ def process_csv_file(archivo) -> Tuple[List[Dict], List[str]]:
         
         # Detectar delimitador
         try:
-            dialect = csv.Sniffer().sniff(archivo_contenido[:1024])
+            # Tomar una muestra representativa (primeras 5 líneas)
+            sample = '\n'.join(lineas[:5])
+            dialect = csv.Sniffer().sniff(sample)
             delimiter = dialect.delimiter
         except:
             # Fallback si falla la detección
-            delimiter = ',' if ',' in lineas[0] else ';'
+            # Contar comas vs punto y coma en la primera línea
+            header = lineas[0]
+            delimiter = ';' if header.count(';') > header.count(',') else ','
             
         print(f"🔍 Delimitador CSV detectado: '{delimiter}'")
         
-        # Leer como CSV
-        csv_reader = csv.DictReader(io.StringIO(archivo_contenido), delimiter=delimiter)
+        print(f"🔍 Delimitador CSV detectado: '{delimiter}'")
         
-        for row_num, fila in enumerate(csv_reader, start=2):
-            fila['_row_num'] = row_num
-            filas_datos.append(fila)
+        # Detectar fila de headers
+        header_row_index = 0
+        header_keywords = ['nombre', 'name', 'direccion', 'address', 'telefono', 'phone', 
+                         'edad', 'age', 'email', 'correo', 'apellido']
+        
+        # Buscar la primera fila que parezca tener headers
+        csv_reader_temp = csv.reader(io.StringIO(archivo_contenido), delimiter=delimiter)
+        rows_temp = list(csv_reader_temp)
+        
+        for i, row in enumerate(rows_temp):
+            # Convertir fila a string para buscar keywords
+            row_text = ' '.join([str(v).lower() for v in row if v])
+            
+            # Si encontramos al menos 2 keywords, asumimos que es el header
+            matches = sum(1 for k in header_keywords if k in row_text)
+            if matches >= 2:
+                header_row_index = i
+                print(f"🔍 Headers detectados en fila CSV {i+1}")
+                break
+        
+        # Reconstruir contenido desde la fila de headers
+        # Usamos rows_temp[header_row_index:]
+        if not rows_temp:
+             return filas_datos, errores
+
+        # Obtener los headers de la fila detectada
+        headers = rows_temp[header_row_index]
+        
+        # Procesar datos
+        for row_num, row_values in enumerate(rows_temp[header_row_index+1:], start=header_row_index+2):
+            if not row_values: continue
+            
+            # Crear diccionario manual para evitar problemas con DictReader y líneas vacías previas
+            fila = {}
+            for i, val in enumerate(row_values):
+                if i < len(headers):
+                    header = headers[i]
+                    if header: # Solo si el header tiene nombre
+                        fila[header] = val
+            
+            if any(fila.values()): # Solo si tiene datos
+                fila['_row_num'] = row_num
+                filas_datos.append(fila)
     
     except Exception as e:
         errores.append(f'Error procesando CSV: {str(e)}')
@@ -376,8 +480,15 @@ def extract_person_data(fila: Dict, row_num: int = None, mapeo: Dict[str, str] =
     
     edad_conyuge_str = obtener_valor_flexible(fila, mapeo, 'edad_conyuge')
     telefono_conyuge = obtener_valor_flexible(fila, mapeo, 'telefono_conyuge')
+    email_conyuge = obtener_valor_flexible(fila, mapeo, 'email_conyuge')
+    telefono_conyuge = obtener_valor_flexible(fila, mapeo, 'telefono_conyuge')
+    email_conyuge = obtener_valor_flexible(fila, mapeo, 'email_conyuge')
     trabajo_conyuge = obtener_valor_flexible(fila, mapeo, 'trabajo_conyuge')
-    fecha_matrimonio = obtener_valor_flexible(fila, mapeo, 'fecha_matrimonio')
+    
+    # Parsear fechas
+    fecha_matrimonio_raw = obtener_valor_flexible(fila, mapeo, 'fecha_matrimonio')
+    fecha_matrimonio = parse_date(fecha_matrimonio_raw)
+    
     ocupacion = obtener_valor_flexible(fila, mapeo, 'ocupacion')
     email = obtener_valor_flexible(fila, mapeo, 'email')
     notas = obtener_valor_flexible(fila, mapeo, 'notas')
@@ -419,6 +530,7 @@ def extract_person_data(fila: Dict, row_num: int = None, mapeo: Dict[str, str] =
         'edades_hijos': edades_hijos,
         'nombre_conyuge': nombre_conyuge,
         'telefono_conyuge': telefono_conyuge,
+        'email_conyuge': email_conyuge,
         'edad_conyuge': edad_conyuge,
         'trabajo_conyuge': trabajo_conyuge,
         'fecha_matrimonio': fecha_matrimonio,

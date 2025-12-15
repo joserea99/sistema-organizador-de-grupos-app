@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>📊 Dashboard - Organizador de Grupos Pequeños</title>
@@ -9,38 +10,38 @@
             background: #f5f5f5;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 40px;
         }
-        
+
         .header h1 {
             font-size: 36px;
             font-weight: 700;
             color: #1a1a1a;
             margin-bottom: 15px;
         }
-        
+
         .header p {
             font-size: 18px;
             color: #6b7280;
             margin-bottom: 30px;
         }
-        
+
         .nav-links {
             display: flex;
             justify-content: center;
             gap: 20px;
             margin-bottom: 40px;
         }
-        
+
         .nav-link {
             padding: 12px 24px;
             background: white;
@@ -48,37 +49,37 @@
             text-decoration: none;
             color: #1976d2;
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
-        
+
         .nav-link:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         }
-        
+
         .nav-link.active {
             background: #1976d2;
             color: white;
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 24px;
             margin-bottom: 40px;
         }
-        
+
         .stat-card {
             background: white;
             padding: 24px;
             border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             text-align: center;
             position: relative;
             overflow: hidden;
         }
-        
+
         .stat-card::before {
             content: '';
             position: absolute;
@@ -88,40 +89,40 @@
             height: 4px;
             background: var(--accent-color, #1976d2);
         }
-        
+
         .stat-number {
             font-size: 48px;
             font-weight: 700;
             color: #1a1a1a;
             margin-bottom: 8px;
         }
-        
+
         .stat-label {
             font-size: 16px;
             color: #6b7280;
             font-weight: 600;
         }
-        
+
         .stat-icon {
             font-size: 24px;
             margin-bottom: 16px;
         }
-        
+
         .section {
             background: white;
             border-radius: 16px;
             padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
-        
+
         .section h3 {
             margin: 0 0 24px 0;
             font-size: 24px;
             font-weight: 700;
             color: #1a1a1a;
         }
-        
+
         .recordatorio-item {
             display: flex;
             align-items: center;
@@ -131,37 +132,37 @@
             margin-bottom: 12px;
             border-left: 4px solid var(--urgencia-color);
         }
-        
+
         .recordatorio-item.vencido {
             --urgencia-color: #dc2626;
             background: #fef2f2;
         }
-        
+
         .recordatorio-item.hoy {
             --urgencia-color: #f59e0b;
             background: #fffbeb;
         }
-        
+
         .recordatorio-item.mañana {
             --urgencia-color: #10b981;
             background: #f0fdf4;
         }
-        
+
         .recordatorio-info {
             flex: 1;
         }
-        
+
         .recordatorio-nombre {
             font-weight: 600;
             color: #1a1a1a;
             margin-bottom: 4px;
         }
-        
+
         .recordatorio-detalle {
             font-size: 14px;
             color: #6b7280;
         }
-        
+
         .recordatorio-urgencia {
             padding: 4px 12px;
             border-radius: 6px;
@@ -170,7 +171,7 @@
             color: white;
             background: var(--urgencia-color);
         }
-        
+
         .tablero-activo {
             display: flex;
             align-items: center;
@@ -179,7 +180,7 @@
             border-radius: 12px;
             margin-bottom: 12px;
         }
-        
+
         .tablero-icono {
             width: 48px;
             height: 48px;
@@ -191,22 +192,22 @@
             color: white;
             margin-right: 16px;
         }
-        
+
         .tablero-info {
             flex: 1;
         }
-        
+
         .tablero-nombre {
             font-weight: 600;
             color: #1a1a1a;
             margin-bottom: 4px;
         }
-        
+
         .tablero-stats {
             font-size: 14px;
             color: #6b7280;
         }
-        
+
         .estado-item {
             display: flex;
             justify-content: space-between;
@@ -214,16 +215,16 @@
             padding: 12px 0;
             border-bottom: 1px solid #e5e7eb;
         }
-        
+
         .estado-item:last-child {
             border-bottom: none;
         }
-        
+
         .estado-nombre {
             font-weight: 600;
             color: #1a1a1a;
         }
-        
+
         .estado-count {
             background: #1976d2;
             color: white;
@@ -232,13 +233,13 @@
             font-size: 14px;
             font-weight: 600;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             color: #6b7280;
         }
-        
+
         .btn-primary {
             background: #1976d2;
             color: white;
@@ -248,21 +249,21 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             background: #1565c0;
         }
-        
+
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
             }
-            
+
             .nav-links {
                 flex-wrap: wrap;
                 gap: 12px;
             }
-            
+
             .nav-link {
                 padding: 8px 16px;
                 font-size: 14px;
@@ -270,63 +271,65 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Dashboard</h1>
-            <p>Resumen completo de tu ministerio</p>
+            <h1>{{ _('📊 Dashboard') }}</h1>
+            <p>{{ _('Resumen completo de tu ministerio') }}</p>
         </div>
-        
+
         <div class="nav-links">
-            <a href="{{ url_for('dashboard') }}" class="nav-link active">📊 Dashboard</a>
+            <a href="{{ url_for('dashboard') }}" class="nav-link active">{{ _('📊 Dashboard') }}</a>
             <a href="{{ url_for('recordatorios') }}" class="nav-link">
-                🔔 Recordatorios 
+                {{ _('🔔 Recordatorios') }}
                 {% if stats.recordatorios_pendientes > 0 %}
-                    <span style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px;">
-                        {{ stats.recordatorios_pendientes }}
-                    </span>
+                <span
+                    style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px;">
+                    {{ stats.recordatorios_pendientes }}
+                </span>
                 {% endif %}
             </a>
-            <a href="{{ url_for('tableros') }}" class="nav-link">🗂️ Tableros</a>
+            <a href="{{ url_for('tableros') }}" class="nav-link">{{ _('🗂️ Tableros') }}</a>
         </div>
-        
+
         <!-- Estadísticas Principales -->
         <div class="stats-grid">
             <div class="stat-card" style="--accent-color: #1976d2;">
                 <div class="stat-icon">👥</div>
                 <div class="stat-number">{{ stats.total_personas }}</div>
-                <div class="stat-label">Total Personas</div>
+                <div class="stat-label">{{ _('Total Personas') }}</div>
             </div>
-            
+
             <div class="stat-card" style="--accent-color: #10b981;">
                 <div class="stat-icon">📋</div>
                 <div class="stat-number">{{ stats.total_tableros }}</div>
-                <div class="stat-label">Tableros Activos</div>
+                <div class="stat-label">{{ _('Tableros Activos') }}</div>
             </div>
-            
+
             <div class="stat-card" style="--accent-color: #f59e0b;">
                 <div class="stat-icon">✨</div>
                 <div class="stat-number">{{ stats.nuevos_mes }}</div>
-                <div class="stat-label">Nuevos este Mes</div>
+                <div class="stat-label">{{ _('Nuevos este Mes') }}</div>
             </div>
-            
+
             <div class="stat-card" style="--accent-color: #dc2626;">
                 <div class="stat-icon">🔔</div>
                 <div class="stat-number">{{ stats.recordatorios_pendientes }}</div>
-                <div class="stat-label">Recordatorios Pendientes</div>
+                <div class="stat-label">{{ _('Recordatorios Pendientes') }}</div>
             </div>
-            
+
             <div class="stat-card" style="--accent-color: #8b5cf6;">
                 <div class="stat-icon">⭐</div>
                 <div class="stat-number">{{ stats.tableros_favoritos }}</div>
-                <div class="stat-label">Tableros Favoritos</div>
+                <div class="stat-label">{{ _('Tableros Favoritos') }}</div>
             </div>
         </div>
-        
+
         <!-- Recordatorios Urgentes -->
         {% if recordatorios_urgentes %}
         <div class="section">
-            <h3>🔔 Recordatorios Urgentes</h3>
+            <h3>{{ _('🔔 Recordatorios Urgentes') }}</h3>
             {% for recordatorio in recordatorios_urgentes[:5] %}
             <div class="recordatorio-item {{ recordatorio.urgencia }}">
                 <div class="recordatorio-info">
@@ -337,32 +340,32 @@
                 </div>
                 <div class="recordatorio-urgencia">
                     {% if recordatorio.urgencia == 'vencido' %}
-                        Vencido
+                    {{ _('Vencido') }}
                     {% elif recordatorio.urgencia == 'hoy' %}
-                        Hoy
+                    {{ _('Hoy') }}
                     {% elif recordatorio.urgencia == 'mañana' %}
-                        Mañana
+                    {{ _('Mañana') }}
                     {% else %}
-                        Próximo
+                    {{ _('Próximo') }}
                     {% endif %}
                 </div>
             </div>
             {% endfor %}
-            
+
             {% if recordatorios_urgentes|length > 5 %}
             <div style="text-align: center; margin-top: 20px;">
                 <a href="{{ url_for('recordatorios') }}" class="btn-primary">
-                    Ver todos los recordatorios ({{ recordatorios_urgentes|length }})
+                    {{ _('Ver todos los recordatorios') }} ({{ recordatorios_urgentes|length }})
                 </a>
             </div>
             {% endif %}
         </div>
         {% endif %}
-        
+
         <!-- Tableros Más Activos -->
         {% if tableros_activos %}
         <div class="section">
-            <h3>🏆 Tableros Más Activos</h3>
+            <h3>{{ _('🏆 Tableros Más Activos') }}</h3>
             {% for tablero in tableros_activos %}
             <div class="tablero-activo">
                 <div class="tablero-icono" style="background: {{ tablero.color }};">
@@ -371,9 +374,9 @@
                 <div class="tablero-info">
                     <div class="tablero-nombre">{{ tablero.nombre }}</div>
                     <div class="tablero-stats">
-                        {{ tablero.total_personas }} personas
+                        {{ tablero.total_personas }} {{ _('personas') }}
                         {% if tablero.nuevos_mes > 0 %}
-                            • {{ tablero.nuevos_mes }} nuevos este mes
+                        • {{ tablero.nuevos_mes }} {{ _('nuevos este mes') }}
                         {% endif %}
                     </div>
                 </div>
@@ -381,24 +384,24 @@
             {% endfor %}
         </div>
         {% endif %}
-        
+
         <!-- Estados de Discipulado -->
         {% if estados_discipulado %}
         <div class="section">
-            <h3>🌱 Estados de Discipulado</h3>
+            <h3>{{ _('🌱 Estados de Discipulado') }}</h3>
             {% for estado in estados_discipulado %}
             <div class="estado-item">
                 <div class="estado-nombre">
                     {% if estado.estado_discipulado == 'Nuevo' %}
-                        🌱 Nuevo
+                    🌱 {{ _('Nuevo') }}
                     {% elif estado.estado_discipulado == 'Creciendo' %}
-                        🌿 Creciendo
+                    🌿 {{ _('Creciendo') }}
                     {% elif estado.estado_discipulado == 'Maduro' %}
-                        🌳 Maduro
+                    🌳 {{ _('Maduro') }}
                     {% elif estado.estado_discipulado == 'Líder' %}
-                        👑 Líder
+                    👑 {{ _('Líder') }}
                     {% else %}
-                        📝 {{ estado.estado_discipulado }}
+                    📝 {{ estado.estado_discipulado }}
                     {% endif %}
                 </div>
                 <div class="estado-count">{{ estado.total }}</div>
@@ -406,17 +409,19 @@
             {% endfor %}
         </div>
         {% endif %}
-        
+
         <!-- Si no hay datos -->
         {% if stats.total_personas == 0 %}
         <div class="empty-state">
-            <h3>👋 ¡Bienvenido al Dashboard!</h3>
-            <p>Aún no tienes personas registradas. Crea tu primer tablero y comienza a organizar tu ministerio.</p>
+            <h3>{{ _('👋 ¡Bienvenido al Dashboard!') }}</h3>
+            <p>{{ _('Aún no tienes personas registradas. Crea tu primer tablero y comienza a organizar tu ministerio.')
+                }}</p>
             <a href="{{ url_for('crear_tablero') }}" class="btn-primary">
-                ➕ Crear Mi Primer Tablero
+                {{ _('➕ Crear Mi Primer Tablero') }}
             </a>
         </div>
         {% endif %}
     </div>
 </body>
+
 </html>

@@ -344,13 +344,27 @@ export class MapManager {
     }
 
     centerMap() {
-        if (this.markers.length === 0) return;
+        console.log('Centering map... Markers count:', this.markers.length);
+        if (this.markers.length === 0) {
+            console.warn('No markers to center on. Centering on default.');
+            this.map.setCenter({ lat: 19.4326, lng: -99.1332 });
+            this.map.setZoom(5);
+            return;
+        }
 
         const bounds = new google.maps.LatLngBounds();
+        let validMarkers = 0;
         this.markers.forEach(marker => {
-            bounds.extend(marker.getPosition());
+            if (marker.getPosition()) {
+                bounds.extend(marker.getPosition());
+                validMarkers++;
+            }
         });
-        this.map.fitBounds(bounds);
+
+        console.log('Valid markers for bounds:', validMarkers);
+        if (validMarkers > 0) {
+            this.map.fitBounds(bounds);
+        }
     }
 
     initFilters() {

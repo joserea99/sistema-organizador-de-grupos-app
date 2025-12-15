@@ -11,19 +11,19 @@
                 <span class="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-2 rounded-lg">
                     <span class="material-symbols-outlined">groups</span>
                 </span>
-                Directorio de Personas
+                {{ _('Directorio de Personas') }}
             </h1>
-            <p class="text-gray-500 dark:text-gray-400 mt-2">Gestiona tu base de datos global de miembros</p>
+            <p class="text-gray-500 dark:text-gray-400 mt-2">{{ _('Gestiona tu base de datos global de miembros') }}</p>
         </div>
         <div class="flex gap-3">
             <button id="themeToggleBtn" class="btn btn-secondary" title="Cambiar modo Claro/Oscuro">
                 <span class="material-symbols-outlined">dark_mode</span>
             </button>
             <button class="btn btn-secondary" onclick="window.print()">
-                <span class="material-symbols-outlined mr-2">print</span>Imprimir
+                <span class="material-symbols-outlined mr-2">print</span>{{ _('Imprimir') }}
             </button>
             <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
-                <span class="material-symbols-outlined mr-2">dashboard</span>Dashboard
+                <span class="material-symbols-outlined mr-2">dashboard</span>{{ _('Dashboard') }}
             </a>
         </div>
     </header>
@@ -36,7 +36,7 @@
             </span>
             <input type="text" id="directorySearch"
                 class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Buscar por nombre, email, teléfono, ministerio...">
+                placeholder="{{ _('Buscar por nombre, email, teléfono, ministerio...') }}">
         </div>
     </div>
 
@@ -47,12 +47,13 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Nombre</th>
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Contacto</th>
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Ubicación</th>
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Ministerio</th>
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">Membresías</th>
-                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300 text-center">Total Grupos</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">{{ _('Nombre') }}</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">{{ _('Contacto') }}</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">{{ _('Ubicación') }}</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">{{ _('Ministerio') }}</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300">{{ _('Membresías') }}</th>
+                        <th class="p-4 font-semibold text-gray-600 dark:text-gray-300 text-center">{{ _('Total Grupos')
+                            }}</th>
                     </tr>
                 </thead>
                 <tbody id="directoryTableBody">
@@ -137,8 +138,8 @@
         {% if not personas %}
         <div class="p-12 text-center text-gray-500">
             <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">groups_2</span>
-            <p class="text-lg">No hay personas registradas aún.</p>
-            <p class="text-sm mt-2">Agrega personas desde tus tableros.</p>
+            <p class="text-lg">{{ _('No hay personas registradas aún.') }}</p>
+            <p class="text-sm mt-2">{{ _('Agrega personas desde tus tableros.') }}</p>
         </div>
         {% endif %}
     </div>

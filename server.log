@@ -1,0 +1,68 @@
+Starting application...
+Importing create_app...
+Creating Flask app...
+App created successfully!
+Running in development mode
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[33mPress CTRL+C to quit[0m
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+App created successfully!
+Running in development mode
+ * Debugger is active!
+ * Debugger PIN: 113-832-258
+127.0.0.1 - - [14/Dec/2025 22:23:59] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Dec/2025 22:23:59] "GET /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:24:00] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:24:16] "POST /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:24:16] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:24:33] "GET /auth/register HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:24:33] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:24:58] "POST /auth/register HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:24:58] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:25:17] "GET /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:25:17] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:25:27] "POST /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:25:27] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:25:53] "GET /auth/register HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:25:53] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:26:07] "[32mPOST /auth/register HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Dec/2025 22:26:07] "GET /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:26:07] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:27:06] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Dec/2025 22:27:06] "GET /auth/login HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:27:07] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:05] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+127.0.0.1 - - [14/Dec/2025 22:31:05] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:31:06] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:17] "GET /tableros/ HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/js/modules/app.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/css/themes/clasico.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/css/components/cards.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/css/components/forms.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/js/modules/filters.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/js/modules/themes.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[36mGET /static/js/modules/modals.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:18] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:22] "GET /dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:31:22] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:24] "GET /recordatorios HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:31:24] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:24] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:28] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "GET /personas HTTP/1.1" 200 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "[36mGET /static/css/base.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "[36mGET /static/css/themes/clasico.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "[36mGET /static/js/modules/app.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "[36mGET /static/js/modules/themes.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "[36mGET /static/js/modules/modals.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:29] "[36mGET /static/js/modules/filters.js HTTP/1.1[0m" 304 -
+127.0.0.1 - - [14/Dec/2025 22:31:30] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:35] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+127.0.0.1 - - [14/Dec/2025 22:31:38] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -

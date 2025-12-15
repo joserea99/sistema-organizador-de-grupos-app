@@ -98,9 +98,9 @@
     <header class="header mb-8 p-6 rounded-2xl flex justify-between items-center">
         <div>
             <h1 class="text-3xl font-bold header-title">
-                <i class="fas fa-layer-group mr-3"></i>Mis Tableros
+                <i class="fas fa-layer-group mr-3"></i>{{ _('Mis Tableros') }}
             </h1>
-            <p class="text-secondary mt-2">Gestiona tus grupos y ministerios</p>
+            <p class="text-secondary mt-2">{{ _('Gestiona tus grupos y ministerios') }}</p>
         </div>
         <div class="flex gap-4">
             <select id="theme-selector" class="form-select text-sm w-auto">
@@ -110,10 +110,10 @@
                 <option value="oscuro">Tema Oscuro</option>
             </select>
             <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
-                <i class="fas fa-home mr-2"></i>Dashboard
+                <i class="fas fa-home mr-2"></i>{{ _('Dashboard') }}
             </a>
             <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">
-                <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                <i class="fas fa-sign-out-alt mr-2"></i>{{ _('Salir') }}
             </a>
         </div>
     </header>
@@ -122,15 +122,15 @@
     <section class="stats-overview">
         <div class="stat-card">
             <div class="stat-number">{{ stats.total_tableros or 0 }}</div>
-            <div class="text-secondary font-medium">Tableros</div>
+            <div class="text-secondary font-medium">{{ _('Tableros') }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-number">{{ stats.total_personas or 0 }}</div>
-            <div class="text-secondary font-medium">Personas</div>
+            <div class="text-secondary font-medium">{{ _('Personas') }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-number">{{ stats.total_listas or 0 }}</div>
-            <div class="text-secondary font-medium">Listas</div>
+            <div class="text-secondary font-medium">{{ _('Listas') }}</div>
         </div>
     </section>
 
@@ -138,11 +138,11 @@
     <section class="controls-section mb-3 p-2 flex flex-wrap gap-4 justify-between items-center"
         style="padding: 0.4rem 1rem;">
         <div class="flex-1 min-w-[300px]">
-            <input type="text" class="form-input" placeholder="Buscar tableros..."
+            <input type="text" class="form-input" placeholder="{{ _('Buscar tableros...') }}"
                 onkeyup="filtrarTableros(this.value)">
         </div>
         <a href="{{ url_for('tableros.crear') }}" class="btn btn-primary">
-            <i class="fas fa-plus mr-2"></i>Nuevo Tablero
+            <i class="fas fa-plus mr-2"></i>{{ _('Nuevo Tablero') }}
         </a>
     </section>
 
@@ -159,21 +159,21 @@
                 <div class="tablero-stats">
                     <div>
                         <div class="text-2xl font-bold text-primary">{{ tablero.total_listas or 0 }}</div>
-                        <div class="text-xs text-secondary uppercase tracking-wider">Listas</div>
+                        <div class="text-xs text-secondary uppercase tracking-wider">{{ _('Listas') }}</div>
                     </div>
                     <div>
                         <div class="text-2xl font-bold text-primary">{{ tablero.total_tarjetas or 0 }}</div>
-                        <div class="text-xs text-secondary uppercase tracking-wider">Personas</div>
+                        <div class="text-xs text-secondary uppercase tracking-wider">{{ _('Personas') }}</div>
                     </div>
                 </div>
                 <div class="tablero-actions">
                     <a href="{{ url_for('tableros.ver', tablero_id=tablero.id) }}"
                         class="btn btn-primary w-full justify-center">
-                        Abrir
+                        {{ _('Abrir') }}
                     </a>
                     <a href="{{ url_for('tableros.editar', tablero_id=tablero.id) }}"
                         class="btn btn-secondary w-full justify-center">
-                        Editar
+                        {{ _('Editar') }}
                     </a>
                 </div>
             </div>
@@ -182,7 +182,7 @@
         {% else %}
         <div class="col-span-full text-center py-12 text-secondary">
             <i class="fas fa-folder-open text-6xl mb-4 opacity-50"></i>
-            <p class="text-xl">No tienes tableros aún. ¡Crea el primero!</p>
+            <p class="text-xl">{{ _('No tienes tableros aún. ¡Crea el primero!') }}</p>
         </div>
         {% endif %}
     </section>

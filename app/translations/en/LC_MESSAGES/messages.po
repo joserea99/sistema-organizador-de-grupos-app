@@ -1,0 +1,803 @@
+# English translations
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-12-14 22:15-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/templates/dashboard.html:278 app/templates/dashboard.html:283
+#, fuzzy
+msgid "📊 Dashboard"
+msgstr "Dashboard"
+
+#: app/templates/dashboard.html:279
+#, fuzzy
+msgid "Resumen completo de tu ministerio"
+msgstr "Ministry Activity Summary"
+
+#: app/templates/dashboard.html:285
+#, fuzzy
+msgid "🔔 Recordatorios"
+msgstr "Reminders"
+
+#: app/templates/dashboard.html:293
+#, fuzzy
+msgid "🗂️ Tableros"
+msgstr "Boards"
+
+#: app/templates/auth/profile.html:255 app/templates/dashboard.html:301
+msgid "Total Personas"
+msgstr "Total People"
+
+#: app/templates/dashboard.html:307 app/templates/main/dashboard.html:281
+msgid "Tableros Activos"
+msgstr "Active Boards"
+
+#: app/templates/dashboard.html:313
+#, fuzzy
+msgid "Nuevos este Mes"
+msgstr "New (Month)"
+
+#: app/templates/dashboard.html:319
+#, fuzzy
+msgid "Recordatorios Pendientes"
+msgstr "Important Reminders"
+
+#: app/templates/dashboard.html:325
+#, fuzzy
+msgid "Tableros Favoritos"
+msgstr "Active Boards"
+
+#: app/templates/dashboard.html:332
+#, fuzzy
+msgid "🔔 Recordatorios Urgentes"
+msgstr "Important Reminders"
+
+#: app/templates/dashboard.html:343
+#, fuzzy
+msgid "Vencido"
+msgstr "Welcome!"
+
+#: app/templates/dashboard.html:345
+msgid "Hoy"
+msgstr ""
+
+#: app/templates/dashboard.html:347
+msgid "Mañana"
+msgstr ""
+
+#: app/templates/dashboard.html:349
+msgid "Próximo"
+msgstr ""
+
+#: app/templates/dashboard.html:358
+#, fuzzy
+msgid "Ver todos los recordatorios"
+msgstr "Reminders"
+
+#: app/templates/dashboard.html:368
+#, fuzzy
+msgid "🏆 Tableros Más Activos"
+msgstr "Active Boards"
+
+#: app/templates/dashboard.html:377
+#, fuzzy
+msgid "personas"
+msgstr "People"
+
+#: app/templates/dashboard.html:379
+#, fuzzy
+msgid "nuevos este mes"
+msgstr "New (Month)"
+
+#: app/templates/dashboard.html:391
+msgid "🌱 Estados de Discipulado"
+msgstr ""
+
+#: app/templates/dashboard.html:396
+msgid "Nuevo"
+msgstr ""
+
+#: app/templates/dashboard.html:398
+msgid "Creciendo"
+msgstr ""
+
+#: app/templates/dashboard.html:400
+msgid "Maduro"
+msgstr ""
+
+#: app/templates/dashboard.html:402 app/templates/tableros/ver.html:222
+msgid "Líder"
+msgstr ""
+
+#: app/templates/dashboard.html:416
+#, fuzzy
+msgid "👋 ¡Bienvenido al Dashboard!"
+msgstr "Welcome!"
+
+#: app/templates/dashboard.html:417
+#, fuzzy
+msgid ""
+"Aún no tienes personas registradas. Crea tu primer tablero y comienza a "
+"organizar tu ministerio."
+msgstr ""
+"You don't have any boards yet. Create your first board to start "
+"organizing your ministry."
+
+#: app/templates/dashboard.html:420
+#, fuzzy
+msgid "➕ Crear Mi Primer Tablero"
+msgstr "Create My First Board"
+
+#: app/templates/auth/profile.html:229
+msgid "Mi Perfil"
+msgstr "My Profile"
+
+#: app/templates/auth/profile.html:234 app/templates/auth/profile.html:236
+msgid "Miembro desde"
+msgstr "Member since"
+
+#: app/templates/auth/profile.html:241 app/templates/auth/profile.html:243
+msgid "Último acceso"
+msgstr "Last access"
+
+#: app/templates/auth/profile.html:250
+msgid "Listas Creadas"
+msgstr "Created Lists"
+
+#: app/templates/auth/profile.html:260
+msgid "Promedio por Lista"
+msgstr "Average per List"
+
+#: app/templates/auth/profile.html:272
+msgid "Información de la Cuenta"
+msgstr "Account Information"
+
+#: app/templates/auth/profile.html:275 app/templates/main/dashboard.html:140
+msgid "Usuario"
+msgstr "User"
+
+#: app/templates/auth/profile.html:280
+msgid "Nombre completo"
+msgstr "Full name"
+
+#: app/templates/auth/profile.html:290
+msgid "Fecha de registro"
+msgstr "Registration date"
+
+#: app/templates/auth/profile.html:305
+msgid "ID de usuario"
+msgstr "User ID"
+
+#: app/templates/auth/profile.html:312
+msgid "Últimas Sesiones"
+msgstr "Last Sessions"
+
+#: app/templates/auth/profile.html:313
+msgid "Historial de los últimos accesos a tu cuenta"
+msgstr "History of recent account accesses"
+
+#: app/templates/auth/profile.html:318
+msgid "Fecha y Hora"
+msgstr "Date and Time"
+
+#: app/templates/auth/profile.html:319
+msgid "Dirección IP"
+msgstr "IP Address"
+
+#: app/templates/auth/profile.html:320
+msgid "Dispositivo"
+msgstr "Device"
+
+#: app/templates/auth/profile.html:350
+msgid "Seguridad y Privacidad"
+msgstr "Security and Privacy"
+
+#: app/templates/auth/profile.html:351
+#, fuzzy
+msgid ""
+"Tu información está protegida y es completamente\n"
+"                privada"
+msgstr "Your information is protected and completely private"
+
+#: app/templates/auth/profile.html:355
+msgid "Tus datos solo son visibles para ti"
+msgstr "Your data is only visible to you"
+
+#: app/templates/auth/profile.html:356
+msgid "Las contraseñas están encriptadas"
+msgstr "Passwords are encrypted"
+
+#: app/templates/auth/profile.html:357
+msgid "Sesiones seguras con autenticación"
+msgstr "Secure sessions with authentication"
+
+#: app/templates/auth/profile.html:358
+msgid "No compartimos información con terceros"
+msgstr "We do not share information with third parties"
+
+#: app/templates/auth/profile.html:359
+msgid "Puedes eliminar tu cuenta en cualquier momento"
+msgstr "You can delete your account at any time"
+
+#: app/templates/auth/profile.html:364
+msgid "Volver al Inicio"
+msgstr "Back to Home"
+
+#: app/templates/auth/profile.html:365
+msgid "Cambiar Contraseña"
+msgstr "Change Password"
+
+#: app/templates/auth/profile.html:367 app/templates/main/dashboard.html:150
+msgid "Cerrar Sesión"
+msgstr "Logout"
+
+#: app/templates/main/dashboard.html:65 app/templates/main/dashboard.html:162
+msgid "Mi Ministerio"
+msgstr "My Ministry"
+
+#: app/templates/main/dashboard.html:73 app/templates/main/personas.html:26
+#: app/templates/main/recordatorios.html:431
+#: app/templates/tableros/lista.html:113 app/templates/tableros/ver.html:78
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: app/templates/main/dashboard.html:79
+#: app/templates/main/recordatorios.html:433
+#: app/templates/tableros/lista.html:125
+msgid "Tableros"
+msgstr "Boards"
+
+#: app/templates/main/dashboard.html:85 app/templates/main/dashboard.html:238
+#: app/templates/tableros/lista_simple.html:495
+msgid "Recordatorios"
+msgstr "Reminders"
+
+#: app/templates/main/dashboard.html:91 app/templates/tableros/lista.html:129
+#: app/templates/tableros/lista.html:166
+msgid "Personas"
+msgstr "People"
+
+#: app/templates/main/dashboard.html:97
+msgid "Mapas"
+msgstr "Maps"
+
+#: app/templates/main/dashboard.html:103
+msgid "Configuración"
+msgstr ""
+
+#: app/templates/main/dashboard.html:111
+msgid "Tema"
+msgstr "Theme"
+
+#: app/templates/main/dashboard.html:114
+msgid "Claro"
+msgstr "Light"
+
+#: app/templates/main/dashboard.html:115
+msgid "Oscuro"
+msgstr "Dark"
+
+#: app/templates/main/dashboard.html:123
+msgid "Idioma"
+msgstr "Language"
+
+#: app/templates/main/dashboard.html:141
+msgid ""
+"Líder de\n"
+"                            Ministerio"
+msgstr ""
+
+#: app/templates/main/dashboard.html:171
+msgid "¡Hola, Bendiciones! 👋"
+msgstr "Hello, Blessings! 👋"
+
+#: app/templates/main/dashboard.html:173
+msgid "Dashboard_Greeting_Summary"
+msgstr "Ministry Activity Summary"
+
+#: app/templates/main/dashboard.html:188
+msgid "Total_Stats_Personas"
+msgstr "Total People"
+
+#: app/templates/main/dashboard.html:205
+msgid "Total_Stats_Tableros"
+msgstr "Active Boards"
+
+#: app/templates/main/dashboard.html:222
+msgid "Total_Stats_Nuevos"
+msgstr "New (Month)"
+
+#: app/templates/main/dashboard.html:248
+msgid "Acciones Rápidas"
+msgstr "Quick Actions"
+
+#: app/templates/main/dashboard.html:256
+msgid "Suscripción Premium"
+msgstr "Premium Subscription"
+
+#: app/templates/main/dashboard.html:257
+msgid "Desbloquea todas las funciones"
+msgstr "Unlock all features"
+
+#: app/templates/main/dashboard.html:264
+#: app/templates/tableros/lista_simple.html:477
+msgid "Crear Nuevo Tablero"
+msgstr "Create New Board"
+
+#: app/templates/main/dashboard.html:269
+msgid "Agregar Persona"
+msgstr "Add Person"
+
+#: app/templates/main/dashboard.html:274
+msgid "Ver Tableros"
+msgstr "View Boards"
+
+#: app/templates/main/dashboard.html:322
+#, fuzzy
+msgid ""
+"No hay tableros\n"
+"                            activos."
+msgstr "No active boards."
+
+#: app/templates/main/dashboard.html:332
+msgid "Recordatorios Importantes"
+msgstr "Important Reminders"
+
+#: app/templates/main/dashboard.html:366
+msgid "Dashboard_All_Caught_Up"
+msgstr "All caught up! 🎉"
+
+#: app/templates/main/personas.html:14
+msgid "Directorio de Personas"
+msgstr "People Directory"
+
+#: app/templates/main/personas.html:16
+msgid "Gestiona tu base de datos global de miembros"
+msgstr "Manage your global member database"
+
+#: app/templates/main/personas.html:23
+msgid "Imprimir"
+msgstr "Print"
+
+#: app/templates/main/personas.html:39
+msgid "Buscar por nombre, email, teléfono, ministerio..."
+msgstr "Search by name, email, phone, ministry..."
+
+#: app/templates/main/personas.html:50
+#: app/templates/tableros/lista_simple.html:522
+#: app/templates/tableros/ver.html:236
+msgid "Nombre"
+msgstr "Name"
+
+#: app/templates/main/personas.html:51
+msgid "Contacto"
+msgstr "Contact"
+
+#: app/templates/main/personas.html:52
+msgid "Ubicación"
+msgstr "Location"
+
+#: app/templates/main/personas.html:53 app/templates/tableros/ver.html:208
+msgid "Ministerio"
+msgstr "Ministry"
+
+#: app/templates/main/personas.html:54
+msgid "Membresías"
+msgstr "Memberships"
+
+#: app/templates/main/personas.html:55
+msgid "Total Grupos"
+msgstr "Total Groups"
+
+#: app/templates/main/personas.html:141
+msgid "No hay personas registradas aún."
+msgstr "No people registered yet."
+
+#: app/templates/main/personas.html:142
+msgid "Agrega personas desde tus tableros."
+msgstr "Add people from your boards."
+
+#: app/templates/main/recordatorios.html:426
+#: app/templates/main/recordatorios.html:432
+msgid "Title_Reminders"
+msgstr "Reminders"
+
+#: app/templates/main/recordatorios.html:427
+msgid "Subtitle_Reminders"
+msgstr "Manage follow-ups for all people"
+
+#: app/templates/main/recordatorios.html:441
+msgid "Filter_All"
+msgstr "All"
+
+#: app/templates/main/recordatorios.html:447
+msgid "Filter_Overdue"
+msgstr "Overdue"
+
+#: app/templates/main/recordatorios.html:455
+msgid "Filter_Today"
+msgstr "Today"
+
+#: app/templates/main/recordatorios.html:463
+msgid "Filter_Upcoming"
+msgstr "Upcoming"
+
+#: app/templates/main/recordatorios.html:487
+msgid "Status_Overdue"
+msgstr "Overdue"
+
+#: app/templates/main/recordatorios.html:489
+msgid "Status_Today"
+msgstr "Today"
+
+#: app/templates/main/recordatorios.html:491
+msgid "Status_Tomorrow"
+msgstr "Tomorrow"
+
+#: app/templates/main/recordatorios.html:493
+msgid "Status_Upcoming"
+msgstr "Upcoming"
+
+#: app/templates/main/recordatorios.html:545
+#: app/templates/main/recordatorios.html:611
+msgid "Label_Notes_Followup"
+msgstr "Follow-up Notes"
+
+#: app/templates/main/recordatorios.html:553
+msgid "Btn_Mark_Contacted"
+msgstr "Mark as Contacted"
+
+#: app/templates/main/recordatorios.html:557
+#: app/templates/tableros/lista.html:176
+msgid "Editar"
+msgstr "Edit"
+
+#: app/templates/main/recordatorios.html:566
+msgid "Empty_Title_Perfect"
+msgstr "Perfect!"
+
+#: app/templates/main/recordatorios.html:567
+msgid "Empty_Msg_No_Reminders"
+msgstr "You have no pending reminders. All caught up!"
+
+#: app/templates/main/recordatorios.html:569
+msgid "Empty_Title_Excellent"
+msgstr "Excellent!"
+
+#: app/templates/main/recordatorios.html:570
+msgid "Empty_Msg_No_Overdue"
+msgstr "You have no overdue reminders. Good job!"
+
+#: app/templates/main/recordatorios.html:572
+msgid "Empty_Title_No_Today"
+msgstr "No follow-ups today"
+
+#: app/templates/main/recordatorios.html:573
+msgid "Empty_Msg_No_Today"
+msgstr "You have no contacts scheduled for today."
+
+#: app/templates/main/recordatorios.html:575
+msgid "Empty_Title_No_Upcoming"
+msgstr "No upcoming follow-ups"
+
+#: app/templates/main/recordatorios.html:576
+msgid "Empty_Msg_No_Upcoming"
+msgstr "You have no contacts scheduled soon."
+
+#: app/templates/main/recordatorios.html:580
+msgid "Btn_Go_To_Boards"
+msgstr "Go to Boards"
+
+#: app/templates/main/recordatorios.html:590
+msgid "Modal_Contact_Title"
+msgstr "Mark as Contacted"
+
+#: app/templates/main/recordatorios.html:596
+msgid "Label_Next_Followup"
+msgstr "Next Follow-up"
+
+#: app/templates/main/recordatorios.html:601
+msgid "Label_Discipleship_Status"
+msgstr "Discipleship Status"
+
+#: app/templates/main/recordatorios.html:603
+msgid "Status_New"
+msgstr "New"
+
+#: app/templates/main/recordatorios.html:604
+msgid "Status_Growing"
+msgstr "Growing"
+
+#: app/templates/main/recordatorios.html:605
+msgid "Status_Mature"
+msgstr "Mature"
+
+#: app/templates/main/recordatorios.html:606
+msgid "Status_Leader"
+msgstr "Leader"
+
+#: app/templates/main/recordatorios.html:613
+msgid "Placeholder_Notes"
+msgstr "How was the contact? What topics were discussed?"
+
+#: app/templates/main/recordatorios.html:617
+msgid "Btn_Cancel"
+msgstr "Cancel"
+
+#: app/templates/main/recordatorios.html:619
+msgid "Btn_Mark_Contacted_Short"
+msgstr "Mark Contacted"
+
+#: app/templates/main/recordatorios.html:668
+msgid "Toast_Success_Contact"
+msgstr "Contact registered successfully"
+
+#: app/templates/main/recordatorios.html:673
+msgid "Toast_Error"
+msgstr "Error"
+
+#: app/templates/main/recordatorios.html:678
+msgid "Toast_Connection_Error"
+msgstr "Connection Error"
+
+#: app/templates/tableros/lista.html:101
+#: app/templates/tableros/lista_simple.html:474
+msgid "Mis Tableros"
+msgstr "My Boards"
+
+#: app/templates/tableros/lista.html:103
+msgid "Gestiona tus grupos y ministerios"
+msgstr "Manage your groups and ministries"
+
+#: app/templates/tableros/lista.html:116
+#, fuzzy
+msgid "Salir"
+msgstr "Open"
+
+#: app/templates/tableros/lista.html:133 app/templates/tableros/lista.html:162
+#, fuzzy
+msgid "Listas"
+msgstr "Lists Only"
+
+#: app/templates/tableros/lista.html:141
+#, fuzzy
+msgid "Buscar tableros..."
+msgstr "View Boards"
+
+#: app/templates/tableros/lista.html:145
+msgid "Nuevo Tablero"
+msgstr "New Board"
+
+#: app/templates/tableros/lista.html:172
+msgid "Abrir"
+msgstr "Open"
+
+#: app/templates/tableros/lista.html:185
+msgid "No tienes tableros aún. ¡Crea el primero!"
+msgstr "You don't have any boards yet. Create the first one!"
+
+#: app/templates/tableros/lista_simple.html:475
+msgid "Organiza diferentes ministerios y grupos pequeños en tableros separados"
+msgstr "Organize different ministries and small groups into separate boards"
+
+#: app/templates/tableros/lista_simple.html:482
+msgid "Ver Plantillas"
+msgstr "View Templates"
+
+#: app/templates/tableros/lista_simple.html:487
+msgid "Plantilla Excel"
+msgstr "Excel Template"
+
+#: app/templates/tableros/lista_simple.html:492
+msgid "Ver Dashboard"
+msgstr "View Dashboard"
+
+#: app/templates/tableros/lista_simple.html:510
+msgid "Buscar tableros por nombre o descripción..."
+msgstr "Search boards by name or description..."
+
+#: app/templates/tableros/lista_simple.html:519
+msgid "Favoritos"
+msgstr "Favorites"
+
+#: app/templates/tableros/lista_simple.html:525
+msgid "Actividad"
+msgstr "Activity"
+
+#: app/templates/tableros/lista_simple.html:603
+msgid "No se encontraron tableros que coincidan con"
+msgstr "No boards found matching"
+
+#: app/templates/tableros/ver.html:36
+msgid "Board_Stats_Lists"
+msgstr "Lists"
+
+#: app/templates/tableros/ver.html:41
+msgid "Board_Stats_People"
+msgstr "People"
+
+#: app/templates/tableros/ver.html:55
+msgid "Deshacer"
+msgstr ""
+
+#: app/templates/tableros/ver.html:59
+msgid "Seleccionar"
+msgstr "Select"
+
+#: app/templates/tableros/ver.html:63
+msgid "Historial"
+msgstr ""
+
+#: app/templates/tableros/ver.html:67
+msgid "Solo Listas"
+msgstr "Lists Only"
+
+#: app/templates/tableros/ver.html:72
+msgid "Btn_New_List"
+msgstr "New List"
+
+#: app/templates/tableros/ver.html:75
+msgid "Btn_New_Person"
+msgstr "New Person"
+
+#: app/templates/tableros/ver.html:88
+msgid "Buscar personas por nombre, teléfono..."
+msgstr "Search people by name, phone..."
+
+#: app/templates/tableros/ver.html:91
+msgid "Todos"
+msgstr "All"
+
+#: app/templates/tableros/ver.html:92
+msgid "Casados"
+msgstr "Married"
+
+#: app/templates/tableros/ver.html:93
+msgid "Solteros"
+msgstr "Single"
+
+#: app/templates/tableros/ver.html:94
+msgid "Con Hijos"
+msgstr "With Children"
+
+#: app/templates/tableros/ver.html:163
+msgid "Dirección"
+msgstr "Address"
+
+#: app/templates/tableros/ver.html:167
+msgid "CP"
+msgstr "Zip"
+
+#: app/templates/tableros/ver.html:173 app/templates/tableros/ver.html:263
+msgid "Email"
+msgstr "Email"
+
+#: app/templates/tableros/ver.html:178 app/templates/tableros/ver.html:243
+msgid "Edad"
+msgstr "Age"
+
+#: app/templates/tableros/ver.html:179 app/templates/tableros/ver.html:244
+msgid "años"
+msgstr "years"
+
+#: app/templates/tableros/ver.html:184
+msgid "Cumpleaños"
+msgstr "Birthday"
+
+#: app/templates/tableros/ver.html:190
+msgid "Hijos"
+msgstr "Children"
+
+#: app/templates/tableros/ver.html:198
+#, fuzzy
+msgid "Ocupación"
+msgstr "Location"
+
+#: app/templates/tableros/ver.html:216
+msgid "Bautizado"
+msgstr ""
+
+#: app/templates/tableros/ver.html:232
+msgid "Datos del Cónyuge"
+msgstr "Spouse Details"
+
+#: app/templates/tableros/ver.html:250
+msgid "Teléfono"
+msgstr "Phone"
+
+#: app/templates/tableros/ver.html:276
+msgid "Trabajo/Ocupación"
+msgstr ""
+
+#: app/templates/tableros/ver.html:283
+msgid "Aniversario"
+msgstr "Anniversary"
+
+#: app/templates/tableros/ver.html:314
+msgid "Mapa de Ubicaciones"
+msgstr "Location Map"
+
+#: app/templates/tableros/ver.html:317
+msgid "Centrar"
+msgstr "Center"
+
+#: app/templates/tableros/ver.html:321
+msgid "Agrupar"
+msgstr "Cluster"
+
+#~ msgid "Hello, Blessings!"
+#~ msgstr "Hello, Blessings!"
+
+#~ msgid "Líder de Ministerio"
+#~ msgstr "Ministry Leader"
+
+#~ msgid "¡Todo al día! 🎉"
+#~ msgstr "All caught up! 🎉"
+
+#~ msgid "Sin resultados"
+#~ msgstr "No results"
+
+#~ msgid "Limpiar búsqueda"
+#~ msgstr "Clear search"
+
+#~ msgid "Nueva Lista"
+#~ msgstr "New List"
+
+#~ msgid "Nueva Persona"
+#~ msgstr "New Person"
+
+#~ msgid "Trabajo"
+#~ msgstr "Job"
+
+#~ msgid "Map_Title_Locations"
+#~ msgstr "Locations"
+
+#~ msgid "Map_Btn_Cluster"
+#~ msgstr "Cluster by Location"
+
+#~ msgid "Modal_New_List_Title"
+#~ msgstr "New List"
+
+#~ msgid "Modal_New_List_Label_Name"
+#~ msgstr "List Name"
+
+#~ msgid "Btn_Save"
+#~ msgstr "Save"
+
+#~ msgid "Modal_New_Person_Title"
+#~ msgstr "New Person"
+
+#~ msgid "Label_FirstName"
+#~ msgstr "First Name"
+
+#~ msgid "Label_LastName"
+#~ msgstr "Last Name"
+
+#~ msgid "Label_Email"
+#~ msgstr "Email"
+
+#~ msgid "Label_Phone"
+#~ msgstr "Phone"
+
+#~ msgid "Label_Address"
+#~ msgstr "Address"
+
+#~ msgid "Btn_Use_Current_Location"
+#~ msgstr "Use Current Location"
+
+#~ msgid "Label_List"
+#~ msgstr "List"
+
+#~ msgid "Settings"
+#~ msgstr "Settings"
+

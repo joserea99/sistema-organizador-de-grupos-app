@@ -20,6 +20,8 @@ class Usuario(db.Model):
     rol = db.Column(db.String(20), default='user')
     suscripcion_activa = db.Column(db.Boolean, default=False)
     stripe_customer_id = db.Column(db.String(120))
+    preferred_language = db.Column(db.String(5), default='es')
+
     
     # Relaciones
     tableros = db.relationship('Tablero', backref='creador', lazy=True)
@@ -209,6 +211,14 @@ class Tarjeta(db.Model):
     numero_hijos = db.Column(db.Integer, default=0)
     edades_hijos = db.Column(db.String(100)) # Guardado como string "5,8,12"
     
+    # Datos del Cónyuge (Ampliado)
+    edad_conyuge = db.Column(db.Integer)
+    telefono_conyuge = db.Column(db.String(50))
+    email_conyuge = db.Column(db.String(120)) # New field
+    trabajo_conyuge = db.Column(db.String(100))
+    fecha_matrimonio = db.Column(db.Date)
+    notas = db.Column(db.Text) # Notas generales
+    
     # Datos eclesiásticos
     bautizado = db.Column(db.Boolean, default=False)
     es_lider = db.Column(db.Boolean, default=False)
@@ -253,6 +263,7 @@ class Tarjeta(db.Model):
             'nombre_conyuge': self.nombre_conyuge,
             'edad_conyuge': self.edad_conyuge if hasattr(self, 'edad_conyuge') else None, # Handle potential missing attr
             'telefono_conyuge': self.telefono_conyuge if hasattr(self, 'telefono_conyuge') else None,
+            'email_conyuge': self.email_conyuge if hasattr(self, 'email_conyuge') else None,
             'trabajo_conyuge': self.trabajo_conyuge if hasattr(self, 'trabajo_conyuge') else None,
             'fecha_matrimonio': str(self.fecha_matrimonio) if hasattr(self, 'fecha_matrimonio') and self.fecha_matrimonio else None,
             'bautizado': self.bautizado,

@@ -226,38 +226,38 @@
         {% endwith %}
 
         <div class="profile-header">
-            <h1>👤 Mi Perfil</h1>
+            <h1>👤 {{ _('Mi Perfil') }}</h1>
             <p><strong>{{ usuario.nombre_completo or usuario.username }}</strong></p>
             <p>{{ usuario.email }}</p>
             {% if usuario.fecha_registro %}
             {% if usuario.fecha_registro is string %}
-            <p>Miembro desde: {{ usuario.fecha_registro }}</p>
+            <p>{{ _('Miembro desde') }}: {{ usuario.fecha_registro }}</p>
             {% else %}
-            <p>Miembro desde: {{ usuario.fecha_registro.strftime('%d de %B de %Y') }}</p>
+            <p>{{ _('Miembro desde') }}: {{ usuario.fecha_registro.strftime('%d de %B de %Y') }}</p>
             {% endif %}
             {% endif %}
             {% if usuario.ultimo_acceso %}
             {% if usuario.ultimo_acceso is string %}
-            <p>Último acceso: {{ usuario.ultimo_acceso }}</p>
+            <p>{{ _('Último acceso') }}: {{ usuario.ultimo_acceso }}</p>
             {% else %}
-            <p>Último acceso: {{ usuario.ultimo_acceso.strftime('%d/%m/%Y a las %H:%M') }}</p>
+            <p>{{ _('Último acceso') }}: {{ usuario.ultimo_acceso.strftime('%d/%m/%Y a las %H:%M') }}</p>
             {% endif %}
             {% endif %}
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>📋 Listas Creadas</h3>
+                <h3>📋 {{ _('Listas Creadas') }}</h3>
                 <div class="stat-number">{{ stats.total_listas }}</div>
             </div>
 
             <div class="stat-card">
-                <h3>👥 Total Personas</h3>
+                <h3>👥 {{ _('Total Personas') }}</h3>
                 <div class="stat-number">{{ stats.total_tarjetas }}</div>
             </div>
 
             <div class="stat-card">
-                <h3>📊 Promedio por Lista</h3>
+                <h3>📊 {{ _('Promedio por Lista') }}</h3>
                 <div class="stat-number">
                     {% if stats.total_listas > 0 %}
                     {{ "%.1f"|format(stats.total_tarjetas / stats.total_listas) }}
@@ -269,15 +269,15 @@
         </div>
 
         <div class="info-section">
-            <h2>ℹ️ Información de la Cuenta</h2>
+            <h2>ℹ️ {{ _('Información de la Cuenta') }}</h2>
 
             <div class="info-row">
-                <span class="info-label">Usuario:</span>
+                <span class="info-label">{{ _('Usuario') }}:</span>
                 <span class="info-value">{{ usuario.username }}</span>
             </div>
 
             <div class="info-row">
-                <span class="info-label">Nombre completo:</span>
+                <span class="info-label">{{ _('Nombre completo') }}:</span>
                 <span class="info-value">{{ usuario.nombre_completo or 'No especificado' }}</span>
             </div>
 
@@ -287,7 +287,7 @@
             </div>
 
             <div class="info-row">
-                <span class="info-label">Fecha de registro:</span>
+                <span class="info-label">{{ _('Fecha de registro') }}:</span>
                 <span class="info-value">
                     {% if usuario.fecha_registro %}
                     {% if usuario.fecha_registro is string %}
@@ -302,22 +302,22 @@
             </div>
 
             <div class="info-row">
-                <span class="info-label">ID de usuario:</span>
+                <span class="info-label">{{ _('ID de usuario') }}:</span>
                 <span class="info-value">#{{ usuario.id }}</span>
             </div>
         </div>
 
         {% if sesiones %}
         <div class="info-section">
-            <h2>🕒 Últimas Sesiones</h2>
-            <p style="color: #666; margin-bottom: 15px;">Historial de los últimos accesos a tu cuenta</p>
+            <h2>🕒 {{ _('Últimas Sesiones') }}</h2>
+            <p style="color: #666; margin-bottom: 15px;">{{ _('Historial de los últimos accesos a tu cuenta') }}</p>
 
             <table class="sessions-table">
                 <thead>
                     <tr>
-                        <th>Fecha y Hora</th>
-                        <th>Dirección IP</th>
-                        <th>Dispositivo</th>
+                        <th>{{ _('Fecha y Hora') }}</th>
+                        <th>{{ _('Dirección IP') }}</th>
+                        <th>{{ _('Dispositivo') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -347,22 +347,24 @@
         {% endif %}
 
         <div class="info-section">
-            <h2>🛡️ Seguridad y Privacidad</h2>
-            <p style="color: #666; margin-bottom: 15px;">Tu información está protegida y es completamente privada</p>
+            <h2>🛡️ {{ _('Seguridad y Privacidad') }}</h2>
+            <p style="color: #666; margin-bottom: 15px;">{{ _('Tu información está protegida y es completamente
+                privada') }}</p>
 
             <ul style="color: #666; line-height: 1.6;">
-                <li>✅ Tus datos solo son visibles para ti</li>
-                <li>✅ Las contraseñas están encriptadas</li>
-                <li>✅ Sesiones seguras con autenticación</li>
-                <li>✅ No compartimos información con terceros</li>
-                <li>✅ Puedes eliminar tu cuenta en cualquier momento</li>
+                <li>✅ {{ _('Tus datos solo son visibles para ti') }}</li>
+                <li>✅ {{ _('Las contraseñas están encriptadas') }}</li>
+                <li>✅ {{ _('Sesiones seguras con autenticación') }}</li>
+                <li>✅ {{ _('No compartimos información con terceros') }}</li>
+                <li>✅ {{ _('Puedes eliminar tu cuenta en cualquier momento') }}</li>
             </ul>
         </div>
 
         <div class="actions">
-            <a href="{{ url_for('main.index') }}" class="btn">🏠 Volver al Inicio</a>
-            <a href="{{ url_for('auth.change_password') }}" class="btn btn-secondary">🔒 Cambiar Contraseña</a>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">🚪 Cerrar Sesión</a>
+            <a href="{{ url_for('main.index') }}" class="btn">🏠 {{ _('Volver al Inicio') }}</a>
+            <a href="{{ url_for('auth.change_password') }}" class="btn btn-secondary">🔒 {{ _('Cambiar Contraseña')
+                }}</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary">🚪 {{ _('Cerrar Sesión') }}</a>
         </div>
     </div>
 </body>

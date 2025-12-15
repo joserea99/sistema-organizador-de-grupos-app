@@ -166,3 +166,29 @@ def stripe_info():
         return f"Error connecting to Stripe: {str(e)}"
 
 
+@main_bp.route('/set-language/<language>')
+def set_language(language):
+    """Change the application language"""
+    from flask import request, redirect, url_for
+    
+    # Validate language
+    if language not in ['es', 'en']:
+        print(f"DEBUG: Invalid language attempted: {language}")
+        return redirect(request.referrer or url_for('main.dashboard'))
+    
+    # Save to session
+    session['language'] = language
+    print(f"DEBUG: Session language set to: {language}")
+    
+    # If user is authenticated, save to database
+    if 'user_id' in session:
+        from app.models import Usuario, db
+        user = Usuario.query.get(session['user_id'])
+        if user:
+            print(f"DEBUG: Updating user {user.username} pref to {language}")
+            user.preferred_language = language
+            db.session.commit()
+            print("DEBUG: Commit successful")
+    
+    # Redirect back to referrer or dashboard
+    return redirect(request.referrer or url_for('main.dashboard'))
