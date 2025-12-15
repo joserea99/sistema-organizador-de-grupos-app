@@ -801,3 +801,19 @@ msgstr "Cluster"
 #~ msgid "Settings"
 #~ msgstr "Settings"
 
+
+#: app/templates/tableros/ver.html:47
+msgid "Tema Clásico"
+msgstr "Classic Theme"
+
+#: app/templates/tableros/ver.html:48
+msgid "Tema Moderno"
+msgstr "Modern Theme"
+
+#: app/templates/tableros/ver.html:49
+msgid "Tema Minimalista"
+msgstr "Minimalist Theme"
+
+#: app/templates/tableros/ver.html:50
+msgid "Tema Oscuro"
+msgstr "Dark Theme"

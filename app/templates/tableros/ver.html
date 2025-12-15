@@ -44,10 +44,10 @@
         <div class="flex gap-2">
             <!-- Selector de Tema -->
             <select id="theme-selector" class="form-select text-sm w-auto">
-                <option value="clasico">Tema Clásico</option>
-                <option value="moderno">Tema Moderno</option>
-                <option value="minimalista">Tema Minimalista</option>
-                <option value="oscuro">Tema Oscuro</option>
+                <option value="clasico">{{ _('Tema Clásico') }}</option>
+                <option value="moderno">{{ _('Tema Moderno') }}</option>
+                <option value="minimalista">{{ _('Tema Minimalista') }}</option>
+                <option value="oscuro">{{ _('Tema Oscuro') }}</option>
             </select>
 
             <button class="btn btn-warning" id="btnDeshacer" {% if not tablero.undo_stack %}disabled{% endif %}

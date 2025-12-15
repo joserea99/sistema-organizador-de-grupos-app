@@ -17,6 +17,13 @@ try:
             from flask_migrate import upgrade
             upgrade()
             print("✅ Automatic migration successful!", file=sys.stderr, flush=True)
+            
+            # Compile translations
+            import subprocess
+            print("🌍 Compiling translations...", file=sys.stderr, flush=True)
+            subprocess.run(["pybabel", "compile", "-d", "app/translations"], check=False)
+            print("✅ Translations compiled!", file=sys.stderr, flush=True)
+            
         except Exception as e:
             print(f"❌ Automatic migration failed: {e}", file=sys.stderr, flush=True)
             # We don't exit here, hoping the app might still work or shows the error later
