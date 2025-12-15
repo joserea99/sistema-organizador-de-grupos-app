@@ -9,6 +9,18 @@ try:
     
     print("Creating Flask app...", file=sys.stderr, flush=True)
     app = create_app()
+    
+    # Auto-run migrations on startup (because Railway behaves unexpectedly with Procfile)
+    with app.app_context():
+        print("🔧 Attempting automatic database migration in run.py...", file=sys.stderr, flush=True)
+        try:
+            from flask_migrate import upgrade
+            upgrade()
+            print("✅ Automatic migration successful!", file=sys.stderr, flush=True)
+        except Exception as e:
+            print(f"❌ Automatic migration failed: {e}", file=sys.stderr, flush=True)
+            # We don't exit here, hoping the app might still work or shows the error later
+            
     print("App created successfully!", file=sys.stderr, flush=True)
     
 except Exception as e:
