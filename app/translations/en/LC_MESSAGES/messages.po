@@ -817,3 +817,23 @@ msgstr "Minimalist Theme"
 #: app/templates/tableros/ver.html:50
 msgid "Tema Oscuro"
 msgstr "Dark Theme"
+
+#: app/templates/auth/profile.html:Stripe
+msgid "Estado de Suscripción"
+msgstr "Subscription Status"
+
+#: app/templates/auth/profile.html:Stripe
+msgid "Tienes una suscripción Premium activa"
+msgstr "You have an active Premium subscription"
+
+#: app/templates/auth/profile.html:Stripe
+msgid "Gestionar Suscripción"
+msgstr "Manage Subscription"
+
+#: app/templates/auth/profile.html:Stripe
+msgid "No tienes una suscripción activa. ¡Desbloquea todas las funciones!"
+msgstr "You do not have an active subscription. Unlock all features!"
+
+#: app/templates/auth/profile.html:Stripe
+msgid "Suscribirse a Premium"
+msgstr "Subscribe to Premium"

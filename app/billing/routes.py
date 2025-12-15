@@ -60,19 +60,47 @@ def success():
 def cancel():
     return render_template('billing/cancel.html')
 
+@billing_bp.route('/create-portal-session', methods=['POST'])
+def create_portal_session():
+    stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
+    user = user_storage.get_user(session['user_id'])
+    
+    if not user or not user.stripe_customer_id:
+        flash("No se encontró información de suscripción.", "error")
+        return redirect(url_for('auth.profile'))
+
+    try:
+        # Authenticate your user.
+        checkout_session = stripe.billing_portal.Session.create(
+            customer=user.stripe_customer_id,
+            return_url=url_for('auth.profile', _external=True),
+        )
+        return redirect(checkout_session.url, code=303)
+    except Exception as e:
+        flash(f"Error al conectar con Stripe Portal: {str(e)}", "error")
+        return redirect(url_for('auth.profile'))
+
 @billing_bp.route('/webhook', methods=['POST'])
 def webhook():
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
+    webhook_secret = current_app.config['STRIPE_WEBHOOK_SECRET']
     
-    # TEMPORARY: Skip signature verification for debugging
-    # TODO: Re-enable signature verification once issue is resolved
+    payload = request.get_data()
+    sig_header = request.headers.get('Stripe-Signature')
+
     try:
-        event_data = request.get_json()
-        current_app.logger.info(f"Webhook received (bypassing signature): {event_data.get('type')}")
-        event = event_data
-    except Exception as e:
-        current_app.logger.error(f"Error parsing webhook JSON: {e}")
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
+        )
+        current_app.logger.info(f"Webhook verified: {event['type']}")
+    except ValueError as e:
+        # Invalid payload
+        current_app.logger.error("Error parsing payload: " + str(e))
         return 'Invalid payload', 400
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        current_app.logger.error("Error verifying webhook signature: " + str(e))
+        return 'Invalid signature', 400
 
     # Handle the event
     if event['type'] == 'checkout.session.completed':
