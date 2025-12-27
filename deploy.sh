@@ -6,19 +6,7 @@ echo "Starting Railway Deployment"
 echo "========================================="
 
 echo "Step 1: Running database migrations..."
-import os
-import sys
-os.environ.setdefault('FLASK_APP', 'run.py')
-
-from app import create_app
-from flask_migrate import upgrade
-
-app = create_app()
-with app.app_context():
-    print("Applying database migrations...")
-    upgrade()
-    print("✓ Migrations completed successfully")
-PYTHON_SCRIPT
+python perform_migrations.py
 
 echo ""
 echo "Step 2: Compiling translations..."

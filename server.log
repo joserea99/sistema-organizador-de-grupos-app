@@ -66,3 +66,100 @@ Running in development mode
 127.0.0.1 - - [14/Dec/2025 22:31:30] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
 127.0.0.1 - - [14/Dec/2025 22:31:35] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
 127.0.0.1 - - [14/Dec/2025 22:31:38] "[35m[1mGET /favicon.ico HTTP/1.1[0m" 204 -
+ * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/add_preferred_language.py', reloading
+DEBUG: Intentando registrar usuario: test, test@test.com
+DEBUG: Fallo al crear usuario (duplicado o error)
+DEBUG: Intentando registrar usuario: test2, test2@test.com
+DEBUG: Usuario creado exitosamente: c8de154c-2eef-4423-943c-ec329422cdb3
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+App created successfully!
+Running in development mode
+ * Debugger is active!
+ * Debugger PIN: 113-832-258
+ * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/force_fix_language_column.py', reloading
+ * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/force_fix_language_column.py', reloading
+ * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/force_fix_language_column.py', reloading
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+App created successfully!
+Running in development mode
+ * Debugger is active!
+ * Debugger PIN: 113-832-258
+ * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/run.py', reloading
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+🔧 Attempting automatic database migration in run.py...
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> add_preferred_language, Add preferred_language to usuarios
+❌ Automatic migration failed: usuarios
+App created successfully!
+Running in development mode
+WARNI [werkzeug]  * Debugger is active!
+INFO  [werkzeug]  * Debugger PIN: 113-832-258
+INFO  [werkzeug]  * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/add_tarjeta_fields.py', reloading
+INFO  [werkzeug]  * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/add_tarjeta_fields.py', reloading
+INFO  [werkzeug]  * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/migrations/versions/add_tarjeta_fields.py', reloading
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+🔧 Attempting automatic database migration in run.py...
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> add_preferred_language, Add preferred_language to usuarios
+❌ Automatic migration failed: usuarios
+App created successfully!
+Running in development mode
+WARNI [werkzeug]  * Debugger is active!
+INFO  [werkzeug]  * Debugger PIN: 113-832-258
+INFO  [werkzeug]  * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/run.py', reloading
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+🔧 Attempting automatic database migration in run.py...
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> add_preferred_language, Add preferred_language to usuarios
+❌ Automatic migration failed: usuarios
+App created successfully!
+Running in development mode
+WARNI [werkzeug]  * Debugger is active!
+INFO  [werkzeug]  * Debugger PIN: 113-832-258
+INFO  [werkzeug]  * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/app/billing/routes.py', reloading
+INFO  [werkzeug]  * Detected change in '/Users/joserea/tu_proyecto_LIMPIO/app/billing/routes.py', reloading
+ * Restarting with watchdog (fsevents)
+Starting application...
+Importing create_app...
+Creating Flask app...
+🔧 Attempting automatic database migration in run.py...
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> add_preferred_language, Add preferred_language to usuarios
+❌ Automatic migration failed: usuarios
+App created successfully!
+Running in development mode
+WARNI [werkzeug]  * Debugger is active!
+INFO  [werkzeug]  * Debugger PIN: 113-832-258
+ERROR [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] code 400, message Bad request version ('\x845¾uR³yñÂç#id\x97\x01i½!å\x98á\x97AÜØÊ\xad\x057«33\x00*\x8a\x8a\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+INFO  [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03¿à\x17Mâm"¢\x07{³wÅÀ¤ì\x9c\x12.ì\x95ý$\x0eÅß\x0c/\x0dÙ¦ê \x845¾uR³yñÂç#id\x97\x01i½!å\x98á\x97AÜØÊ­\x057«33\x00*\x8a\x8a\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+ERROR [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] code 400, message Bad request syntax ('\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03íp¸§')
+INFO  [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03íp¸§[0m" 400 -
+ERROR [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] code 400, message Bad request syntax ('\x16\x03\x01\x00}\x01\x00\x00y\x03\x01iû\x03\xad')
+INFO  [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] "[31m[1m\x16\x03\x01\x00}\x01\x00\x00y\x03\x01iû\x03­[0m" 400 -
+ERROR [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] code 400, message Bad request version ('.u\x97\x97ð{\x00*ÚÚ\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+INFO  [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03î\x10µ\x07H\x08OÚs5¸\x84ÊÖÑüò«½¶ð~3å\x1a^í\x0c¡!iµ .R\x95\x9f\x8f9±\x06 (;ÓX(b1Ô(\x97o¢\x01ÄÎ1\x1f.u\x97\x97ð{\x00*ÚÚ\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+ERROR [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] code 400, message Bad request version ('\x00,**\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+INFO  [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] "[31m[1m\x16\x03\x01\x02\x00\x01\x00\x01ü\x03\x03\x89Å\x7f\x93\x0e\x81\x00+AA\x0c°e§\x8d:~w \x17ãÐ\x10¯pC\x11\x99"òq± ÷\x0f\x074\x92ßB`E¥/ôE%<DD¦Ê V7Yeá×I\x8aBøË\x1c\x00,**\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À[0m" 400 -
+ERROR [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] code 400, message Bad request syntax ('\x16\x03\x01\x00}\x01\x00\x00y\x03\x01Ò0Ý\x8bWæ\x8f\x03@3sÄ"rïß°ÿ\x99ïÜs\x905ëî\x032\x11HÅû\x00\x00\x14À')
+INFO  [werkzeug] 127.0.0.1 - - [15/Dec/2025 14:58:01] "[31m[1m\x16\x03\x01\x00}\x01\x00\x00y\x03\x01Ò0Ý\x8bWæ\x8f\x03@3sÄ"rïß°ÿ\x99ïÜs\x905ëî\x032\x11HÅû\x00\x00\x14À[0m" 400 -
+/opt/homebrew/Cellar/python@3.13/3.13.2/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:277: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-siotvv7f'}
+  warnings.warn(
