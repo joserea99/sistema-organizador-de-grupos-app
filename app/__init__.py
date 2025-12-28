@@ -60,6 +60,9 @@ def create_app():
     app.config['STRIPE_WEBHOOK_SECRET'] = os.getenv('STRIPE_WEBHOOK_SECRET', '')
     app.config['STRIPE_PRICE_ID'] = os.getenv('STRIPE_PRICE_ID', 'price_tu_id_de_precio')
 
+    # Force HTTPS for external URLs (important for webhooks)
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+
     # Database Config
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
