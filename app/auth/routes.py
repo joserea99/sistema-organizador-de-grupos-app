@@ -22,6 +22,10 @@ def crear_tablero_ejemplo(user_id):
         lista_activos = tablero.agregar_lista("Miembros Activos", "#10b981")
         lista_lideres = tablero.agregar_lista("Líderes", "#f59e0b")
         
+        # Commit lists to database
+        from app.models import db
+        db.session.commit()
+        
         # Add sample people with FAKE data (clearly marked as examples)
         lista_nuevos.agregar_persona(
             nombre="Juan",
@@ -62,6 +66,9 @@ def crear_tablero_ejemplo(user_id):
             ministerio="Ejemplo",
             responsable="Demo"
         )
+        
+        # Commit all personas to database
+        db.session.commit()
         
         storage.save_to_disk()
         return tablero
