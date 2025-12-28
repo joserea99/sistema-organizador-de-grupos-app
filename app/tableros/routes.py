@@ -110,9 +110,10 @@ def lista():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
 
-    # Obtener tableros reales del storage
-    tableros = [t.to_dict() for t in storage.get_all_tableros()]
-    stats = storage.get_stats()
+    # SECURITY FIX: Filter tableros by current user
+    user_id = session.get('user_id')
+    tableros = [t.to_dict() for t in storage.get_tableros_usuario(user_id)]
+    stats = storage.get_stats(user_id)
     
     return render_template("tableros/lista.html", tableros=tableros, stats=stats)
 
@@ -142,6 +143,11 @@ def ver(tablero_id):
     if not tablero:
         flash("Tablero no encontrado", "error")
         return redirect(url_for("tableros.lista"))
+    
+    # SECURITY FIX: Verify ownership
+    if tablero.creador_id != session.get('user_id'):
+        flash("No tienes permiso para ver este tablero", "error")
+        return redirect(url_for("tableros.lista"))
 
     tablero_dict = tablero.to_dict()
     listas = tablero_dict['listas']
@@ -163,6 +169,10 @@ def get_tablero_data(tablero_id):
     tablero = storage.get_tablero(tablero_id)
     if not tablero:
         return jsonify({'error': 'Tablero no encontrado'}), 404
+    
+    # SECURITY FIX: Verify ownership
+    if tablero.creador_id != session.get('user_id'):
+        return jsonify({'error': 'No autorizado'}), 403
         
     return jsonify(tablero.to_dict())
 
@@ -289,9 +299,11 @@ def agregar_tarjeta():
                     lista_encontrada = lista
                     tablero_encontrado = tablero
         
-        # Si no se encontró (o no venía tablero_id), buscar en todos
+        
+        # Si no se encontró (o no venía tablero_id), buscar en todos los tableros del usuario
         if not lista_encontrada:
-            for tablero in storage.get_all_tableros():
+            user_id = session.get('user_id')
+            for tablero in storage.get_tableros_usuario(user_id):
                 lista = tablero.get_lista(lista_id)
                 if lista:
                     lista_encontrada = lista
@@ -302,7 +314,8 @@ def agregar_tarjeta():
             # Intentar buscar lista_id en el body si no vino en args
             if not lista_id and data.get('lista_id'):
                 lista_id = data.get('lista_id')
-                for tablero in storage.get_all_tableros():
+                user_id = session.get('user_id')
+                for tablero in storage.get_tableros_usuario(user_id):
                     lista = tablero.get_lista(lista_id)
                     if lista:
                         lista_encontrada = lista
@@ -544,11 +557,12 @@ def importar_excel(lista_id):
         return redirect(url_for("auth.login"))
     
     try:
-        # Buscar la lista en todos los tableros
+        # Buscar la lista en todos los tableros del usuario
         lista_encontrada = None
         tablero_encontrado = None
+        user_id = session.get('user_id')
         
-        for tablero in storage.get_all_tableros():
+        for tablero in storage.get_tableros_usuario(user_id):
             lista = tablero.get_lista(lista_id)
             if lista:
                 lista_encontrada = lista
@@ -732,8 +746,9 @@ def eliminar_lista(lista_id):
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
-        # Buscar la lista en todos los tableros
-        for tablero in storage.get_all_tableros():
+        # Buscar la lista en todos los tableros del usuario
+        user_id = session.get('user_id')
+        for tablero in storage.get_tableros_usuario(user_id):
             lista = tablero.get_lista(lista_id)
             if lista:
                 # Verificar que la lista no tenga tarjetas
@@ -792,8 +807,9 @@ def eliminar_tarjeta(tarjeta_id):
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
-        # Buscar la tarjeta en todos los tableros y listas
-        for tablero in storage.get_all_tableros():
+        # Buscar la tarjeta en todos los tableros y listas del usuario
+        user_id = session.get('user_id')
+        for tablero in storage.get_tableros_usuario(user_id):
             for lista in tablero.listas:
                 tarjeta = lista.get_tarjeta(tarjeta_id)
                 if tarjeta:
@@ -941,11 +957,12 @@ def editar_lista(lista_id):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    # Buscar la lista en todos los tableros
+    # Buscar la lista en todos los tableros del usuario
     lista_encontrada = None
     tablero_encontrado = None
+    user_id = session.get('user_id')
     
-    for tablero in storage.get_all_tableros():
+    for tablero in storage.get_tableros_usuario(user_id):
         lista = tablero.get_lista(lista_id)
         if lista:
             lista_encontrada = lista
@@ -985,12 +1002,13 @@ def editar_tarjeta(lista_id, tarjeta_id):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    # Buscar la tarjeta en todos los tableros
+    # Buscar la tarjeta en todos los tableros del usuario
     tarjeta_encontrada = None
     lista_encontrada = None
     tablero_encontrado = None
+    user_id = session.get('user_id')
     
-    for tablero in storage.get_all_tableros():
+    for tablero in storage.get_tableros_usuario(user_id):
         for lista in tablero.listas:
             tarjeta = lista.get_tarjeta(tarjeta_id)
             if tarjeta:
@@ -1466,11 +1484,12 @@ def mover_lista():
         if not lista_id:
             return jsonify({'error': 'Lista ID requerido'}), 400
         
-        # Buscar la lista y el tablero
+        # Buscar la lista y el tablero del usuario
         lista_encontrada = None
         tablero_encontrado = None
+        user_id = session.get('user_id')
         
-        for tablero in storage.get_all_tableros():
+        for tablero in storage.get_tableros_usuario(user_id):
             lista = tablero.get_lista(lista_id)
             if lista:
                 lista_encontrada = lista

@@ -17,11 +17,29 @@ def dashboard():
         if "user_id" not in session:
             return redirect(url_for("auth.login"))
 
-        stats = storage.get_stats()
-        tableros_activos = storage.get_recent_tableros()
+        # SECURITY FIX: Filter by current user
+        user_id = session.get('user_id')
+        stats = storage.get_stats(user_id)
         
-        # Obtener cumpleaños próximos y formatearlos como recordatorios
-        cumpleanos = storage.get_upcoming_birthdays()
+        # Get user's recent tableros
+        user_tableros = storage.get_tableros_usuario(user_id)
+        tableros_activos = sorted(user_tableros, key=lambda t: t.fecha_creacion, reverse=True)[:4]
+        
+        # Obtener cumpleaños próximos solo de las personas del usuario
+        from app.models import Lista, Tarjeta
+        
+        # Get lista IDs for user's tableros
+        lista_ids = []
+        for tablero in user_tableros:
+            lista_ids.extend([l.id for l in tablero.listas])
+        
+        # Get birthdays only from user's listas
+        cumpleanos = []
+        if lista_ids:
+            cumpleanos = storage.get_upcoming_birthdays()
+            # Filter to only include personas in user's listas
+            cumpleanos = [p for p in cumpleanos if p.lista_id in lista_ids]
+        
         recordatorios_urgentes = []
         
         from datetime import datetime
@@ -80,10 +98,22 @@ def personas():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    from app.models import Tarjeta
+    from app.models import Tarjeta, Lista
     
-    # Obtener todas las tarjetas
-    todas_tarjetas = Tarjeta.query.all()
+    # SECURITY FIX: Only get tarjetas from user's tableros
+    user_id = session.get('user_id')
+    user_tableros = storage.get_tableros_usuario(user_id)
+    
+    # Get lista IDs for user's tableros
+    lista_ids = []
+    for tablero in user_tableros:
+        lista_ids.extend([l.id for l in tablero.listas])
+    
+    # Obtener solo las tarjetas del usuario
+    if lista_ids:
+        todas_tarjetas = Tarjeta.query.filter(Tarjeta.lista_id.in_(lista_ids)).all()
+    else:
+        todas_tarjetas = []
     
     # Diccionario para agrupar miembros únicos
     miembros = {}

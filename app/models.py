@@ -313,8 +313,15 @@ class TableroStorage:
     def __init__(self):
         self._runtime_data = {} # Cache for transient data (undo_stack, history) keyed by tablero_id
 
-    def get_all_tableros(self):
+    def get_all_tableros(self, user_id=None):
+        """Get all tableros, optionally filtered by user"""
+        if user_id:
+            return Tablero.query.filter_by(creador_id=user_id).all()
         return Tablero.query.all()
+    
+    def get_tableros_usuario(self, user_id):
+        """Get tableros for a specific user (recommended method)"""
+        return Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all()
         
     def get_tablero(self, tablero_id):
         tablero = Tablero.query.get(tablero_id)
@@ -339,8 +346,40 @@ class TableroStorage:
         db.session.commit()
         return tablero
         
-    def get_stats(self):
+    def get_stats(self, user_id=None):
+        """Get statistics, optionally filtered by user"""
         now = datetime.now()
+        
+        if user_id:
+            # Get user's tableros
+            tableros_usuario = Tablero.query.filter_by(creador_id=user_id).all()
+            tablero_ids = [t.id for t in tableros_usuario]
+            
+            # Get listas for user's tableros
+            listas_usuario = Lista.query.filter(Lista.tablero_id.in_(tablero_ids)).all() if tablero_ids else []
+            lista_ids = [l.id for l in listas_usuario]
+            
+            # Get personas in user's listas
+            if lista_ids:
+                total_personas = Tarjeta.query.filter(Tarjeta.lista_id.in_(lista_ids)).count()
+                nuevos_mes = Tarjeta.query.filter(
+                    Tarjeta.lista_id.in_(lista_ids),
+                    extract('year', Tarjeta.fecha_creacion) == now.year,
+                    extract('month', Tarjeta.fecha_creacion) == now.month
+                ).count()
+            else:
+                total_personas = 0
+                nuevos_mes = 0
+            
+            return {
+                "total_tableros": len(tableros_usuario),
+                "total_listas": len(listas_usuario),
+                "total_personas": total_personas,
+                "nuevos_mes": nuevos_mes,
+                "recordatorios_pendientes": 0
+            }
+        
+        # Global stats (for admin or fallback)
         nuevos_mes = Tarjeta.query.filter(
             extract('year', Tarjeta.fecha_creacion) == now.year,
             extract('month', Tarjeta.fecha_creacion) == now.month
@@ -351,7 +390,7 @@ class TableroStorage:
             "total_listas": Lista.query.count(),
             "total_personas": Tarjeta.query.count(),
             "nuevos_mes": nuevos_mes,
-            "recordatorios_pendientes": 0 # Placeholder, will be calculated in route or separate method
+            "recordatorios_pendientes": 0
         }
 
     def get_recent_tableros(self, limit=4):

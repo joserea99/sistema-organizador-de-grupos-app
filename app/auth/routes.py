@@ -1,8 +1,73 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
-from app.models import UserStorage
+from app.models import UserStorage, storage
 
 auth_bp = Blueprint("auth", __name__)
 user_storage = UserStorage()
+
+def crear_tablero_ejemplo(user_id):
+    """Create a sample tablero for new users with FAKE data for demo purposes"""
+    try:
+        from datetime import date
+        
+        # Create sample tablero
+        tablero = storage.crear_tablero(
+            nombre="📖 Mi Primer Grupo",
+            descripcion="Tablero de ejemplo para conocer la aplicación",
+            icono="👥",
+            creador_id=user_id
+        )
+        
+        # Add sample lists
+        lista_nuevos = tablero.agregar_lista("Nuevos Contactos", "#3b82f6")
+        lista_activos = tablero.agregar_lista("Miembros Activos", "#10b981")
+        lista_lideres = tablero.agregar_lista("Líderes", "#f59e0b")
+        
+        # Add sample people with FAKE data (clearly marked as examples)
+        lista_nuevos.agregar_persona(
+            nombre="Juan",
+            apellido="Ejemplo",
+            direccion="Calle Ejemplo 123 (Demo)",
+            telefono="555-0100",
+            email="juan.ejemplo@demo.com",
+            edad=30,
+            estado_civil="Casado",
+            numero_hijos=2,
+            edades_hijos="5, 8",
+            nombre_conyuge="María Ejemplo",
+            responsable="Demo"
+        )
+        
+        lista_activos.agregar_persona(
+            nombre="María",
+            apellido="Demo",
+            direccion="Av. Demo 456 (Ejemplo)",
+            telefono="555-0200",
+            email="maria.demo@demo.com",
+            edad=25,
+            estado_civil="Soltera",
+            bautizado=True,
+            responsable="Demo"
+        )
+        
+        lista_lideres.agregar_persona(
+            nombre="Pedro",
+            apellido="Muestra",
+            direccion="Calle Muestra 789 (Demo)",
+            telefono="555-0300",
+            email="pedro.muestra@demo.com",
+            edad=35,
+            estado_civil="Casado",
+            bautizado=True,
+            es_lider=True,
+            ministerio="Ejemplo",
+            responsable="Demo"
+        )
+        
+        storage.save_to_disk()
+        return tablero
+    except Exception as e:
+        print(f"Error creating sample tablero: {e}")
+        return None
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -70,6 +135,15 @@ def register():
         
         if user:
             print(f"DEBUG: Usuario creado exitosamente: {user.id}")
+            
+            # ONBOARDING: Create sample tablero for new user
+            print(f"DEBUG: Creating sample tablero for new user {user.id}")
+            sample_tablero = crear_tablero_ejemplo(user.id)
+            if sample_tablero:
+                print(f"DEBUG: Sample tablero created: {sample_tablero.id}")
+            else:
+                print("DEBUG: Failed to create sample tablero")
+            
             flash("¡Cuenta creada exitosamente! Por favor inicia sesión.", "success")
             return redirect(url_for("auth.login"))
         else:
