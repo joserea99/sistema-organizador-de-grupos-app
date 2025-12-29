@@ -364,22 +364,42 @@ def debug_force_migrate():
              
         print("⚡️ Starting MANUAL migration via SUBPROCESS...", file=sys.stderr)
         
-        # Run migration in a separate process using the same python interpreter
-        result = subprocess.run(
-            [sys.executable, "-m", "flask", "db", "upgrade"],
-            capture_output=True,
-            text=True
-        )
+        # Subprocess failed (likely OOM), let's try Raw SQL execution in-process
+        # This avoids spawning a new process and saves memory
+        print("⚡️ Subprocess failed (Exit 1). Attempting Raw SQL Hotfix...", file=sys.stderr)
         
-        if result.returncode == 0:
-            print("✅ MANUAL migration successful!", file=sys.stderr)
-            return f"<h1>Migration Successful!</h1><pre>{result.stdout}</pre>", 200
-        else:
-            print(f"❌ MANUAL migration failed (code {result.returncode})", file=sys.stderr)
-            print(f"STDOUT: {result.stdout}", file=sys.stderr)
-            print(f"STDERR: {result.stderr}", file=sys.stderr)
-            return f"<h1>Migration Failed</h1><p>Exit Code: {result.returncode}</p><h3>STDERR:</h3><pre>{result.stderr}</pre><h3>STDOUT:</h3><pre>{result.stdout}</pre>", 500
+        from app import db
+        from sqlalchemy import text
+        
+        sql_commands = [
+            # Check/Add oauth_provider
+            "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS oauth_provider VARCHAR(20);",
+            # Check/Add oauth_id
+            "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS oauth_id VARCHAR(255);",
+            # Check/Add email_verified
+            "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;",
+            # Make password_hash nullable (Postgres syntax)
+            "ALTER TABLE usuarios ALTER COLUMN password_hash DROP NOT NULL;",
+            # Update Alembic Version to match 'add_oauth_columns' revision
+            "UPDATE alembic_version SET version_num = 'add_oauth_columns';"
+        ]
+        
+        executed_log = []
+        try:
+            for cmd in sql_commands:
+                print(f"Executing: {cmd}", file=sys.stderr)
+                db.session.execute(text(cmd))
+                executed_log.append(cmd)
             
+            db.session.commit()
+            print("✅ Raw SQL migration successful!", file=sys.stderr)
+            return f"<h1>Hotfix Migration Successful!</h1><p>Executed SQL commands directly to bypass memory limits.</p><pre>{chr(10).join(executed_log)}</pre>", 200
+            
+        except Exception as sql_err:
+            db.session.rollback()
+            print(f"❌ Raw SQL execution failed: {sql_err}", file=sys.stderr)
+            return f"<h1>Hotfix Failed</h1><p>Error: {sql_err}</p>", 500
+
     except Exception as e:
         import traceback
         error_info = traceback.format_exc()
