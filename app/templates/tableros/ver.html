@@ -34,11 +34,8 @@
             <p class="text-sm text-secondary">{{ tablero.descripcion }}</p>
             <div class="flex gap-4 mt-2 text-xs text-secondary">
                 <span><i class="fas fa-list mr-1"></i> {{ tablero.listas|length }} {{ _('Board_Stats_Lists') }}</span>
-                {% set total_personas = 0 %}
-                {% for lista in tablero.listas %}
-                {% set total_personas = total_personas + lista.tarjetas|length %}
-                {% endfor %}
-                <span><i class="fas fa-users mr-1"></i> {{ total_personas }} {{ _('Board_Stats_People') }}</span>
+                <span><i class="fas fa-users mr-1"></i> {{ tablero.total_tarjetas }} {{ _('Board_Stats_People')
+                    }}</span>
             </div>
         </div>
         <div class="flex gap-2">
