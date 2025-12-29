@@ -112,8 +112,12 @@ def create_app():
         from app.models import storage, TableroStorage
         
         # Initialize OAuth
-        from app.auth.oauth_helpers import init_oauth
-        init_oauth(app)
+        try:
+            from app.auth.oauth_helpers import init_oauth
+            init_oauth(app)
+        except Exception as e:
+            print(f"WARNING: OAuth initialization failed: {e}")
+            # Continue app startup without OAuth
     
     @app.route('/health')
     def health_check():

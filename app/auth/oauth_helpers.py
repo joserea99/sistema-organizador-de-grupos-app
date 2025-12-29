@@ -38,5 +38,12 @@ def generate_oauth_state():
 
 
 def get_oauth_redirect_uri(provider):
-    """Get the OAuth redirect URI for a provider"""
-    return url_for(f'auth.{provider}_callback', _external=True)
+    """Get the OAuth redirect URI for a provider, forcing HTTPS in production"""
+    uri = url_for(f'auth.{provider}_callback', _external=True)
+    
+    # Force HTTPS in production (if not in debug mode)
+    # This fixes redirect_uri_mismatch on Railway/Heroku behind proxies
+    if not current_app.debug and uri.startswith('http://'):
+        uri = uri.replace('http://', 'https://', 1)
+        
+    return uri

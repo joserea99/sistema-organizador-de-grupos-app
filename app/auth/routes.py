@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
 from app.models import UserStorage, storage, db, Usuario
-from app.auth.oauth_helpers import oauth, init_oauth, generate_oauth_state
+# from app.auth.oauth_helpers import oauth, init_oauth, generate_oauth_state, get_oauth_redirect_uri
 from functools import wraps
 
 auth_bp = Blueprint("auth", __name__)
@@ -224,33 +224,43 @@ def change_password():
 def google_login():
     """Initiate Google OAuth flow"""
     # Initialize OAuth if not already done
-    init_oauth(current_app)
+    # init_oauth(current_app) # Redundant, already in init
     
-    # Generate state parameter for security
-    state = generate_oauth_state()
-    session['oauth_state'] = state
-    
-    # Get the redirect URI
-    redirect_uri = url_for('auth.google_callback', _external=True)
-    
-    # Redirect to Google for authorization
-    return oauth.google.authorize_redirect(redirect_uri, state=state)
+    try:
+        from app.auth.oauth_helpers import oauth, generate_oauth_state, get_oauth_redirect_uri
+        
+        # Generate state parameter for security
+        state = generate_oauth_state()
+        session['oauth_state'] = state
+        
+        # Get the redirect URI (HTTPS enforced in prod)
+        redirect_uri = get_oauth_redirect_uri('google')
+        
+        # Redirect to Google for authorization
+        return oauth.google.authorize_redirect(redirect_uri, state=state)
+    except Exception as e:
+        print(f"Error initiating Google Login: {e}")
+        flash("Error temporal en el servicio de inicio de sesión con Google. Intenta con email/contraseña.", "error")
+        return redirect(url_for('auth.login'))
 
 
 @auth_bp.route("/google/callback")
 def google_callback():
     """Handle Google OAuth callback"""
     try:
-        # Initialize OAuth
-        init_oauth(current_app)
+        from app.auth.oauth_helpers import oauth, get_oauth_redirect_uri
         
         # Verify state parameter
         if request.args.get('state') != session.get('oauth_state'):
             flash("Error de seguridad en la autenticación. Por favor intenta de nuevo.", "error")
             return redirect(url_for('auth.login'))
         
+        # Get the redirect URI used in the request (must match login)
+        redirect_uri = get_oauth_redirect_uri('google')
+        
         # Exchange authorization code for access token
-        token = oauth.google.authorize_access_token()
+        # Pass redirect_uri explicitly to ensure match
+        token = oauth.google.authorize_access_token(redirect_uri=redirect_uri)
         
         # Get user info from Google
         user_info = oauth.google.parse_id_token(token)
