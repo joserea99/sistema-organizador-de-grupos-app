@@ -354,22 +354,34 @@ def google_callback():
 def debug_force_migrate():
     """Emergency route to force DB migration from browser"""
     try:
-        from flask_migrate import upgrade
-        from app import db
-        import sys
+        import subprocess
         
         # Verify admin or simple secret key (since login is broken)
         secret_key = request.args.get('key')
         if secret_key != "fix_db_now":
              return "Acceso denegado. Falta la clave secreta.", 403
              
-        print("⚡️ Starting MANUAL migration (Emergency Mode)...", file=sys.stderr)
-        upgrade()
-        print("✅ MANUAL migration successful!", file=sys.stderr)
-        return "Migration Successful! You can now use Google Login.", 200
+        print("⚡️ Starting MANUAL migration via SUBPROCESS...", file=sys.stderr)
         
+        # Run migration in a separate process to avoid crashing the web worker
+        # and to capture stdout/stderr clearly
+        result = subprocess.run(
+            ["flask", "db", "upgrade"],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            print("✅ MANUAL migration successful!", file=sys.stderr)
+            return f"<h1>Migration Successful!</h1><pre>{result.stdout}</pre>", 200
+        else:
+            print(f"❌ MANUAL migration failed (code {result.returncode})", file=sys.stderr)
+            print(f"STDOUT: {result.stdout}", file=sys.stderr)
+            print(f"STDERR: {result.stderr}", file=sys.stderr)
+            return f"<h1>Migration Failed</h1><p>Exit Code: {result.returncode}</p><h3>STDERR:</h3><pre>{result.stderr}</pre><h3>STDOUT:</h3><pre>{result.stdout}</pre>", 500
+            
     except Exception as e:
         import traceback
         error_info = traceback.format_exc()
-        print(f"❌ MANUAL migration failed: {e}", file=sys.stderr)
-        return f"Migration Failed: {e} <br><pre>{error_info}</pre>", 500
+        print(f"❌ Route execution failed: {e}", file=sys.stderr)
+        return f"Route Execution Error: {e} <br><pre>{error_info}</pre>", 500
