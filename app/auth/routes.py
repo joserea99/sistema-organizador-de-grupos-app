@@ -348,9 +348,27 @@ def google_callback():
 
 # TODO: Apple OAuth routes (when credentials are available)
 # @auth_bp.route("/apple/login")
-# def apple_login():
-#     pass
-# 
-# @auth_bp.route("/apple/callback")
-# def apple_callback():
-#     pass
+# ...
+
+@auth_bp.route("/debug/force-migrate")
+def debug_force_migrate():
+    """Emergency route to force DB migration from browser"""
+    try:
+        from flask_migrate import upgrade
+        from app import db
+        import sys
+        
+        # Verify admin or simple security check (optional, but good for safety)
+        if not session.get("user_id"):
+             return "Please login first (even if DB is outdated)", 403
+             
+        print("⚡️ Starting MANUAL migration...", file=sys.stderr)
+        upgrade()
+        print("✅ MANUAL migration successful!", file=sys.stderr)
+        return "Migration Successful! You can now use Google Login.", 200
+        
+    except Exception as e:
+        import traceback
+        error_info = traceback.format_exc()
+        print(f"❌ MANUAL migration failed: {e}", file=sys.stderr)
+        return f"Migration Failed: {e} <br><pre>{error_info}</pre>", 500
