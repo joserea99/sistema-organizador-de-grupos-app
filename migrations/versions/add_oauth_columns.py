@@ -26,6 +26,7 @@ def upgrade():
                existing_type=sa.VARCHAR(length=256),
                nullable=True)
 
+
 def downgrade():
     with op.batch_alter_table('usuarios', schema=None) as batch_op:
         batch_op.alter_column('password_hash',
