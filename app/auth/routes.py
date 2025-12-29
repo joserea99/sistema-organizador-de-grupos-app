@@ -262,8 +262,9 @@ def google_callback():
         # Authlib 1.0+ handles redirect_uri automatically for Google
         token = oauth.google.authorize_access_token()
         
-        # Get user info from Google
-        user_info = oauth.google.parse_id_token(token)
+        # Get user info from Google (use userinfo endpoint instead of manual token parsing)
+        # This avoids the 'nonce' requirement error
+        user_info = oauth.google.userinfo()
         
         if not user_info or 'email' not in user_info:
             flash("No pudimos obtener tu información de Google. Por favor intenta de nuevo.", "error")
