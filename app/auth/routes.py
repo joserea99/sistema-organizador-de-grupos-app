@@ -259,8 +259,8 @@ def google_callback():
         redirect_uri = get_oauth_redirect_uri('google')
         
         # Exchange authorization code for access token
-        # Pass redirect_uri explicitly to ensure match
-        token = oauth.google.authorize_access_token(redirect_uri=redirect_uri)
+        # Authlib 1.0+ handles redirect_uri automatically for Google
+        token = oauth.google.authorize_access_token()
         
         # Get user info from Google
         user_info = oauth.google.parse_id_token(token)
