@@ -22,12 +22,18 @@ def init_oauth(app):
         }
     )
     
-    # TODO: Register Apple OAuth when credentials are available
-    # oauth.register(
-    #     name='apple',
-    #     client_id=app.config['APPLE_CLIENT_ID'],
-    #     ...
-    # )
+    # Register Apple OAuth
+    if app.config.get('APPLE_CLIENT_ID') and app.config.get('APPLE_PRIVATE_KEY'):
+        oauth.register(
+            name='apple',
+            client_id=app.config.get('APPLE_CLIENT_ID'),
+            client_secret=app.config.get('APPLE_PRIVATE_KEY'),
+            server_metadata_url='https://appleid.apple.com/.well-known/openid-configuration',
+            client_kwargs={
+                'scope': 'name email',
+                'response_mode': 'form_post',
+            }
+        )
     
     return oauth
 

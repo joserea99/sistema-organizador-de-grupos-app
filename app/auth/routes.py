@@ -348,9 +348,142 @@ def google_callback():
         return redirect(url_for('auth.login'))
 
 
-# TODO: Apple OAuth routes (when credentials are available)
-# @auth_bp.route("/apple/login")
-# ...
+@auth_bp.route("/apple/login")
+def apple_login():
+    """Initiate Apple OAuth flow"""
+    try:
+        from app.auth.oauth_helpers import oauth, generate_oauth_state, get_oauth_redirect_uri
+        
+        # Check if Apple is configured
+        if 'apple' not in oauth._registry:
+            flash("Inicio de sesión con Apple no configurado aún.", "error")
+            return redirect(url_for('auth.login'))
+
+        # Generate state parameter
+        state = generate_oauth_state()
+        session['oauth_state'] = state
+        
+        # Get redirect URI
+        redirect_uri = get_oauth_redirect_uri('apple')
+        
+        # Redirect to Apple
+        return oauth.apple.authorize_redirect(redirect_uri, state=state)
+    except Exception as e:
+        print(f"Error initiating Apple Login: {e}")
+        flash("Error temporal en el servicio de Apple.", "error")
+        return redirect(url_for('auth.login'))
+
+
+@auth_bp.route("/apple/callback", methods=["POST"])  # Apple uses POST
+def apple_callback():
+    """Handle Apple OAuth callback"""
+    try:
+        from app.auth.oauth_helpers import oauth, get_oauth_redirect_uri
+        
+        # Verify state (Apple returns it in form data)
+        # Note: Authlib validates state automatically in authorize_access_token if passed
+        
+        # Get session state
+        session_state = session.get('oauth_state')
+        if not session_state:
+             flash("Error de sesión. Intenta de nuevo.", "error")
+             return redirect(url_for('auth.login'))
+
+        # Exchange code for token
+        # Apple sends data in POST body
+        token = oauth.apple.authorize_access_token()
+        
+        # Get user info from ID Token
+        user_info = token.get('userinfo')
+        
+        if not user_info or 'email' not in user_info:
+            flash("No pudimos obtener tu email de Apple.", "error")
+            return redirect(url_for('auth.login'))
+            
+        email = user_info.get('email')
+        oauth_id = user_info.get('sub')
+        
+        # Apple only sends 'name' on the FIRST login.
+        # We need to extract it from the 'user' form field if present
+        # format is JSON string: {"name": {"firstName": "Juan", "lastName": "Perez"}, ...}
+        import json
+        nombre_completo = ""
+        user_form_data = request.form.get('user')
+        if user_form_data:
+            try:
+                apple_user_data = json.loads(user_form_data)
+                name_data = apple_user_data.get('name', {})
+                first_name = name_data.get('firstName', '')
+                last_name = name_data.get('lastName', '')
+                nombre_completo = f"{first_name} {last_name}".strip()
+            except Exception as e:
+                print(f"Error parsing Apple user name: {e}")
+        
+        # Fallback if name is empty (subsequent logins)
+        if not nombre_completo:
+            nombre_completo = "Usuario Apple"
+
+        # Check if user exists
+        user = Usuario.query.filter_by(email=email).first()
+        is_new_user = False
+        
+        if not user:
+            # Create new user
+            from app.models import db
+            import uuid
+            
+            username = email.split('@')[0]
+            base_username = username
+            counter = 1
+            while Usuario.query.filter_by(username=username).first():
+                username = f"{base_username}{counter}"
+                counter += 1
+            
+            user = Usuario(
+                id=str(uuid.uuid4()),
+                username=username,
+                email=email,
+                nombre_completo=nombre_completo,
+                oauth_provider='apple',
+                oauth_id=oauth_id,
+                email_verified=True, # Apple emails are verified
+                password_hash=None
+            )
+            
+            db.session.add(user)
+            db.session.commit()
+            is_new_user = True
+            
+            # Create sample details
+            crear_tablero_ejemplo(user.id)
+            
+        else:
+            # Update provider if needed
+            if not user.oauth_provider:
+                user.oauth_provider = 'apple'
+                user.oauth_id = oauth_id
+                user.email_verified = True
+                db.session.commit()
+        
+        # Login
+        session["user_id"] = user.id
+        session["username"] = user.username
+        session["rol"] = user.rol
+        session.permanent = True
+        session.pop('oauth_state', None)
+        
+        if is_new_user:
+            flash(f"¡Bienvenido, {user.nombre_completo}! Cuenta creada con Apple.", "success")
+            session['show_subscription_prompt'] = True
+        else:
+             flash(f"¡Bienvenido de nuevo!", "success")
+             
+        return redirect(url_for("main.dashboard"))
+        
+    except Exception as e:
+        print(f"Error in Apple Callback: {e}")
+        flash(f"Error login Apple: {str(e)}", "error")
+        return redirect(url_for('auth.login'))
 
 @auth_bp.route("/debug/force-migrate")
 def debug_force_migrate():
@@ -408,41 +541,3 @@ def debug_force_migrate():
         print(f"❌ Route execution failed: {e}", file=sys.stderr)
         return f"Route Execution Error: {e} <br><pre>{error_info}</pre>", 500
 
-@auth_bp.route('/debug/db-check')
-def debug_db_check():
-    """Temporary debug route to check DB stats"""
-    if 'user_id' not in session:
-        return "Not logged in"
-    
-    user_id = session['user_id']
-    from app.models import Usuario, Tablero, Lista, Tarjeta, storage, db
-    
-    # 1. User Info
-    user = Usuario.query.get(user_id)
-    user_info = f"User: {user.username} ({user.email}) ID: {user.id}<br>"
-    
-    # 2. Get Stats Output
-    stats = storage.get_stats(user_id)
-    stats_info = f"Storage.get_stats: {stats}<br>"
-    
-    # 3. Manual counting
-    tableros = Tablero.query.filter_by(creador_id=user_id).all()
-    manual_info = f"Manual Tableros Query found: {len(tableros)}<br>"
-    
-    details = "<ul>"
-    for t in tableros:
-        listas = Lista.query.filter_by(tablero_id=t.id).all()
-        details += f"<li>Tablero {t.id} ({t.nombre}) - Creador: {t.creador_id}"
-        details += "<ul>"
-        for l in listas:
-            count = Tarjeta.query.filter_by(lista_id=l.id).count()
-            details += f"<li>Lista {l.id} ({l.nombre}): {count} tarjetas</li>"
-        details += "</ul></li>"
-    details += "</ul>"
-    
-    # 4. Check for ORPHANED cards (cards in lists that belong to this user but query missed?)
-    # or cards that simply exist in the DB
-    total_cards_db = Tarjeta.query.count()
-    orphan_info = f"Total cards in ENTIRE DB: {total_cards_db}<br>"
-    
-    return f"<h1>Debug DB Stats</h1>{user_info}<hr>{stats_info}<hr>{manual_info}{details}<hr>{orphan_info}"
