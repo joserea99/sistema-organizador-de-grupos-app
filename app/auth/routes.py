@@ -358,11 +358,12 @@ def debug_force_migrate():
         from app import db
         import sys
         
-        # Verify admin or simple security check (optional, but good for safety)
-        if not session.get("user_id"):
-             return "Please login first (even if DB is outdated)", 403
+        # Verify admin or simple secret key (since login is broken)
+        secret_key = request.args.get('key')
+        if secret_key != "fix_db_now":
+             return "Acceso denegado. Falta la clave secreta.", 403
              
-        print("⚡️ Starting MANUAL migration...", file=sys.stderr)
+        print("⚡️ Starting MANUAL migration (Emergency Mode)...", file=sys.stderr)
         upgrade()
         print("✅ MANUAL migration successful!", file=sys.stderr)
         return "Migration Successful! You can now use Google Login.", 200
