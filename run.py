@@ -15,7 +15,8 @@ try:
         print("🔧 Attempting automatic database migration in run.py...", file=sys.stderr, flush=True)
         try:
             from flask_migrate import upgrade
-            upgrade()
+            # upgrade() # Disabled for debugging because it crashes Railway
+            print("⚠️ Automatic migration SKIPPED for debugging!", file=sys.stderr, flush=True)
             print("✅ Automatic migration successful!", file=sys.stderr, flush=True)
             
             # Compile translations
