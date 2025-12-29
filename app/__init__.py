@@ -9,6 +9,7 @@ except ImportError:
 from flask import Flask, request, session
 from flask_migrate import Migrate
 from flask_babel import Babel
+from werkzeug.middleware.proxy_fix import ProxyFix
 from app.models import db
 
 
@@ -47,6 +48,9 @@ def create_app():
     load_dotenv()
 
     app = Flask(__name__)
+    
+    # Trust proxy headers (Railway/nginx reverse proxy)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1, x_for=1)
 
     # Configuración desde variables de entorno
     # Configuración desde variables de entorno
