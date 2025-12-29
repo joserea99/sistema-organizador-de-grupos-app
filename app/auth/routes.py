@@ -355,6 +355,7 @@ def debug_force_migrate():
     """Emergency route to force DB migration from browser"""
     try:
         import subprocess
+        import sys
         
         # Verify admin or simple secret key (since login is broken)
         secret_key = request.args.get('key')
@@ -363,10 +364,9 @@ def debug_force_migrate():
              
         print("⚡️ Starting MANUAL migration via SUBPROCESS...", file=sys.stderr)
         
-        # Run migration in a separate process to avoid crashing the web worker
-        # and to capture stdout/stderr clearly
+        # Run migration in a separate process using the same python interpreter
         result = subprocess.run(
-            ["flask", "db", "upgrade"],
+            [sys.executable, "-m", "flask", "db", "upgrade"],
             capture_output=True,
             text=True
         )
