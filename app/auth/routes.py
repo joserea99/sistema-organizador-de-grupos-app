@@ -342,7 +342,8 @@ def google_callback():
         
     except Exception as e:
         print(f"Error in Google OAuth callback: {e}")
-        flash("Hubo un error al iniciar sesión con Google. Por favor intenta de nuevo.", "error")
+        # DEBUG: Show explicit error to user
+        flash(f"Error Google Login: {str(e)}", "error")
         return redirect(url_for('auth.login'))
 
 
