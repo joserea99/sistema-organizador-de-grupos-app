@@ -407,3 +407,42 @@ def debug_force_migrate():
         error_info = traceback.format_exc()
         print(f"❌ Route execution failed: {e}", file=sys.stderr)
         return f"Route Execution Error: {e} <br><pre>{error_info}</pre>", 500
+
+@auth_bp.route('/debug/db-check')
+def debug_db_check():
+    """Temporary debug route to check DB stats"""
+    if 'user_id' not in session:
+        return "Not logged in"
+    
+    user_id = session['user_id']
+    from app.models import Usuario, Tablero, Lista, Tarjeta, storage, db
+    
+    # 1. User Info
+    user = Usuario.query.get(user_id)
+    user_info = f"User: {user.username} ({user.email}) ID: {user.id}<br>"
+    
+    # 2. Get Stats Output
+    stats = storage.get_stats(user_id)
+    stats_info = f"Storage.get_stats: {stats}<br>"
+    
+    # 3. Manual counting
+    tableros = Tablero.query.filter_by(creador_id=user_id).all()
+    manual_info = f"Manual Tableros Query found: {len(tableros)}<br>"
+    
+    details = "<ul>"
+    for t in tableros:
+        listas = Lista.query.filter_by(tablero_id=t.id).all()
+        details += f"<li>Tablero {t.id} ({t.nombre}) - Creador: {t.creador_id}"
+        details += "<ul>"
+        for l in listas:
+            count = Tarjeta.query.filter_by(lista_id=l.id).count()
+            details += f"<li>Lista {l.id} ({l.nombre}): {count} tarjetas</li>"
+        details += "</ul></li>"
+    details += "</ul>"
+    
+    # 4. Check for ORPHANED cards (cards in lists that belong to this user but query missed?)
+    # or cards that simply exist in the DB
+    total_cards_db = Tarjeta.query.count()
+    orphan_info = f"Total cards in ENTIRE DB: {total_cards_db}<br>"
+    
+    return f"<h1>Debug DB Stats</h1>{user_info}<hr>{stats_info}<hr>{manual_info}{details}<hr>{orphan_info}"
