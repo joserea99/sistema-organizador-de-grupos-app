@@ -400,13 +400,13 @@
             </div>
 
             <div class="social-login">
-                <button class="btn-social">
+                <a href="{{ url_for('auth.google_login') }}" class="btn-social">
                     <i class="fab fa-google" style="color: #DB4437;"></i>
                     Google
-                </button>
-                <button class="btn-social">
+                </a>
+                <button class="btn-social" style="opacity: 0.5; cursor: not-allowed;" disabled>
                     <i class="fab fa-apple" style="color: #000;"></i>
-                    Apple
+                    Apple (Próximamente)
                 </button>
             </div>
 

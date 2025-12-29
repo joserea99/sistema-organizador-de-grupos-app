@@ -13,7 +13,7 @@ class Usuario(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.String(256), nullable=True)  # Nullable for OAuth users
     nombre_completo = db.Column(db.String(120))
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     activo = db.Column(db.Boolean, default=True)
@@ -21,6 +21,11 @@ class Usuario(db.Model):
     suscripcion_activa = db.Column(db.Boolean, default=False)
     stripe_customer_id = db.Column(db.String(120))
     preferred_language = db.Column(db.String(5), default='es')
+    
+    # OAuth fields
+    oauth_provider = db.Column(db.String(20))  # 'google', 'apple', or None for email
+    oauth_id = db.Column(db.String(255))  # Unique ID from OAuth provider
+    email_verified = db.Column(db.Boolean, default=False)  # True for OAuth, False for email
 
     
     # Relaciones

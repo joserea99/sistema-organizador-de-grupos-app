@@ -62,6 +62,14 @@ def create_app():
 
     # Force HTTPS for external URLs (important for webhooks)
     app.config['PREFERRED_URL_SCHEME'] = 'https'
+    
+    # OAuth Config
+    app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID', '')
+    app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET', '')
+    app.config['APPLE_CLIENT_ID'] = os.getenv('APPLE_CLIENT_ID', '')
+    app.config['APPLE_TEAM_ID'] = os.getenv('APPLE_TEAM_ID', '')
+    app.config['APPLE_KEY_ID'] = os.getenv('APPLE_KEY_ID', '')
+    app.config['APPLE_PRIVATE_KEY'] = os.getenv('APPLE_PRIVATE_KEY', '')
 
     # Database Config
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///app.db')
@@ -98,6 +106,10 @@ def create_app():
             
         # Inicializar storage de compatibilidad
         from app.models import storage, TableroStorage
+        
+        # Initialize OAuth
+        from app.auth.oauth_helpers import init_oauth
+        init_oauth(app)
     
     @app.route('/health')
     def health_check():

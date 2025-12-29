@@ -259,6 +259,56 @@
             border: 1px solid #fecaca;
         }
 
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 32px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 15px;
+            font-family: inherit;
+        }
+
+        .btn-social:hover:not(:disabled) {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
         @media (max-width: 1024px) {
             .hero-section {
                 display: none;
@@ -373,6 +423,21 @@
                     Crear Cuenta
                 </button>
             </form>
+
+            <div class="divider">
+                <span>O continúa con</span>
+            </div>
+
+            <div class="social-login">
+                <a href="{{ url_for('auth.google_login') }}" class="btn-social">
+                    <i class="fab fa-google" style="color: #DB4437;"></i>
+                    Google
+                </a>
+                <button class="btn-social" style="opacity: 0.5; cursor: not-allowed;" disabled>
+                    <i class="fab fa-apple" style="color: #000;"></i>
+                    Apple (Próximamente)
+                </button>
+            </div>
 
             <div class="login-link">
                 ¿Ya tienes una cuenta?
