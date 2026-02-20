@@ -3,7 +3,9 @@ from io import BytesIO
 from datetime import datetime
 import pandas as pd
 import json
+from marshmallow import ValidationError
 from app.models import db, Tablero, Lista, Tarjeta, Usuario
+from app.schemas import TableroCreacionSchema, TarjetaBaseSchema, ListaSchema
 from app.services.stats_service import get_stats
 
 tableros_bp = Blueprint("tableros", __name__)
@@ -191,22 +193,33 @@ def procesar():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
 
-    # Obtener datos del formulario
-    nombre = request.form.get("nombre", "").strip()
-    descripcion = request.form.get("descripcion", "").strip()
-    icono = request.form.get("icono", "📋").strip()
-    
-    if not nombre:
-        flash("El nombre del tablero es obligatorio", "error")
+    try:
+        schema_data = {
+            "nombre": request.form.get("nombre", "").strip(),
+            "descripcion": request.form.get("descripcion", "").strip(),
+            "icono": request.form.get("icono", "📋").strip(),
+            "listas": request.form.getlist("listas[]")
+        }
+        
+        valid_data = TableroCreacionSchema().load(schema_data)
+        
+    except ValidationError as err:
+        error_messages = [msg for el in err.messages.values() for msg in el]
+        flash(error_messages[0] if error_messages else "Datos de tablero inválidos.", "error")
         return redirect(url_for("tableros.crear"))
 
     # Crear tablero real
-    tablero = Tablero(nombre=nombre, descripcion=descripcion, icono=icono, creador_id=session.get("user_id"))
+    tablero = Tablero(
+        nombre=valid_data["nombre"], 
+        descripcion=valid_data["descripcion"], 
+        icono=valid_data["icono"], 
+        creador_id=session.get("user_id")
+    )
     db.session.add(tablero)
     db.session.commit()
     
     # Agregar listas iniciales si se especificaron
-    listas_nombres = request.form.getlist("listas[]")
+    listas_nombres = valid_data.get("listas", [])
     
     current_app.logger.info(f"Listas recibidas del formulario: {listas_nombres}")
     
@@ -218,7 +231,7 @@ def procesar():
         # Guardar cambios en la base de datos (commit de las listas)
         db.session.commit()
     
-    flash(f"¡Tablero '{nombre}' creado exitosamente!", "success")
+    flash(f"¡Tablero '{valid_data['nombre']}' creado exitosamente!", "success")
     return redirect(url_for("tableros.ver", tablero_id=tablero.id))
 
 
@@ -332,42 +345,44 @@ def agregar_tarjeta():
             if not lista_encontrada:
                 return jsonify({'error': 'Lista no encontrada'}), 404
         
-        # Extraer datos de la persona
-        nombre = data.get('nombre', '').strip()
+        # Validar via Marshmallow
+        try:
+            valid_data = TarjetaBaseSchema().load(data)
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            current_app.logger.warning(f"Tarjeta validation failed: {error_messages}")
+            return jsonify({'success': False, 'error': error_messages[0]}), 400
+            
+        nombre = valid_data.get("nombre")
+        
+        # Opcional (apellído u otros no mapeados estrictamente en el schema base pero que se recogen igual)
         apellido = data.get('apellido', '').strip()
-        direccion = data.get('direccion', '').strip()
-        telefono = data.get('telefono', '').strip()
         
-        # Si viene titulo en lugar de nombre/apellido (compatibilidad)
-        titulo = data.get('titulo', '').strip()
-        if titulo and not nombre:
-            partes_titulo = titulo.split(' ', 1)
-            nombre = partes_titulo[0] if partes_titulo else 'Persona'
-            apellido = partes_titulo[1] if len(partes_titulo) > 1 else ''
-        
-        if not nombre:
-            nombre = 'Nueva persona'
-        
-        # Crear nueva persona usando el método agregar_persona
+        # Crear nueva persona usando el método agregar_persona (que internamente llama a Tarjeta)
         nueva_persona = lista_encontrada.agregar_persona(
             nombre=nombre,
             apellido=apellido,
-            direccion=direccion,
-            telefono=telefono,
+            direccion=valid_data.get('direccion'),
+            telefono=valid_data.get('telefono'),
+            
+            # Additional keys that might not be in the strict schema yet
             edad=int(data.get('edad')) if data.get('edad') else None,
             estado_civil=data.get('estado_civil', ''),
             numero_hijos=int(data.get('numero_hijos', 0)),
             edades_hijos=data.get('edades_hijos', ''),
             ocupacion=data.get('ocupacion', ''),
-            nombre_conyuge=data.get('nombre_conyuge', ''),
+            
+            nombre_conyuge=valid_data.get('nombre_esposo'), # Schema maps 'nombre_esposo' but method expects 'nombre_conyuge'
             telefono_conyuge=data.get('telefono_conyuge', ''),
             edad_conyuge=int(data.get('edad_conyuge')) if data.get('edad_conyuge') else None,
             trabajo_conyuge=data.get('trabajo_conyuge', ''),
             fecha_matrimonio=data.get('fecha_matrimonio', ''),
+            
             email=data.get('email', ''),
-            notas=data.get('notas', ''),
+            notas=valid_data.get('notas'),
             codigo_postal=data.get('codigo_postal', ''),
             responsable=data.get('responsable', session.get('username', '')),
+            
             # Campos eclesiásticos
             bautizado=data.get('bautizado') == 'on' or data.get('bautizado') == True,
             asiste_grupo=data.get('asiste_grupo') == 'on' or data.get('asiste_grupo') == True,
@@ -510,16 +525,19 @@ def agregar_lista():
         if not data:
             # Si no hay JSON, intentar form data
             data = request.form.to_dict()
+            
+        try:
+            valid_data = ListaSchema().load({
+                "nombre": data.get('titulo', '').strip(),  # Map frontend 'titulo' to schema 'nombre'
+                "tablero_id": data.get('tablero_id', '').strip()
+            })
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            return jsonify({'error': error_messages[0]}), 400
         
-        titulo = data.get('titulo', '').strip()
+        titulo = valid_data.get('nombre')
         color = data.get('color', '#3b82f6').strip()
-        tablero_id = data.get('tablero_id', '').strip()
-        
-        if not titulo:
-            return jsonify({'error': 'El título de la lista es requerido'}), 400
-        
-        if not tablero_id:
-            return jsonify({'error': 'El ID del tablero es requerido'}), 400
+        tablero_id = valid_data.get('tablero_id')
         
         # Buscar el tablero
         tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()

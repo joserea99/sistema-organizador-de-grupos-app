@@ -1,5 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
 from app.models import db, Usuario
+from app.schemas import UsuarioRegistroSchema
 # from app.auth.oauth_helpers import oauth, init_oauth, generate_oauth_state, get_oauth_redirect_uri
 from functools import wraps
 
@@ -120,25 +121,31 @@ def logout():
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        nombre_completo = request.form.get("nombre_completo", "").strip()
-        username = request.form.get("username", "").strip()
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-        confirm_password = request.form.get("confirm_password", "")
-        
-        # Validaciones básicas
-        if not all([username, email, password]):
-            flash("Todos los campos son obligatorios.", "error")
-            return render_template("auth/register.html")
+        try:
+            # Validate input through Marshmallow schema
+            schema = UsuarioRegistroSchema()
+            valid_data = schema.load(request.form)
             
+            nombre_completo = valid_data.get("nombre_completo")
+            username = valid_data.get("username")
+            email = valid_data.get("email")
+            password = valid_data.get("password")
+            
+        except ValidationError as err:
+            # Flash the first schema validation error found
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            flash(error_messages[0] if error_messages else "Datos inválidos.", "error")
+            return render_template("auth/register.html")
+        
+        # Additional custom validation
+        confirm_password = request.form.get("confirm_password", "")
         if password != confirm_password:
             flash("Las contraseñas no coinciden.", "error")
             return render_template("auth/register.html")
             
-        # Intentar crear usuario
-        print(f"DEBUG: Intentando registrar usuario: {username}, {email}")
+        current_app.logger.info(f"Intentando registrar usuario: {username}, {email}")
         
-        user_exists = Usuario.query.filter_by(username=username).first() or Usuario.query.filter_by(email=email).first()
+        user_exists = Usuario.query.filter((Usuario.username == username) | (Usuario.email == email)).first()
         
         if user_exists:
             user = None
@@ -153,10 +160,10 @@ def register():
                 user = None
         
         if user:
-            print(f"DEBUG: Usuario creado exitosamente: {user.id}")
+            current_app.logger.info(f"Usuario creado exitosamente: {user.id}")
             
             # ONBOARDING: Create sample tablero for new user
-            print(f"DEBUG: Creating sample tablero for new user {user.id}")
+            current_app.logger.info(f"Creating sample tablero for new user {user.id}")
             sample_tablero = crear_tablero_ejemplo(user.id)
             if sample_tablero:
                 print(f"DEBUG: Sample tablero created: {sample_tablero.id}")
