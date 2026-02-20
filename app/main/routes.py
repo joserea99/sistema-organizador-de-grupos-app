@@ -1,5 +1,6 @@
-from flask import Blueprint, redirect, render_template, session, url_for, current_app
-from app.models import storage
+from flask import Blueprint, redirect, render_template, session, url_for, request, current_app
+from app.models import db, Tablero, Lista, Tarjeta
+from app.services.stats_service import get_stats, get_upcoming_birthdays
 
 main_bp = Blueprint("main", __name__)
 
@@ -16,13 +17,12 @@ def dashboard():
     try:
         if "user_id" not in session:
             return redirect(url_for("auth.login"))
-
         # SECURITY FIX: Filter by current user
         user_id = session.get('user_id')
-        stats = storage.get_stats(user_id)
+        stats = get_stats(user_id)
         
         # Get user's recent tableros
-        user_tableros = storage.get_tableros_usuario(user_id)
+        user_tableros = Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all()
         tableros_activos = sorted(user_tableros, key=lambda t: t.fecha_creacion, reverse=True)[:4]
         
         # Obtener cumpleaños próximos solo de las personas del usuario
@@ -36,7 +36,7 @@ def dashboard():
         # Get birthdays only from user's listas
         cumpleanos = []
         if lista_ids:
-            cumpleanos = storage.get_upcoming_birthdays()
+            cumpleanos = get_upcoming_birthdays()
             # Filter to only include personas in user's listas
             cumpleanos = [p for p in cumpleanos if p.lista_id in lista_ids]
         
@@ -99,10 +99,9 @@ def personas():
         return redirect(url_for("auth.login"))
     
     from app.models import Tarjeta, Lista
-    
     # SECURITY FIX: Only get tarjetas from user's tableros
     user_id = session.get('user_id')
-    user_tableros = storage.get_tableros_usuario(user_id)
+    user_tableros = Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all()
     
     # Get lista IDs for user's tableros
     lista_ids = []

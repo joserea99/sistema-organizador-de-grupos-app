@@ -99,18 +99,7 @@ def create_app():
     def inject_conf_var():
         return dict(get_locale=get_locale)
 
-    # Crear tablas si no existen
-    # Crear tablas si no existen
     with app.app_context():
-        try:
-            db.create_all()
-        except Exception as e:
-            print(f"Error connecting to database: {e}")
-            # No re-raise to allow app to start and show health check
-            
-        # Inicializar storage de compatibilidad
-        from app.models import storage, TableroStorage
-        
         # Initialize OAuth
         try:
             from app.auth.oauth_helpers import init_oauth

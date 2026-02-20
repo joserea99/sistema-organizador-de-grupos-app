@@ -1,9 +1,8 @@
 import stripe
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app, jsonify
-from app.models import UserStorage
+from app.models import db, Usuario
 
 billing_bp = Blueprint('billing', __name__)
-user_storage = UserStorage()
 
 @billing_bp.before_request
 def check_auth():
@@ -16,7 +15,7 @@ def check_auth():
 
 @billing_bp.route('/subscribe')
 def subscribe():
-    user = user_storage.get_user(session['user_id'])
+    user = Usuario.query.get(session['user_id'])
     
     if not user:
         # Si el usuario no existe en el storage (posible inconsistencia), forzar logout
@@ -32,7 +31,7 @@ def subscribe():
 @billing_bp.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
-    user = user_storage.get_user(session['user_id'])
+    user = Usuario.query.get(session['user_id'])
     
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -65,7 +64,7 @@ def cancel():
 @billing_bp.route('/create-portal-session', methods=['POST'])
 def create_portal_session():
     stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
-    user = user_storage.get_user(session['user_id'])
+    user = Usuario.query.get(session['user_id'])
     
     if not user or not user.stripe_customer_id:
         flash("No se encontró información de suscripción.", "error")
@@ -202,14 +201,14 @@ def handle_checkout_session(session_data):
     print(f"📝 Customer ID from Stripe: {customer_id}")
     
     if user_id:
-        user = user_storage.get_user(user_id)
+        user = Usuario.query.get(user_id)
         if user:
             print(f"✅ User found: {user.username}")
             print(f"📊 Current subscription status: {user.suscripcion_activa}")
             
             user.suscripcion_activa = True
             user.stripe_customer_id = customer_id
-            user_storage.save_to_disk()
+            db.session.commit()
             
             print(f"✅ Subscription activated for user {user.username}")
             print(f"💾 User saved with stripe_customer_id: {customer_id}")
@@ -223,11 +222,11 @@ def handle_subscription_deleted(subscription):
     print(f"🔍 Looking for user with stripe_customer_id: {customer_id}")
     
     # Buscar usuario por stripe_customer_id
-    user = user_storage.get_user_by_stripe_id(customer_id)
+    user = Usuario.query.filter_by(stripe_customer_id=customer_id).first()
     if user:
         print(f"✅ User found: {user.username}")
         user.suscripcion_activa = False
-        user_storage.save_to_disk()
+        db.session.commit()
         print(f"✅ Subscription deactivated for user {user.username}")
     else:
         print(f"❌ User NOT found with stripe_customer_id: {customer_id}")

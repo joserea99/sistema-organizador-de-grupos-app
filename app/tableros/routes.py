@@ -3,10 +3,11 @@ from io import BytesIO
 from datetime import datetime
 import pandas as pd
 import json
-from app.models import storage, UserStorage
+from app.models import db, Tablero, Lista, Tarjeta, Usuario
+from app.services.stats_service import get_stats
 
 tableros_bp = Blueprint("tableros", __name__)
-user_storage = UserStorage()
+
 
 @tableros_bp.before_request
 def check_subscription():
@@ -17,7 +18,7 @@ def check_subscription():
     if 'user_id' not in session:
         return redirect(url_for('auth.login'))
         
-    user = user_storage.get_user(session['user_id'])
+    user = Usuario.query.get(session['user_id'])
     if not user:
         session.clear()
         return redirect(url_for('auth.login'))
@@ -112,8 +113,8 @@ def lista():
 
     # SECURITY FIX: Filter tableros by current user
     user_id = session.get('user_id')
-    tableros = [t.to_dict() for t in storage.get_tableros_usuario(user_id)]
-    stats = storage.get_stats(user_id)
+    tableros = [t.to_dict() for t in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all()]
+    stats = get_stats(user_id)
     
     return render_template("tableros/lista.html", tableros=tableros, stats=stats)
 
@@ -139,7 +140,7 @@ def ver(tablero_id):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
 
-    tablero = storage.get_tablero(tablero_id)
+    tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
     if not tablero:
         flash("Tablero no encontrado", "error")
         return redirect(url_for("tableros.lista"))
@@ -166,7 +167,8 @@ def get_tablero_data(tablero_id):
     if "user_id" not in session:
         return jsonify({'error': 'No autorizado'}), 401
         
-    tablero = storage.get_tablero(tablero_id)
+    from sqlalchemy.orm import joinedload
+    tablero = Tablero.query.options(joinedload(Tablero.listas).joinedload(Lista.tarjetas)).filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
     if not tablero:
         return jsonify({'error': 'Tablero no encontrado'}), 404
     
@@ -199,12 +201,9 @@ def procesar():
         return redirect(url_for("tableros.crear"))
 
     # Crear tablero real
-    tablero = storage.crear_tablero(
-        nombre=nombre,
-        descripcion=descripcion,
-        icono=icono,
-        creador_id=session.get("user_id")
-    )
+    tablero = Tablero(nombre=nombre, descripcion=descripcion, icono=icono, creador_id=session.get("user_id"))
+    db.session.add(tablero)
+    db.session.commit()
     
     # Agregar listas iniciales si se especificaron
     listas_nombres = request.form.getlist("nombres_listas[]")
@@ -216,7 +215,7 @@ def procesar():
                 tablero.agregar_lista(lista_nombre.strip())
         
         # Guardar cambios en la base de datos (commit de las listas)
-        storage.save_to_disk()
+        db.session.commit()
     
     flash(f"¡Tablero '{nombre}' creado exitosamente!", "success")
     return redirect(url_for("tableros.ver", tablero_id=tablero.id))
@@ -246,12 +245,9 @@ def crear_desde_plantilla(plantilla_id):
         return redirect(url_for("tableros.plantillas"))
 
     # Crear tablero desde plantilla
-    tablero = storage.crear_tablero(
-        nombre=plantilla_encontrada["nombre"],
-        descripcion=plantilla_encontrada["descripcion"],
-        icono=plantilla_encontrada["icono"],
-        creador_id=session.get("user_id")
-    )
+    tablero = Tablero(nombre=plantilla_encontrada["nombre"], descripcion=plantilla_encontrada["descripcion"], icono=plantilla_encontrada["icono"], creador_id=session.get("user_id"))
+    db.session.add(tablero)
+    db.session.commit()
     
     # Agregar listas de la plantilla
     for lista_nombre in plantilla_encontrada["listas"]:
@@ -292,7 +288,7 @@ def agregar_tarjeta():
         # Optimización: Si viene el tablero_id, buscar directamente
         tablero_id = data.get('tablero_id')
         if tablero_id:
-            tablero = storage.get_tablero(tablero_id)
+            tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
             if tablero:
                 lista = tablero.get_lista(lista_id)
                 if lista:
@@ -303,7 +299,7 @@ def agregar_tarjeta():
         # Si no se encontró (o no venía tablero_id), buscar en todos los tableros del usuario
         if not lista_encontrada:
             user_id = session.get('user_id')
-            for tablero in storage.get_tableros_usuario(user_id):
+            for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
                 lista = tablero.get_lista(lista_id)
                 if lista:
                     lista_encontrada = lista
@@ -315,7 +311,7 @@ def agregar_tarjeta():
             if not lista_id and data.get('lista_id'):
                 lista_id = data.get('lista_id')
                 user_id = session.get('user_id')
-                for tablero in storage.get_tableros_usuario(user_id):
+                for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
                     lista = tablero.get_lista(lista_id)
                     if lista:
                         lista_encontrada = lista
@@ -385,7 +381,7 @@ def agregar_tarjeta():
                 }
             )
         
-        storage.save_to_disk()
+        db.session.commit()
         
         return jsonify({
             'success': True,
@@ -513,7 +509,7 @@ def agregar_lista():
             return jsonify({'error': 'El ID del tablero es requerido'}), 400
         
         # Buscar el tablero
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             return jsonify({'error': 'Tablero no encontrado'}), 404
         
@@ -536,7 +532,7 @@ def agregar_lista():
         )
         
         # Guardar cambios en disco
-        storage.save_to_disk()
+        db.session.commit()
         
         return jsonify({
             'success': True,
@@ -562,7 +558,7 @@ def importar_excel(lista_id):
         tablero_encontrado = None
         user_id = session.get('user_id')
         
-        for tablero in storage.get_tableros_usuario(user_id):
+        for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
             lista = tablero.get_lista(lista_id)
             if lista:
                 lista_encontrada = lista
@@ -622,7 +618,7 @@ def importar_excel(lista_id):
                     errores.append(f'Error creando persona: {str(e)}')
             
             # Guardar cambios a disco
-            storage.save_to_disk()
+            db.session.commit()
             
             # Mostrar resultados
             if tarjetas_importadas > 0:
@@ -651,80 +647,19 @@ def descargar_plantilla_excel():
         return redirect(url_for("auth.login"))
     
     try:
-        # Intentar generar Excel real
-        try:
-            import pandas as pd
-            
-            # Crear datos de ejemplo (igual estructura que tu CSV actual)
-            data = {
-                'Nombre': ['Juan Pérez', 'María García', 'Carlos López', 'Ana Martínez', 'Pedro Sánchez'],
-                'Dirección': ['Calle 123 Col. Centro', 'Av. Principal 456', 'Blvd. Sur 789', 'Col. Norte 321', 'Calle Centro 654'],
-                'Teléfono': ['555-0123', '555-0124', '555-0125', '555-0126', '555-0127'],
-                'Email': ['juan@example.com', 'maria@example.com', '', 'ana@example.com', ''],
-                'Edad': [35, 28, 42, 31, 29],
-                'Estado Civil': ['Casado', 'Soltera', 'Casado', 'Casada', 'Soltero'],
-                'Num Hijos': [2, 0, 3, 1, 0],
-                'Edades Hijos': ['5, 8', '', '10, 12, 15', '7', ''],
-                'Nombre Cónyuge': ['María Pérez', '', 'Ana López', 'Roberto Martínez', ''],
-                'Edad Cónyuge': [32, '', 38, 33, ''],
-                'Teléfono Cónyuge': ['555-0130', '', '555-0131', '555-0132', ''],
-                'Email Cónyuge': ['maria.perez@example.com', '', 'ana.lopez@example.com', '', ''],
-                'Trabajo Cónyuge': ['Maestra', '', 'Doctora', 'Ingeniero', ''],
-                'Fecha Matrimonio': ['2018-06-15', '', '2005-03-20', '2015-09-10', '']
-            }
-            
-            # Crear DataFrame
-            df = pd.DataFrame(data)
-            
-            # Crear archivo Excel en memoria
-            output = BytesIO()
-            
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df.to_excel(writer, sheet_name='Plantilla', index=False)
-                
-                # Ajustar ancho de columnas
-                workbook = writer.book
-                worksheet = writer.sheets['Plantilla']
-                
-                for column in worksheet.columns:
-                    max_length = 0
-                    column_letter = column[0].column_letter
-                    
-                    for cell in column:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(str(cell.value))
-                        except:
-                            pass
-                    
-                    adjusted_width = min(max_length + 2, 50)
-                    worksheet.column_dimensions[column_letter].width = adjusted_width
-            
-            output.seek(0)
-            
+        from app.services.excel_service import generar_plantilla_excel_bytes
+        
+        output, file_type = generar_plantilla_excel_bytes()
+        
+        if file_type == 'excel':
             return send_file(
                 output,
                 as_attachment=True,
                 download_name='plantilla_personas_con_conyuge.xlsx',
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
-            
-        except ImportError:
-            # Fallback a CSV si pandas no está disponible
+        else:
             flash('⚠️ Generando CSV (pandas no disponible)', 'warning')
-            
-            # Tu contenido CSV original exacto
-            contenido_csv = """Nombre,Dirección,Teléfono,Email,Edad,Estado Civil,Num Hijos,Edades Hijos,Nombre Cónyuge,Edad Cónyuge,Teléfono Cónyuge,Email Cónyuge,Trabajo Cónyuge,Fecha Matrimonio
-Juan Pérez,Calle 123 Col. Centro,555-0123,juan@example.com,35,Casado,2,"5,8",María Pérez,32,555-0130,maria.perez@example.com,Maestra,2018-06-15
-María García,Av. Principal 456,555-0124,maria@example.com,28,Soltera,0,,,,,,,
-Carlos López,Blvd. Sur 789,555-0125,,42,Casado,3,"10,12,15",Ana López,38,555-0131,ana.lopez@example.com,Doctora,2005-03-20
-Ana Martínez,Col. Norte 321,555-0126,ana@example.com,31,Casada,1,"7",Roberto Martínez,33,555-0132,,Ingeniero,2015-09-10
-Pedro Sánchez,Calle Centro 654,555-0127,,29,Soltero,0,,,,,,,"""
-            
-            output = BytesIO()
-            output.write(contenido_csv.encode('utf-8'))
-            output.seek(0)
-            
             return send_file(
                 output,
                 as_attachment=True,
@@ -748,7 +683,7 @@ def eliminar_lista(lista_id):
     try:
         # Buscar la lista en todos los tableros del usuario
         user_id = session.get('user_id')
-        for tablero in storage.get_tableros_usuario(user_id):
+        for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
             lista = tablero.get_lista(lista_id)
             if lista:
                 # Verificar que la lista no tenga tarjetas
@@ -787,7 +722,7 @@ def eliminar_lista(lista_id):
                     }
                 )
                 
-                storage.save_to_disk()
+                db.session.commit()
                 
                 return jsonify({
                     'success': True,
@@ -809,7 +744,7 @@ def eliminar_tarjeta(tarjeta_id):
     try:
         # Buscar la tarjeta en todos los tableros y listas del usuario
         user_id = session.get('user_id')
-        for tablero in storage.get_tableros_usuario(user_id):
+        for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
             for lista in tablero.listas:
                 tarjeta = lista.get_tarjeta(tarjeta_id)
                 if tarjeta:
@@ -842,7 +777,7 @@ def eliminar_tarjeta(tarjeta_id):
                         'Eliminar Tarjeta',
                         f'Se eliminó a "{nombre_tarjeta}" de la lista "{lista.nombre}"'
                     )
-                    storage.save_to_disk()
+                    db.session.commit()
                     
                     return jsonify({
                         'success': True,
@@ -862,7 +797,7 @@ def editar_lista_api(tablero_id):
     if "user_id" not in session:
         return jsonify({'error': 'No autorizado'}), 401
     
-    tablero = storage.get_tablero(tablero_id)
+    tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
     if not tablero:
         return jsonify({'success': False, 'error': 'Tablero no encontrado'}), 404
         
@@ -879,7 +814,7 @@ def editar_lista_api(tablero_id):
     if lista_encontrada:
         lista_encontrada.nombre = nombre
         lista_encontrada.color = color
-        storage.save_to_disk()
+        db.session.commit()
         return jsonify({'success': True, 'message': 'Lista actualizada exitosamente'})
     
     return jsonify({'success': False, 'error': 'Lista no encontrada'}), 404
@@ -891,7 +826,7 @@ def eliminar_lista_api(tablero_id):
     if "user_id" not in session:
         return jsonify({'error': 'No autorizado'}), 401
         
-    tablero = storage.get_tablero(tablero_id)
+    tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
     if not tablero:
         return jsonify({'success': False, 'error': 'Tablero no encontrado'}), 404
         
@@ -903,7 +838,7 @@ def eliminar_lista_api(tablero_id):
         
     # Eliminar la lista directamente (el frontend pedirá confirmación)
     if tablero.eliminar_lista(lista_id):
-        storage.save_to_disk()
+        db.session.commit()
         return jsonify({'success': True, 'message': 'Lista eliminada exitosamente'})
     
     return jsonify({'success': False, 'error': 'Lista no encontrada'}), 404
@@ -913,13 +848,14 @@ def eliminar(tablero_id):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    tablero = storage.get_tablero(tablero_id)
+    tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
     if not tablero:
         flash("Tablero no encontrado", "error")
         return redirect(url_for("tableros.lista"))
     
     # Eliminar tablero
-    storage.eliminar_tablero(tablero_id)
+    Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).delete()
+    db.session.commit()
     flash(f"Tablero '{tablero.nombre}' eliminado exitosamente", "success")
     return redirect(url_for("tableros.lista"))
 
@@ -929,7 +865,7 @@ def editar(tablero_id):
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     
-    tablero = storage.get_tablero(tablero_id)
+    tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
     if not tablero:
         flash("Tablero no encontrado", "error")
         return redirect(url_for("tableros.lista"))
@@ -962,7 +898,7 @@ def editar_lista(lista_id):
     tablero_encontrado = None
     user_id = session.get('user_id')
     
-    for tablero in storage.get_tableros_usuario(user_id):
+    for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
         lista = tablero.get_lista(lista_id)
         if lista:
             lista_encontrada = lista
@@ -1008,7 +944,7 @@ def editar_tarjeta(lista_id, tarjeta_id):
     tablero_encontrado = None
     user_id = session.get('user_id')
     
-    for tablero in storage.get_tableros_usuario(user_id):
+    for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
         for lista in tablero.listas:
             tarjeta = lista.get_tarjeta(tarjeta_id)
             if tarjeta:
@@ -1067,7 +1003,7 @@ def editar_tarjeta(lista_id, tarjeta_id):
             tarjeta_encontrada.descripcion = tarjeta_encontrada.direccion
             tarjeta_encontrada.fecha_actualizacion = datetime.now()
             
-            storage.save_to_disk()
+            db.session.commit()
             
             flash(f'Tarjeta "{tarjeta_encontrada.nombre_completo}" actualizada exitosamente', 'success')
             return redirect(url_for('tableros.ver', tablero_id=tablero_encontrado.id))
@@ -1088,41 +1024,12 @@ def get_uncoded_people():
         data = request.json
         tablero_id = data.get('tablero_id')
         
-        tablero = storage.get_tablero(tablero_id)
-        if not tablero:
+        from app.services.geocoding_service import fix_uncoded_people_for_tablero
+        personas_to_code = fix_uncoded_people_for_tablero(tablero_id, session.get('user_id'))
+        
+        if personas_to_code is None:
             return jsonify({'error': 'Tablero no encontrado'}), 404
             
-        personas_to_code = []
-        personas = tablero.get_todas_las_personas()
-        
-        print(f"DEBUG: Checking {len(personas)} people for geocoding in tablero {tablero.nombre}")
-        
-        for p_dict in personas:
-            # Buscar la tarjeta real
-            tarjeta = None
-            for lista in tablero.listas:
-                t = lista.get_tarjeta(p_dict['id'])
-                if t:
-                    tarjeta = t
-                    break
-            
-            if tarjeta:
-                # Debug info for each person with address
-                if tarjeta.direccion:
-                    print(f"DEBUG: Person {tarjeta.nombre_completo} has address: '{tarjeta.direccion}'. Lat: {tarjeta.latitud}, Lng: {tarjeta.longitud}")
-                
-                # Check if needs geocoding (address exists, and coords are missing or 0)
-                has_address = bool(tarjeta.direccion and tarjeta.direccion.strip())
-                needs_coords = (tarjeta.latitud == 0 and tarjeta.longitud == 0) or tarjeta.latitud is None
-                
-                if has_address and needs_coords:
-                    print(f"DEBUG: Adding {tarjeta.nombre_completo} to geocode list")
-                    personas_to_code.append({
-                        'id': tarjeta.id,
-                        'nombre': tarjeta.nombre_completo,
-                        'direccion': tarjeta.direccion
-                    })
-        
         return jsonify({
             'success': True, 
             'personas': personas_to_code,
@@ -1145,25 +1052,12 @@ def update_person_coords():
         lat = data.get('lat')
         lng = data.get('lng')
         
-        tablero = storage.get_tablero(tablero_id)
-        if not tablero:
-            return jsonify({'error': 'Tablero no encontrado'}), 404
-            
-        # Buscar persona
-        tarjeta_encontrada = None
-        for lista in tablero.listas:
-            t = lista.get_tarjeta(persona_id)
-            if t:
-                tarjeta_encontrada = t
-                break
+        from app.services.geocoding_service import update_person_coords
         
-        if tarjeta_encontrada:
-            tarjeta_encontrada.latitud = float(lat)
-            tarjeta_encontrada.longitud = float(lng)
-            storage.save_to_disk()
+        if update_person_coords(tablero_id, session.get('user_id'), persona_id, lat, lng):
             return jsonify({'success': True})
         else:
-            return jsonify({'error': 'Persona no encontrada'}), 404
+            return jsonify({'error': 'Tablero o Persona no encontrada'}), 404
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -1181,7 +1075,7 @@ def preview_clustering():
         min_size = int(data.get('min_size', 5))
         max_size = int(data.get('max_size', 12))
         
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             return jsonify({'error': 'Tablero no encontrado'}), 404
             
@@ -1220,7 +1114,7 @@ def apply_clustering():
         print(f"DEBUG: apply_clustering called for tablero {tablero_id} with {len(clusters)} clusters")
         print(f"DEBUG: Clusters data: {json.dumps(clusters, indent=2)}")
         
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             print(f"DEBUG: Tablero {tablero_id} not found")
             return jsonify({'error': 'Tablero no encontrado'}), 404
@@ -1285,9 +1179,9 @@ def apply_clustering():
                     moved_people += 1
             
             # Guardar cambios por cada cluster
-            storage.save_to_disk()
+            db.session.commit()
         
-        storage.save_to_disk()
+        db.session.commit()
         
         return jsonify({
             'success': True,
@@ -1318,7 +1212,7 @@ def exportar_datos(tablero_id, formato):
     
     try:
         # Buscar el tablero
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             flash('Tablero no encontrado', 'error')
             return redirect(url_for('tableros.lista'))
@@ -1489,7 +1383,7 @@ def mover_lista():
         tablero_encontrado = None
         user_id = session.get('user_id')
         
-        for tablero in storage.get_tableros_usuario(user_id):
+        for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
             lista = tablero.get_lista(lista_id)
             if lista:
                 lista_encontrada = lista
@@ -1509,7 +1403,7 @@ def mover_lista():
                 nueva_posicion = len(tablero_encontrado.orden_listas)
                 
             tablero_encontrado.orden_listas.insert(nueva_posicion, lista_id)
-            storage.save_to_disk()
+            db.session.commit()
             
             return jsonify({
                 'success': True,
@@ -1532,7 +1426,7 @@ def deshacer_accion():
         data = request.json
         tablero_id = data.get('tablero_id')
         
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             return jsonify({'error': 'Tablero no encontrado'}), 404
             
@@ -1658,7 +1552,7 @@ def deshacer_accion():
             f'Se deshizo la acción: {action_type}'
         )
         
-        storage.save_to_disk()
+        db.session.commit()
         
         return jsonify({'success': True, 'message': 'Acción deshecha exitosamente'})
         
@@ -1684,7 +1578,7 @@ def bulk_move():
         if not tarjeta_ids or not lista_destino_id:
             return jsonify({'error': 'Datos incompletos'}), 400
             
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             return jsonify({'error': 'Tablero no encontrado'}), 404
             
@@ -1745,7 +1639,7 @@ def bulk_move():
                 }
             )
             
-            storage.save_to_disk()
+            db.session.commit()
             
         return jsonify({'success': True, 'count': count})
         
@@ -1767,7 +1661,7 @@ def bulk_delete():
         if not tarjeta_ids:
             return jsonify({'error': 'Datos incompletos'}), 400
             
-        tablero = storage.get_tablero(tablero_id)
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
         if not tablero:
             return jsonify({'error': 'Tablero no encontrado'}), 404
             
@@ -1811,7 +1705,7 @@ def bulk_delete():
                 }
             )
             
-            storage.save_to_disk()
+            db.session.commit()
             
         return jsonify({'success': True, 'count': count})
         

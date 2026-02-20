@@ -1,10 +1,9 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
-from app.models import UserStorage, storage, db, Usuario
+from app.models import db, Usuario
 # from app.auth.oauth_helpers import oauth, init_oauth, generate_oauth_state, get_oauth_redirect_uri
 from functools import wraps
 
 auth_bp = Blueprint("auth", __name__)
-user_storage = UserStorage()
 
 def crear_tablero_ejemplo(user_id):
     """Create a sample tablero for new users with FAKE data for demo purposes"""
@@ -12,12 +11,14 @@ def crear_tablero_ejemplo(user_id):
         from datetime import date
         
         # Create sample tablero
-        tablero = storage.crear_tablero(
+        tablero = Tablero(
             nombre="📖 Mi Primer Grupo",
             descripcion="Tablero de ejemplo para conocer la aplicación",
             icono="👥",
             creador_id=user_id
         )
+        db.session.add(tablero)
+        db.session.commit()
         
         # Add sample lists
         lista_nuevos = tablero.agregar_lista("Nuevos Contactos", "#3b82f6")
@@ -25,7 +26,6 @@ def crear_tablero_ejemplo(user_id):
         lista_lideres = tablero.agregar_lista("Líderes", "#f59e0b")
         
         # Commit lists to database
-        from app.models import db
         db.session.commit()
         
         # Add sample people with FAKE data (clearly marked as examples)
@@ -71,8 +71,6 @@ def crear_tablero_ejemplo(user_id):
         
         # Commit all personas to database
         db.session.commit()
-        
-        storage.save_to_disk()
         return tablero
     except Exception as e:
         print(f"Error creating sample tablero: {e}")
@@ -90,10 +88,9 @@ def login():
             return render_template("auth/login.html")
 
         # Intentar buscar por username o email
-        user_storage.load_from_disk() # Recargar datos para asegurar que vemos usuarios nuevos
-        user = user_storage.get_user_by_username(username_or_email)
+        user = Usuario.query.filter_by(username=username_or_email).first()
         if not user:
-            user = user_storage.get_user_by_email(username_or_email)
+            user = Usuario.query.filter_by(email=username_or_email).first()
         
         if user and user.check_password(password):
             if not user.activo:
@@ -140,7 +137,20 @@ def register():
             
         # Intentar crear usuario
         print(f"DEBUG: Intentando registrar usuario: {username}, {email}")
-        user = user_storage.create_user(username, email, password, nombre_completo)
+        
+        user_exists = Usuario.query.filter_by(username=username).first() or Usuario.query.filter_by(email=email).first()
+        
+        if user_exists:
+            user = None
+        else:
+            user = Usuario(username=username, email=email, nombre_completo=nombre_completo)
+            user.set_password(password)
+            db.session.add(user)
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+                user = None
         
         if user:
             print(f"DEBUG: Usuario creado exitosamente: {user.id}")
@@ -167,7 +177,7 @@ def profile():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
 
-    user = user_storage.get_user(session["user_id"])
+    user = Usuario.query.get(session["user_id"])
     if not user:
         session.clear()
         return redirect(url_for("auth.login"))
@@ -201,7 +211,7 @@ def change_password():
         new_password = request.form.get("new_password")
         confirm_password = request.form.get("confirm_password")
         
-        user = user_storage.get_user(session["user_id"])
+        user = Usuario.query.get(session["user_id"])
         
         if not user or not user.check_password(current_password):
             flash("La contraseña actual es incorrecta.", "error")
@@ -211,7 +221,7 @@ def change_password():
             flash("La nueva contraseña debe tener al menos 6 caracteres.", "error")
         else:
             user.set_password(new_password)
-            user_storage.save_to_disk()
+            db.session.commit()
             flash("Contraseña actualizada exitosamente.", "success")
             return redirect(url_for("auth.profile"))
             
