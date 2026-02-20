@@ -9,6 +9,20 @@ class UsuarioRegistroSchema(Schema):
     password = fields.String(required=True, validate=validate.Length(min=6, error="La contraseña debe tener al menos 6 caracteres."))
     nombre_completo = fields.String(required=True, validate=validate.Length(min=2, max=100, error="El nombre completo es requerido."))
 
+class UsuarioLoginSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+    username = fields.String(required=True, error_messages={"required": "El usuario o correo es requerido."})
+    password = fields.String(required=True, error_messages={"required": "La contraseña es requerida."})
+    remember = fields.Boolean(load_default=False)
+
+class ChangePasswordSchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+    current_password = fields.String(required=True, error_messages={"required": "La contraseña actual es requerida."})
+    new_password = fields.String(required=True, validate=validate.Length(min=6, error="La nueva contraseña debe tener al menos 6 caracteres."))
+    confirm_password = fields.String(required=True, error_messages={"required": "Debes confirmar la contraseña."})
+
 class TableroSchema(Schema):
     nombre = fields.String(required=True, validate=validate.Length(min=1, max=100, error="El nombre del tablero es requerido."))
     descripcion = fields.String(validate=validate.Length(max=500), load_default="")

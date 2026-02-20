@@ -1,6 +1,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
 from app.models import db, Usuario
-from app.schemas import UsuarioRegistroSchema
+from app.schemas import UsuarioRegistroSchema, UsuarioLoginSchema, ChangePasswordSchema
 # from app.auth.oauth_helpers import oauth, init_oauth, generate_oauth_state, get_oauth_redirect_uri
 from functools import wraps
 
@@ -80,12 +80,15 @@ def crear_tablero_ejemplo(user_id):
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username_or_email = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        remember = request.form.get("remember") == "on"
-
-        if not username_or_email or not password:
-            flash("Por favor ingresa usuario y contraseña.", "error")
+        try:
+            schema = UsuarioLoginSchema()
+            valid_data = schema.load(request.form)
+            username_or_email = valid_data.get("username", "").strip()
+            password = valid_data.get("password", "")
+            remember = valid_data.get("remember", False)
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            flash(error_messages[0] if error_messages else "Por favor ingresa usuario y contraseña.", "error")
             return render_template("auth/login.html")
 
         # Intentar buscar por username o email
@@ -214,18 +217,23 @@ def change_password():
         return redirect(url_for("auth.login"))
         
     if request.method == "POST":
-        current_password = request.form.get("current_password")
-        new_password = request.form.get("new_password")
-        confirm_password = request.form.get("confirm_password")
-        
+        try:
+            schema = ChangePasswordSchema()
+            valid_data = schema.load(request.form)
+            current_password = valid_data.get("current_password")
+            new_password = valid_data.get("new_password")
+            confirm_password = valid_data.get("confirm_password")
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            flash(error_messages[0] if error_messages else "Datos inválidos.", "error")
+            return render_template("auth/change_password.html")
+            
         user = Usuario.query.get(session["user_id"])
         
         if not user or not user.check_password(current_password):
             flash("La contraseña actual es incorrecta.", "error")
         elif new_password != confirm_password:
             flash("Las nuevas contraseñas no coinciden.", "error")
-        elif len(new_password) < 6:
-            flash("La nueva contraseña debe tener al menos 6 caracteres.", "error")
         else:
             user.set_password(new_password)
             db.session.commit()

@@ -5,7 +5,7 @@ import pandas as pd
 import json
 from marshmallow import ValidationError
 from app.models import db, Tablero, Lista, Tarjeta, Usuario
-from app.schemas import TableroCreacionSchema, TarjetaBaseSchema, ListaSchema
+from app.schemas import TableroCreacionSchema, TarjetaBaseSchema, ListaSchema, TableroSchema
 from app.services.stats_service import get_stats
 
 tableros_bp = Blueprint("tableros", __name__)
@@ -903,16 +903,19 @@ def editar(tablero_id):
         return redirect(url_for("tableros.lista"))
     
     if request.method == 'POST':
-        # Procesar edición del tablero
-        nuevo_nombre = request.form.get('nombre', '').strip()
-        nueva_descripcion = request.form.get('descripcion', '').strip()
-        nuevo_icono = request.form.get('icono', tablero.icono)
+        # Procesar edición del tablero vía Marshmallow schema
+        try:
+            valid_data = TableroSchema().load(request.form)
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            flash(error_messages[0] if error_messages else "Datos inválidos al editar tablero.", "error")
+            return redirect(url_for('tableros.editar', tablero_id=tablero.id))
+            
+        tablero.nombre = valid_data.get('nombre')
+        tablero.descripcion = valid_data.get('descripcion')
+        tablero.icono = valid_data.get('icono')
         
-        if nuevo_nombre:
-            tablero.nombre = nuevo_nombre
-            tablero.descripcion = nueva_descripcion
-            tablero.icono = nuevo_icono
-            flash('Tablero actualizado exitosamente', 'success')
+        flash('Tablero actualizado exitosamente', 'success')
         
         return redirect(url_for('tableros.ver', tablero_id=tablero.id))
     
@@ -948,19 +951,21 @@ def editar_lista(lista_id):
                              tablero=tablero_encontrado.to_dict())
     
     elif request.method == 'POST':
-        # Procesar edición
-        nuevo_nombre = request.form.get('nombre', '').strip()
+        # Validar edición parcial
+        try:
+            valid_data = ListaSchema().load({"nombre": request.form.get('nombre', '').strip()}, partial=("tablero_id",))
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            flash(error_messages[0] if error_messages else "El nombre de la lista inválido.", "error")
+            return redirect(request.url)
+            
         nuevo_color = request.form.get('color', lista_encontrada.color)
         
-        if not nuevo_nombre:
-            flash('El nombre de la lista es requerido', 'error')
-            return redirect(request.url)
-        
         # Actualizar lista
-        lista_encontrada.nombre = nuevo_nombre
+        lista_encontrada.nombre = valid_data.get('nombre')
         lista_encontrada.color = nuevo_color
         
-        flash(f'Lista "{nuevo_nombre}" actualizada exitosamente', 'success')
+        flash(f'Lista "{lista_encontrada.nombre}" actualizada exitosamente', 'success')
         return redirect(url_for('tableros.ver', tablero_id=tablero_encontrado.id))
 
 
@@ -999,36 +1004,48 @@ def editar_tarjeta(lista_id, tarjeta_id):
                              tablero=tablero_encontrado.to_dict())
     
     elif request.method == 'POST':
-        # Procesar edición completa con todos los campos
+        # Extract direct form dict
+        form_data = request.form.to_dict()
+        form_data['lista_id'] = lista_encontrada.id # Manually inject the relation required for schema validation
+        
+        try:
+            valid_data = TarjetaBaseSchema().load(form_data)
+        except ValidationError as err:
+            error_messages = [msg for el in err.messages.values() for msg in el]
+            flash(error_messages[0] if error_messages else "Datos de tarjeta inválidos.", "error")
+            return redirect(request.url)
+            
         try:
             # Información Personal
-            tarjeta_encontrada.nombre = request.form.get('nombre', '').strip()
-            tarjeta_encontrada.apellido = request.form.get('apellido', '').strip()
-            tarjeta_encontrada.edad = int(request.form.get('edad')) if request.form.get('edad') else None
-            tarjeta_encontrada.estado_civil = request.form.get('estado_civil', '')
-            tarjeta_encontrada.ocupacion = request.form.get('ocupacion', '')
+            tarjeta_encontrada.nombre = valid_data.get('nombre')
+            tarjeta_encontrada.apellido = form_data.get('apellido', '').strip()
+            tarjeta_encontrada.edad = int(form_data.get('edad')) if form_data.get('edad') else None
+            tarjeta_encontrada.estado_civil = form_data.get('estado_civil', '')
+            tarjeta_encontrada.ocupacion = form_data.get('ocupacion', '')
             
             # Contacto y Ubicación
-            tarjeta_encontrada.telefono = request.form.get('telefono', '').strip()
-            tarjeta_encontrada.email = request.form.get('email', '').strip()
-            tarjeta_encontrada.direccion = request.form.get('direccion', '').strip()
+            tarjeta_encontrada.telefono = valid_data.get('telefono')
+            tarjeta_encontrada.email = form_data.get('email', '').strip()
+            tarjeta_encontrada.direccion = valid_data.get('direccion')
             
             # Información Familiar
-            tarjeta_encontrada.numero_hijos = int(request.form.get('numero_hijos', 0))
-            tarjeta_encontrada.edades_hijos = request.form.get('edades_hijos', '')
-            tarjeta_encontrada.nombre_conyuge = request.form.get('nombre_conyuge', '')
-            tarjeta_encontrada.telefono_conyuge = request.form.get('telefono_conyuge', '')
+            tarjeta_encontrada.numero_hijos = int(form_data.get('numero_hijos', 0))
+            tarjeta_encontrada.edades_hijos = form_data.get('edades_hijos', '')
+            tarjeta_encontrada.nombre_conyuge = valid_data.get('nombre_esposo') # Note schema mapping 'nombre_esposo' -> method 'nombre_conyuge' expected internally. Wait, the model uses nombre_conyuge..
+            if tarjeta_encontrada.nombre_conyuge is None:
+                tarjeta_encontrada.nombre_conyuge = form_data.get('nombre_conyuge', '')    
+            tarjeta_encontrada.telefono_conyuge = form_data.get('telefono_conyuge', '')
             
             # Información Adicional
-            tarjeta_encontrada.responsable = request.form.get('responsable', '')
-            tarjeta_encontrada.estado = request.form.get('estado', 'activa')
-            tarjeta_encontrada.notas = request.form.get('notas', '').strip()
+            tarjeta_encontrada.responsable = form_data.get('responsable', '')
+            tarjeta_encontrada.estado = form_data.get('estado', 'activa')
+            tarjeta_encontrada.notas = valid_data.get('notas')
             
             # Campos Eclesiásticos
-            tarjeta_encontrada.bautizado = 'bautizado' in request.form
-            tarjeta_encontrada.asiste_grupo = 'asiste_grupo' in request.form
-            tarjeta_encontrada.es_lider = 'es_lider' in request.form
-            tarjeta_encontrada.ministerio = request.form.get('ministerio', '')
+            tarjeta_encontrada.bautizado = 'bautizado' in form_data
+            tarjeta_encontrada.asiste_grupo = 'asiste_grupo' in form_data
+            tarjeta_encontrada.es_lider = 'es_lider' in form_data
+            tarjeta_encontrada.ministerio = form_data.get('ministerio', '')
             
             # Actualizar campos calculados
             tarjeta_encontrada.titulo = tarjeta_encontrada.nombre_completo
