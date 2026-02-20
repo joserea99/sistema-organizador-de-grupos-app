@@ -93,30 +93,27 @@ def webhook():
         event = stripe.Webhook.construct_event(
             payload, sig_header, webhook_secret
         )
-        current_app.logger.info(f"✅ Webhook verified: {event['type']}")
-        print(f"✅ Webhook received and verified: {event['type']}")
+        current_app.logger.info(f"✅ Webhook received and verified: {event['type']}")
     except ValueError as e:
         # Invalid payload
-        current_app.logger.error("❌ Error parsing payload: " + str(e))
-        print(f"❌ Error parsing payload: {e}")
-        return 'Invalid payload', 400
+        current_app.logger.error(f"❌ Error parsing payload: {e}")
+        return jsonify(error="Invalid payload"), 400
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        current_app.logger.error("❌ Error verifying webhook signature: " + str(e))
-        print(f"❌ Error verifying webhook signature: {e}")
-        return 'Invalid signature', 400
+        current_app.logger.error(f"❌ Error verifying webhook signature: {e}")
+        return jsonify(error="Invalid signature"), 400
 
     # Handle the event
     if event['type'] == 'checkout.session.completed':
         session_data = event['data']['object']
-        print(f"📦 Processing checkout.session.completed for session: {session_data.get('id')}")
+        current_app.logger.info(f"📦 Processing checkout.session.completed for session: {session_data.get('id')}")
         handle_checkout_session(session_data)
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
-        print(f"🗑️ Processing customer.subscription.deleted for customer: {subscription.get('customer')}")
+        current_app.logger.info(f"🗑️ Processing customer.subscription.deleted for customer: {subscription.get('customer')}")
         handle_subscription_deleted(subscription)
     else:
-        print(f"ℹ️ Unhandled event type: {event['type']}")
+        current_app.logger.info(f"ℹ️ Unhandled event type: {event['type']}")
 
     return jsonify(success=True)
 
@@ -197,36 +194,41 @@ def handle_checkout_session(session_data):
     user_id = session_data.get('client_reference_id')
     customer_id = session_data.get('customer')
     
-    print(f"🔍 Looking for user with ID: {user_id}")
-    print(f"📝 Customer ID from Stripe: {customer_id}")
+    current_app.logger.info(f"🔍 Looking for user with ID: {user_id}")
+    current_app.logger.info(f"📝 Customer ID from Stripe: {customer_id}")
     
     if user_id:
         user = Usuario.query.get(user_id)
         if user:
-            print(f"✅ User found: {user.username}")
-            print(f"📊 Current subscription status: {user.suscripcion_activa}")
+            current_app.logger.info(f"✅ User found: {user.username}")
+            current_app.logger.info(f"📊 Current subscription status: {user.suscripcion_activa}")
             
             user.suscripcion_activa = True
-            user.stripe_customer_id = customer_id
+            if customer_id:
+                user.stripe_customer_id = customer_id
+                
             db.session.commit()
             
-            print(f"✅ Subscription activated for user {user.username}")
-            print(f"💾 User saved with stripe_customer_id: {customer_id}")
+            current_app.logger.info(f"✅ Subscription activated for user {user.username}")
+            current_app.logger.info(f"💾 User saved with stripe_customer_id: {customer_id}")
         else:
-            print(f"❌ User NOT found with ID: {user_id}")
+            current_app.logger.warning(f"❌ User NOT found with ID: {user_id}")
     else:
-        print(f"❌ No client_reference_id in session data")
+        current_app.logger.warning(f"❌ No client_reference_id in session data")
 
 def handle_subscription_deleted(subscription):
     customer_id = subscription.get('customer')
-    print(f"🔍 Looking for user with stripe_customer_id: {customer_id}")
+    current_app.logger.info(f"🔍 Looking for user with stripe_customer_id: {customer_id}")
     
-    # Buscar usuario por stripe_customer_id
-    user = Usuario.query.filter_by(stripe_customer_id=customer_id).first()
-    if user:
-        print(f"✅ User found: {user.username}")
-        user.suscripcion_activa = False
-        db.session.commit()
-        print(f"✅ Subscription deactivated for user {user.username}")
+    if customer_id:
+        # Buscar usuario por stripe_customer_id
+        user = Usuario.query.filter_by(stripe_customer_id=customer_id).first()
+        if user:
+            current_app.logger.info(f"✅ User found: {user.username}")
+            user.suscripcion_activa = False
+            db.session.commit()
+            current_app.logger.info(f"✅ Subscription deactivated for user {user.username}")
+        else:
+            current_app.logger.warning(f"❌ User NOT found with stripe_customer_id: {customer_id}")
     else:
-        print(f"❌ User NOT found with stripe_customer_id: {customer_id}")
+        current_app.logger.warning(f"❌ No customer ID in subscription data")

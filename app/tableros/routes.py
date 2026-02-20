@@ -206,8 +206,9 @@ def procesar():
     db.session.commit()
     
     # Agregar listas iniciales si se especificaron
-    listas_nombres = request.form.getlist("nombres_listas[]")
-    print(f"DEBUG: Listas recibidas del formulario: {listas_nombres}")
+    listas_nombres = request.form.getlist("listas[]")
+    
+    current_app.logger.info(f"Listas recibidas del formulario: {listas_nombres}")
     
     if listas_nombres:
         for lista_nombre in listas_nombres:
@@ -306,6 +307,16 @@ def agregar_tarjeta():
                     tablero_encontrado = tablero
                     break
         
+        # Si no se encontró (o no venía tablero_id), buscar en todos los tableros del usuario
+        if not lista_encontrada:
+            user_id = session.get('user_id')
+            for tablero in Tablero.query.filter_by(creador_id=user_id).order_by(Tablero.fecha_creacion.desc()).all():
+                lista = tablero.get_lista(lista_id)
+                if lista:
+                    lista_encontrada = lista
+                    tablero_encontrado = tablero
+                    break
+        
         if not lista_encontrada:
             # Intentar buscar lista_id en el body si no vino en args
             if not lista_id and data.get('lista_id'):
@@ -390,7 +401,9 @@ def agregar_tarjeta():
         }), 201
         
     except Exception as e:
-        print(f"Error en agregar_tarjeta: {e}")
+        db.session.rollback()
+        current_app.logger.error(f"Error en agregar_tarjeta: {e}")
+        flash("Error al agregar la tarjeta.", "error")
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
 
@@ -541,8 +554,9 @@ def agregar_lista():
         }), 201
         
     except Exception as e:
-        print(f"Error en agregar_lista: {e}")
-        return jsonify({'error': f'Error interno: {str(e)}'}), 500
+        db.session.rollback()
+        current_app.logger.error(f"Error en agregar_lista: {e}")
+        return jsonify({"success": False, "error": str(e)}), 400
 
 
 @tableros_bp.route("/importar_excel/<lista_id>", methods=["GET", "POST"])
@@ -1107,22 +1121,21 @@ def apply_clustering():
         return jsonify({'error': 'No autorizado'}), 401
         
     try:
-        data = request.json
+        data = request.get_json()
         tablero_id = data.get('tablero_id')
         clusters = data.get('clusters', [])
         
-        print(f"DEBUG: apply_clustering called for tablero {tablero_id} with {len(clusters)} clusters")
-        print(f"DEBUG: Clusters data: {json.dumps(clusters, indent=2)}")
+        current_app.logger.info(f"apply_clustering called for tablero {tablero_id} with {len(clusters)} clusters")
+        current_app.logger.debug(f"Clusters data: {json.dumps(clusters, indent=2)}")
         
-        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get('user_id')).first()
+        tablero = Tablero.query.filter_by(id=tablero_id, creador_id=session.get("user_id")).first()
         if not tablero:
-            print(f"DEBUG: Tablero {tablero_id} not found")
-            return jsonify({'error': 'Tablero no encontrado'}), 404
+            current_app.logger.warning(f"Tablero {tablero_id} not found")
+            return jsonify({'success': False, 'error': 'Tablero no encontrado'}), 404
             
         if not clusters:
-             print("DEBUG: No clusters provided in request body")
-             return jsonify({'success': False, 'message': 'No hay grupos para crear.'})
-            
+             current_app.logger.warning("No clusters provided in request body")
+             return jsonify({'success': False, 'error': 'No se proporcionaron grupos'}), 400           
         created_lists = 0
         moved_people = 0
         
@@ -1434,11 +1447,10 @@ def deshacer_accion():
             return jsonify({'error': 'No hay acciones para deshacer'}), 400
             
         # Obtener última acción
-        undo_action = tablero.undo_stack.pop()
-        action_type = undo_action['type']
-        undo_data = undo_action['data']
-        
-        print(f"Deshaciendo acción: {action_type}")
+        if user_id in action_history and action_history[user_id]:
+            action_data = action_history[user_id].pop()
+            action_type = action_data["action"]
+            current_app.logger.info(f"Deshaciendo acción: {action_type}")
         
         if action_type == 'mover_tarjeta':
             tarjeta_id = undo_data['tarjeta_id']

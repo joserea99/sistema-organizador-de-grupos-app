@@ -202,22 +202,22 @@ def set_language(language):
     
     # Validate language
     if language not in ['es', 'en']:
-        print(f"DEBUG: Invalid language attempted: {language}")
+        current_app.logger.warning(f"Invalid language attempted: {language}")
         return redirect(request.referrer or url_for('main.dashboard'))
     
     # Save to session
     session['language'] = language
-    print(f"DEBUG: Session language set to: {language}")
+    current_app.logger.info(f"Session language set to: {language}")
     
     # If user is authenticated, save to database
     if 'user_id' in session:
         from app.models import Usuario, db
         user = Usuario.query.get(session['user_id'])
         if user:
-            print(f"DEBUG: Updating user {user.username} pref to {language}")
+            current_app.logger.info(f"Updating user {user.username} pref to {language}")
             user.preferred_language = language
             db.session.commit()
-            print("DEBUG: Commit successful")
+            current_app.logger.debug("Commit successful")
     
     # Redirect back to referrer or dashboard
     return redirect(request.referrer or url_for('main.dashboard'))

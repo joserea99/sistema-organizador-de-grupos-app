@@ -10,6 +10,8 @@ from flask import Flask, request, session
 from flask_migrate import Migrate
 from flask_babel import Babel
 from werkzeug.middleware.proxy_fix import ProxyFix
+import logging
+from logging.config import dictConfig
 from app.models import db
 
 
@@ -44,6 +46,23 @@ def get_locale():
 
 
 def create_app():
+    # Configure logging before app creation
+    dictConfig({
+        'version': 1,
+        'formatters': {'default': {
+            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        }},
+        'handlers': {'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'default'
+        }},
+        'root': {
+            'level': 'INFO',
+            'handlers': ['wsgi']
+        }
+    })
+
     # Cargar variables de entorno
     load_dotenv()
 
@@ -105,7 +124,7 @@ def create_app():
             from app.auth.oauth_helpers import init_oauth
             init_oauth(app)
         except Exception as e:
-            print(f"WARNING: OAuth initialization failed: {e}")
+            app.logger.warning(f"OAuth initialization failed: {e}")
             # Continue app startup without OAuth
     
     @app.route('/health')
