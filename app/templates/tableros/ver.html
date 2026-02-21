@@ -93,221 +93,10 @@
         </div>
     </div>
 
-    <!-- Tablero Kanban -->
-    <div class="kanban-lists-container flex gap-4 overflow-x-auto pb-4"
+    <div id="board-lists-container" class="kanban-lists-container flex gap-4 overflow-x-auto pb-4"
         style="height: calc(100vh - 400px); min-height: 500px;">
         {% for lista in tablero.listas %}
-        <div class="kanban-list w-80 flex-shrink-0 flex flex-col rounded-lg" data-list-id="{{ lista.id }}"
-            data-color="{{ lista.color }}">
-            <div class="list-header p-3 border-b flex justify-between items-center"
-                style="border-top: 3px solid {{ lista.color }}">
-                <h3 class="font-semibold list-title">{{ lista.nombre }}</h3>
-                <div class="flex items-center gap-2">
-                    <a href="{{ url_for('tableros.importar_excel', lista_id=lista.id) }}"
-                        class="text-gray-500 hover:text-blue-600 transition-colors" title="Importar desde Excel/CSV">
-                        <i class="fas fa-file-import"></i>
-                    </a>
-                    <button class="text-gray-500 hover:text-blue-600 transition-colors btn-edit-list"
-                        data-list-id="{{ lista.id }}" data-list-name="{{ lista.nombre }}"
-                        data-list-color="{{ lista.color }}" title="Editar Lista">
-                        <i class="fas fa-cog"></i>
-                    </button>
-                    <span class="list-count px-2 py-1 rounded-full text-xs font-bold">
-                        {{ lista.tarjetas|length }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="kanban-list-items p-3 flex-1 overflow-y-auto custom-scrollbar" style="min-height: 100px;">
-                {% for tarjeta in lista.tarjetas %}
-                <div class="kanban-card person-card" data-id="{{ tarjeta.id }}"
-                    onclick="toggleCardSelection(this, event)" data-estado-civil="{{ tarjeta.estado_civil }}"
-                    data-hijos="{{ 'true' if tarjeta.tiene_hijos else 'false' }}" data-color="{{ lista.color }}"
-                    data-phone="{{ tarjeta.telefono }}" data-email="{{ tarjeta.email }}" data-list-id="{{ lista.id }}"
-                    data-list-name="{{ lista.nombre }}" data-estado="{{ tarjeta.estado_civil|lower }}"
-                    data-lat="{{ tarjeta.latitud or '' }}" data-lng="{{ tarjeta.longitud or '' }}"
-                    data-conyuge="{{ tarjeta.nombre_conyuge or '' }}"
-                    data-edad-conyuge="{{ tarjeta.edad_conyuge or '' }}"
-                    data-codigo-postal="{{ tarjeta.codigo_postal or '' }}">
-                    <div class="card-selection-overlay hidden absolute top-2 right-2 z-10">
-                        <input type="checkbox" class="card-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                            onchange="updateBulkToolbar()">
-                    </div>
-                    <div class="card-header" style="border-left: 4px solid {{ tarjeta.color or '#3b82f6' }};">
-                        <div class="person-avatar" style="color: {{ lista.color }}; background: {{ lista.color }}15;">
-                            {{ tarjeta.nombre[:2].upper() }}
-                        </div>
-                        <div class="person-details">
-                            <h4 class="person-name">{{ tarjeta.nombre_completo }}</h4>
-                            <div class="person-info">
-                                <i class="fas fa-phone text-xs w-4"></i> {{ tarjeta.telefono }}
-                            </div>
-                            <div class="person-tags">
-                                {% if tarjeta.estado_civil %}
-                                <span class="tag estado-{{ tarjeta.estado_civil|lower }}">
-                                    {{ tarjeta.estado_civil }}
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="expand-indicator">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-
-                    <div class="card-details">
-                        <div class="detail-row">
-                            <span class="detail-label">{{ _('Dirección') }}:</span>
-                            <span class="detail-value">
-                                {{ tarjeta.direccion or 'No especificada' }}
-                                {% if tarjeta.codigo_postal %}
-                                <br><span class="text-xs text-gray-500">{{ _('CP') }}: {{ tarjeta.codigo_postal
-                                    }}</span>
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">{{ _('Email') }}:</span>
-                            <span class="detail-value">{{ tarjeta.email or 'No especificado' }}</span>
-                        </div>
-                        {% if tarjeta.edad %}
-                        <div class="detail-row">
-                            <span class="detail-label">{{ _('Edad') }}:</span>
-                            <span class="detail-value">{{ tarjeta.edad }} {{ _('años') }}</span>
-                        </div>
-                        {% endif %}
-                        {% if tarjeta.fecha_nacimiento %}
-                        <div class="detail-row">
-                            <span class="detail-label">{{ _('Cumpleaños') }}:</span>
-                            <span class="detail-value">{{ tarjeta.fecha_nacimiento }}</span>
-                        </div>
-                        {% endif %}
-                        {% if tarjeta.numero_hijos %}
-                        <div class="detail-row">
-                            <span class="detail-label">{{ _('Hijos') }}:</span>
-                            <span class="detail-value">{{ tarjeta.numero_hijos }} ({{ tarjeta.edades_hijos or 'edades no
-                                especificadas' }})</span>
-                        </div>
-                        {% endif %}
-
-                        {% if tarjeta.ocupacion %}
-                        <div class="detail-row">
-                            <span class="detail-label">{{ _('Ocupación') }}:</span>
-                            <span class="detail-value">{{ tarjeta.ocupacion }}</span>
-                        </div>
-                        {% endif %}
-
-                        <!-- Datos Eclesiásticos -->
-                        {% if tarjeta.ministerio or tarjeta.bautizado or tarjeta.es_lider %}
-                        <div class="mt-2 pt-2 border-t border-gray-100">
-                            {% if tarjeta.ministerio %}
-                            <div class="detail-row">
-                                <span class="detail-label">{{ _('Ministerio') }}:</span>
-                                <span class="detail-value">{{ tarjeta.ministerio }}</span>
-                            </div>
-                            {% endif %}
-                            <div class="flex gap-2 mt-1">
-                                {% if tarjeta.bautizado %}
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                    💧 {{ _('Bautizado') }}
-                                </span>
-                                {% endif %}
-                                {% if tarjeta.es_lider %}
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                    ⭐ {{ _('Líder') }}
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        {% if tarjeta.nombre_conyuge %}
-                        <div class="mt-3 pt-3 border-t border-gray-100 bg-pink-50 rounded-lg p-2 -mx-2">
-                            <div class="font-semibold text-gray-900 !text-gray-900 mb-2 flex items-center gap-2">
-                                <i class="fas fa-heart text-pink-500 text-xs"></i> {{ _('Datos del Cónyuge') }}
-                            </div>
-                            <div class="grid grid-cols-1 gap-1 text-sm">
-                                <div class="detail-row">
-                                    <span class="detail-label font-medium text-gray-800 !text-gray-800">{{ _('Nombre')
-                                        }}:</span>
-                                    <span class="detail-value font-bold text-gray-900 !text-gray-900">{{
-                                        tarjeta.nombre_conyuge
-                                        }}</span>
-                                </div>
-
-                                {% if tarjeta.edad_conyuge %}
-                                <div class="detail-row">
-                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Edad') }}:</span>
-                                    <span class="detail-value text-gray-900 !text-gray-900">{{ tarjeta.edad_conyuge }}
-                                        {{ _('años') }}</span>
-                                </div>
-                                {% endif %}
-
-                                {% if tarjeta.telefono_conyuge %}
-                                <div class="detail-row">
-                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Teléfono') }}:</span>
-                                    <span class="detail-value flex items-center gap-1">
-                                        <i class="fas fa-phone-alt text-gray-600 !text-gray-600 text-xs"></i>
-                                        <a href="tel:{{ tarjeta.telefono_conyuge }}"
-                                            class="hover:underline hover:text-blue-600 text-gray-900 !text-gray-900">
-                                            {{ tarjeta.telefono_conyuge }}
-                                        </a>
-                                    </span>
-                                </div>
-                                {% endif %}
-
-                                {% if tarjeta.email_conyuge %}
-                                <div class="detail-row">
-                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Email') }}:</span>
-                                    <span class="detail-value flex items-center gap-1">
-                                        <i class="fas fa-envelope text-gray-600 !text-gray-600 text-xs"></i>
-                                        <a href="mailto:{{ tarjeta.email_conyuge }}"
-                                            class="hover:underline hover:text-blue-600 text-gray-900 !text-gray-900">
-                                            {{ tarjeta.email_conyuge }}
-                                        </a>
-                                    </span>
-                                </div>
-                                {% endif %}
-
-                                {% if tarjeta.trabajo_conyuge %}
-                                <div class="detail-row">
-                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Trabajo/Ocupación')
-                                        }}:</span>
-                                    <span class="detail-value text-gray-900 !text-gray-900">{{ tarjeta.trabajo_conyuge
-                                        }}</span>
-                                </div>
-                                {% endif %}
-
-                                {% if tarjeta.fecha_matrimonio %}
-                                <div class="detail-row">
-                                    <span class="detail-label text-gray-800 !text-gray-800">{{ _('Aniversario')
-                                        }}:</span>
-                                    <span class="detail-value text-gray-900 !text-gray-900">
-                                        <i class="fas fa-calendar-alt text-gray-600 !text-gray-600 text-xs"></i> {{
-                                        tarjeta.fecha_matrimonio }}
-                                    </span>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-
-                        <div class="card-actions">
-                            <a href="{{ url_for('tableros.editar_tarjeta', lista_id=lista.id, tarjeta_id=tarjeta.id) }}"
-                                class="action-btn edit" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button class="action-btn delete" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% include 'tableros/partials/_lista.html' %}
         {% endfor %}
     </div>
 
@@ -352,7 +141,7 @@
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="formNuevaPersona">
+            <form id="formNuevaPersona" hx-post="{{ url_for('tableros.agregar_tarjeta') }}" hx-swap="none">
                 <div class="form-group relative mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <label class="form-label font-bold text-primary">
                         <i class="fas fa-search mr-2"></i>Buscar Persona Existente
@@ -497,8 +286,8 @@
             </script>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            <button class="btn btn-primary" form="formNuevaPersona">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" form="formNuevaPersona">Guardar</button>
         </div>
     </div>
 </div>
@@ -511,7 +300,8 @@
             <button class="modal-close">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="formNuevaLista">
+            <form id="formNuevaLista" hx-post="{{ url_for('tableros.agregar_lista') }}" hx-swap="none">
+                <input type="hidden" name="tablero_id" value="{{ tablero.id }}">
                 <div class="form-group">
                     <label class="form-label">Nombre de la Lista</label>
                     <input type="text" name="titulo" class="form-input" required placeholder="Ej: Visitantes">

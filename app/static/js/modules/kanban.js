@@ -24,8 +24,7 @@ export class KanbanBoard {
         this.isDragging = false;
         this.initSortable();
         this.initListSortable(); // Nueva función para ordenar listas
-        this.initCreateList();
-        this.initCreatePerson(); // Inicializar creación de personas
+        this.initHtmxTriggers(); // Enlazar triggers HTMX devueltos por backend
         this.initListEditing(); // Inicializar edición de listas
         this.initPersonSearch();
         this.initCardInteractions();
@@ -131,131 +130,37 @@ export class KanbanBoard {
         });
     }
 
-    initCreateList() {
-        const form = document.getElementById('formNuevaLista');
-        if (form) {
-            form.addEventListener('submit', (e) => this.handleCreateList(e));
-        }
-    }
-
-    async handleCreateList(e) {
-        e.preventDefault();
-        const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-
-        console.log('Attempting to create list...');
-        console.log('Tablero ID:', this.tableroId);
-
-        if (!this.tableroId) {
-            alert('Error interno: ID del tablero no encontrado. Por favor recarga la página.');
-            return;
-        }
-
-        try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creando...';
-
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-            data.tablero_id = this.tableroId;
-
-            console.log('Sending data:', data);
-
-            const response = await fetch('/tableros/agregar_lista', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-
-            console.log('Response status:', response.status);
-            const result = await response.json();
-            console.log('Response data:', result);
-
-            if (response.ok) {
-                console.log('List created successfully, reloading...');
-                window.location.reload();
-            } else {
-                console.error('Server error:', result.error);
-                alert('Error: ' + (result.error || 'Error desconocido'));
-                // Reset overflow in case modal gets stuck
+    initHtmxTriggers() {
+        document.body.addEventListener('closePersonaModal', () => {
+            const modal = document.getElementById('modalNuevaPersona');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
                 document.body.style.overflow = '';
+
+                const form = document.getElementById('formNuevaPersona');
+                if (form) form.reset();
             }
-        } catch (error) {
-            console.error('Network/JS error creating list:', error);
-            alert('Error de conexión al crear la lista');
-            document.body.style.overflow = '';
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-        }
-    }
+            // Re-vincular SortableJS a las nuevas tarjetas insertadas
+            this.initSortable();
+            console.log('HTMX inserted new Person card. Modal closed.');
+        });
 
-    initCreatePerson() {
-        const form = document.getElementById('formNuevaPersona');
-        if (form) {
-            form.addEventListener('submit', (e) => this.handleCreatePerson(e));
-        }
-    }
+        document.body.addEventListener('closeListaModal', () => {
+            const modal = document.getElementById('modalNuevaLista');
+            if (modal) {
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
 
-    async handleCreatePerson(e) {
-        e.preventDefault();
-        const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]') || document.querySelector('button[form="formNuevaPersona"]');
-        const originalText = submitBtn ? submitBtn.textContent : 'Guardar';
-
-        console.log('Attempting to create person...');
-
-        try {
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Guardando...';
+                const form = document.getElementById('formNuevaLista');
+                if (form) form.reset();
             }
-
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-            data.tablero_id = this.tableroId; // Add tablero ID
-
-            // Validar lista_id
-            if (!data.lista_id) {
-                alert('Por favor selecciona una lista de destino');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                }
-                return;
-            }
-
-            console.log('Sending person data:', data);
-
-            const response = await fetch('/tableros/agregar_tarjeta', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                console.log('Person created successfully, reloading...');
-                window.location.reload();
-            } else {
-                console.error('Server error:', result.error);
-                alert('Error: ' + (result.error || 'Error desconocido'));
-            }
-        } catch (error) {
-            console.error('Network/JS error creating person:', error);
-            alert('Error de conexión al crear la persona');
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        }
+            // Re-vincular SortableJS a las nuevas listas y sus dropzones
+            this.initListSortable();
+            this.initSortable();
+            console.log('HTMX inserted new kanban List. Modal closed.');
+        });
     }
 
     initListSortable() {

@@ -12,7 +12,9 @@ from flask_babel import Babel
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 from logging.config import dictConfig
+from traceback import format_exc
 from app.models import db
+from app.cache import cache
 
 
 def get_locale():
@@ -99,9 +101,20 @@ def create_app():
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith("postgres://"):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    # Caching Config
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        app.config['CACHE_TYPE'] = 'RedisCache'
+        app.config['CACHE_REDIS_URL'] = redis_url
+        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    else:
+        app.config['CACHE_TYPE'] = 'SimpleCache'
+        app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
     # Inicializar extensiones
     db.init_app(app)
+    cache.init_app(app)
     
     # Inicializar Flask-Migrate para migraciones de base de datos
     migrate = Migrate(app, db)

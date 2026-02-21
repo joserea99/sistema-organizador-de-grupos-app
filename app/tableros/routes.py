@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash, request, jsonify, send_file, current_app
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request, jsonify, send_file, current_app, make_response
 from io import BytesIO
 from datetime import datetime
 import pandas as pd
@@ -409,6 +409,14 @@ def agregar_tarjeta():
         
         db.session.commit()
         
+        if request.headers.get('HX-Request'):
+            html = render_template('tableros/partials/_tarjeta.html', tarjeta=nueva_persona, lista=lista_encontrada)
+            resp = f'<div id="list-{lista_encontrada.id}-items" hx-swap-oob="beforeend">{html}</div>'
+            resp += f'<span id="list-{lista_encontrada.id}-count" hx-swap-oob="innerHTML">{len(lista_encontrada.tarjetas)}</span>'
+            response = make_response(resp)
+            response.headers['HX-Trigger'] = 'closePersonaModal'
+            return response
+        
         return jsonify({
             'success': True,
             'tarjeta': nueva_persona.to_dict(),
@@ -564,6 +572,13 @@ def agregar_lista():
         
         # Guardar cambios en disco
         db.session.commit()
+        
+        if request.headers.get('HX-Request'):
+            html = render_template('tableros/partials/_lista.html', lista=nueva_lista)
+            resp = f'<div id="board-lists-container" hx-swap-oob="beforeend">{html}</div>'
+            response = make_response(resp)
+            response.headers['HX-Trigger'] = 'closeListaModal'
+            return response
         
         return jsonify({
             'success': True,

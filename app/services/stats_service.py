@@ -1,7 +1,9 @@
 from datetime import datetime
 from sqlalchemy import extract
 from app.models import db, Tablero, Lista, Tarjeta
+from app.cache import cache
 
+@cache.memoize(timeout=600)
 def get_stats(user_id=None):
     """Get statistics, optionally filtered by user"""
     now = datetime.now()
@@ -49,6 +51,7 @@ def get_stats(user_id=None):
         "recordatorios_pendientes": 0
     }
 
+@cache.memoize(timeout=600)
 def get_upcoming_birthdays(limit=5):
     # Simple implementation: get birthdays in current month
     now = datetime.now()

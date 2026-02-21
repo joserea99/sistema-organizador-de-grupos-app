@@ -1,0 +1,28 @@
+<div class="kanban-list w-80 flex-shrink-0 flex flex-col rounded-lg" data-list-id="{{ lista.id }}"
+    data-color="{{ lista.color }}">
+    <div class="list-header p-3 border-b flex justify-between items-center"
+        style="border-top: 3px solid {{ lista.color }}">
+        <h3 class="font-semibold list-title">{{ lista.nombre }}</h3>
+        <div class="flex items-center gap-2">
+            <a href="{{ url_for('tableros.importar_excel', lista_id=lista.id) }}"
+                class="text-gray-500 hover:text-blue-600 transition-colors" title="Importar desde Excel/CSV">
+                <i class="fas fa-file-import"></i>
+            </a>
+            <button class="text-gray-500 hover:text-blue-600 transition-colors btn-edit-list"
+                data-list-id="{{ lista.id }}" data-list-name="{{ lista.nombre }}" data-list-color="{{ lista.color }}"
+                title="Editar Lista">
+                <i class="fas fa-cog"></i>
+            </button>
+            <span class="list-count px-2 py-1 rounded-full text-xs font-bold" id="list-{{ lista.id }}-count">
+                {{ lista.tarjetas|length }}
+            </span>
+        </div>
+    </div>
+
+    <div id="list-{{ lista.id }}-items" class="kanban-list-items p-3 flex-1 overflow-y-auto custom-scrollbar"
+        style="min-height: 100px;">
+        {% for tarjeta in lista.tarjetas %}
+        {% include 'tableros/partials/_tarjeta.html' %}
+        {% endfor %}
+    </div>
+</div>
