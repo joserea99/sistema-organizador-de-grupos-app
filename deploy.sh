@@ -6,8 +6,7 @@ echo "Starting Railway Deployment (DEBUG VERSION V2)"
 echo "========================================="
 
 echo "Step 1: Running database migrations..."
-# python perform_migrations.py
-echo "Skipping migrations for debugging (manual trigger only)..."
+python perform_migrations.py
 
 echo ""
 echo "Step 2: Compiling translations..."
