@@ -150,9 +150,11 @@ def create_app():
     from app.tableros.routes import tableros_bp
     from app.billing.routes import billing_bp
     from app.api.routes import api_bp
+    from app.admin.routes import admin_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(tableros_bp, url_prefix="/tableros")
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(billing_bp, url_prefix="/billing")

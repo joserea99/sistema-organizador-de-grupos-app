@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administrador{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .admin-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .admin-stat-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .admin-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-info h3 {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .stat-info .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    .users-table-container {
+        background: var(--bg-primary);
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .users-table th {
+        background: var(--bg-secondary);
+        padding: 1rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .users-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+    .users-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .users-table tr:hover {
+        background: var(--bg-hover);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+    }
+
+    .status-inactive {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="header mb-6 flex justify-between items-center pb-4 border-b">
+        <div>
+            <h1 class="text-3xl font-bold flex items-center gap-3">
+                <i class="fas fa-shield-alt text-indigo-600"></i>
+                Panel de Super Administrador
+            </h1>
+            <p class="text-secondary mt-1">Métricas globales y gestión de usuarios del sistema.</p>
+        </div>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a mi Dashboard
+        </a>
+    </div>
+
+    <!-- KPIs -->
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card">
+            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5;">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Usuarios</h3>
+                <p class="value">{{ stats.total_usuarios }}</p>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Suscripciones Activas</h3>
+                <p class="value">{{ stats.usuarios_premium }}</p>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">
+                <i class="fas fa-columns"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Tableros Creados</h3>
+                <p class="value">{{ stats.total_tableros }}</p>
+            </div>
+        </div>
+
+        <div class="admin-stat-card">
+            <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1); color: #db2777;">
+                <i class="fas fa-address-card"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Tarjetas (Personas)</h3>
+                <p class="value">{{ stats.total_tarjetas }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registro de Usuarios -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Usuarios Registrados</h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Fecha de Registro</th>
+                        <th>Método</th>
+                        <th>Suscripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td>
+                            <div class="font-medium">{{ u.nombre_completo or u.username }}</div>
+                            {% if u.is_admin %}
+                            <span class="text-xs text-indigo-600 font-bold"><i class="fas fa-crown"></i> Admin</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.fecha_registro.strftime('%Y-%m-%d') if u.fecha_registro else 'N/A' }}</td>
+                        <td>
+                            {% if u.oauth_provider == 'google' %}
+                            <span class="text-red-500"><i class="fab fa-google"></i> Google</span>
+                            {% elif u.oauth_provider == 'apple' %}
+                            <span class="text-gray-900 dark:text-gray-300"><i class="fab fa-apple"></i> Apple</span>
+                            {% else %}
+                            <span class="text-gray-500"><i class="fas fa-envelope"></i> Email</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.suscripcion_activa %}
+                            <span class="status-badge status-active"><i class="fas fa-check-circle mr-1"></i>
+                                Premium</span>
+                            {% else %}
+                            <span class="status-badge status-inactive"><i class="fas fa-times-circle mr-1"></i>
+                                Gratuito</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-gray-500">No hay usuarios registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

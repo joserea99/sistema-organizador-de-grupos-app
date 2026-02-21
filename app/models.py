@@ -18,6 +18,7 @@ class Usuario(db.Model):
     fecha_registro = db.Column(db.DateTime, default=datetime.utcnow)
     activo = db.Column(db.Boolean, default=True)
     rol = db.Column(db.String(20), default='user')
+    is_admin = db.Column(db.Boolean, default=False)
     suscripcion_activa = db.Column(db.Boolean, default=False)
     stripe_customer_id = db.Column(db.String(120))
     preferred_language = db.Column(db.String(5), default='es')
