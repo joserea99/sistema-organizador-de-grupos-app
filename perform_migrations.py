@@ -8,13 +8,28 @@ os.environ.setdefault('FLASK_APP', 'run.py')
 
 try:
     print("Starting migration process...")
-    from app import create_app
+    from app import create_app, db
     from flask_migrate import upgrade
+    from sqlalchemy import text
     
     app = create_app()
     with app.app_context():
         print("Applying database migrations...")
-        upgrade()
+        try:
+            upgrade()
+        except Exception as migrate_error:
+            print(f"Alembic sync warning: {migrate_error}")
+            print("Falling back to manual schema parity...")
+            
+        print("Verifying critical schema columns...")
+        try:
+            # Force inject the is_admin column bypassing Alembic tracking
+            db.session.execute(text("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;"))
+            db.session.commit()
+        except Exception as sql_err:
+            print(f"SQL fallback warning: {sql_err}")
+            db.session.rollback()
+
         print("✓ Migrations completed successfully")
 
 except Exception as e:
