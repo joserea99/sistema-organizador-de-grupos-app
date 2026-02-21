@@ -38,29 +38,6 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="clasico"] {
-    /* === COLORES PRIMARIOS (Ajustados para Dark) === */
-    --color-primary: #3b82f6;
-    --color-primary-light: #60a5fa;
-    --color-primary-dark: #2563eb;
-
-    /* === COLORES DE TEXTO === */
-    --text-primary: #f9fafb;
-    --text-secondary: #d1d5db;
-    --text-light: #9ca3af;
-    --text-on-primary: #ffffff;
-
-    /* === COLORES DE FONDO === */
-    --bg-body: #111827;
-    --bg-primary: #1f2937;
-    --bg-secondary: #374151;
-    --bg-tertiary: #4b5563;
-    --bg-hover: #374151;
-
-    /* === BORDES === */
-    --border-color: #374151;
-    --border-light: #4b5563;
-}
 
 [data-theme="minimalista"] {
     /* === COLORES PRIMARIOS === */
@@ -219,6 +196,7 @@ body {
     background: var(--color-primary);
     color: var(--text-on-primary) !important;
 }
+
 .btn-primary:hover {
     background: var(--color-primary-dark);
     transform: translateY(-1px);
@@ -241,7 +219,13 @@ body {
     color: var(--text-on-primary) !important;
 }
 
-.card, .kanban-list, .controls-section, .import-export-section, .maps-section, .dropdown-menu, .modal-content {
+.card,
+.kanban-list,
+.controls-section,
+.import-export-section,
+.maps-section,
+.dropdown-menu,
+.modal-content {
     background: var(--bg-primary) !important;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-md);
@@ -271,26 +255,36 @@ body {
     border-bottom-color: var(--border-color);
 }
 
-.list-title, .person-name, .modal-title, .controls-title {
+.list-title,
+.person-name,
+.modal-title,
+.controls-title {
     color: var(--text-primary) !important;
 }
 
-.list-count, .tag {
+.list-count,
+.tag {
     background: var(--bg-tertiary);
     color: var(--text-primary) !important;
 }
 
-.person-info, .form-label, .modal-close {
+.person-info,
+.form-label,
+.modal-close {
     color: var(--text-secondary) !important;
 }
 
-.form-input, .form-select, .form-textarea {
+.form-input,
+.form-select,
+.form-textarea {
     background: var(--bg-body) !important;
     border-color: var(--border-color);
     color: var(--text-primary) !important;
 }
 
-.form-input:focus, .form-select:focus, .form-textarea:focus {
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
     border-color: var(--color-primary);
 }
 
@@ -306,6 +300,7 @@ body {
     border: 1px solid var(--border-color);
     color: var(--text-secondary) !important;
 }
+
 .map-filter-btn.active {
     background: var(--color-primary) !important;
     color: var(--text-on-primary) !important;
@@ -316,28 +311,32 @@ body {
 [data-theme="moderno"] body {
     background-attachment: fixed;
 }
+
 [data-theme="moderno"] .header {
     background: var(--glass-bg) !important;
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--glass-border);
 }
+
 [data-theme="moderno"] .btn-primary {
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     box-shadow: var(--glow-primary);
 }
 
-[data-theme="minimalista"] .card, 
-[data-theme="minimalista"] .kanban-list, 
+[data-theme="minimalista"] .card,
+[data-theme="minimalista"] .kanban-list,
 [data-theme="minimalista"] .person-card,
 [data-theme="minimalista"] .modal-content,
 [data-theme="minimalista"] .controls-section {
     box-shadow: none !important;
     border-radius: 4px !important;
 }
+
 [data-theme="minimalista"] .header {
     box-shadow: none !important;
 }
+
 [data-theme="minimalista"] body {
     font-family: 'Inter', sans-serif !important;
 }
