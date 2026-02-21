@@ -129,7 +129,12 @@ def create_app():
 
     @app.context_processor
     def inject_conf_var():
-        return dict(get_locale=get_locale)
+        from app.models import Usuario
+        from flask import session
+        current_user = None
+        if 'user_id' in session:
+            current_user = Usuario.query.get(session['user_id'])
+        return dict(get_locale=get_locale, current_user=current_user)
 
     with app.app_context():
         # Initialize OAuth
