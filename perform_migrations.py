@@ -17,7 +17,7 @@ try:
         print("Applying database migrations...")
         try:
             upgrade()
-        except Exception as migrate_error:
+        except (Exception, SystemExit) as migrate_error:
             print(f"Alembic sync warning: {migrate_error}")
             print("Falling back to manual schema parity...")
             
