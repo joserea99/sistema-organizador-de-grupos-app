@@ -58,3 +58,38 @@ def dashboard():
     }
     
     return render_template('admin/dashboard.html', usuarios=usuarios, stats=stats)
+
+
+@admin_bp.route('/users/<user_id>/toggle_admin', methods=['POST'])
+@admin_required
+def toggle_admin(user_id):
+    user = Usuario.query.get_or_404(user_id)
+    
+    # Prevenir que el admin se quite los permisos a sí mismo por error
+    if user.id == session.get('user_id'):
+        flash("No puedes modificar tus propios permisos de administrador desde aquí.", "warning")
+        return redirect(url_for('admin.dashboard'))
+        
+    user.is_admin = not user.is_admin
+    db.session.commit()
+    
+    status = "otorgado" if user.is_admin else "revocado"
+    flash(f"Se han {status} los permisos de administrador al usuario {user.email}.", "success")
+    return redirect(url_for('admin.dashboard'))
+
+
+@admin_bp.route('/users/<user_id>/delete', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    user = Usuario.query.get_or_404(user_id)
+    
+    # Prevenir que el admin se borre a sí mismo
+    if user.id == session.get('user_id'):
+        flash("No puedes eliminar tu propia cuenta de administrador.", "error")
+        return redirect(url_for('admin.dashboard'))
+        
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash(f"Usuario {user.email} eliminado correctamente del sistema.", "success")
+    return redirect(url_for('admin.dashboard'))

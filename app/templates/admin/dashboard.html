@@ -182,6 +182,7 @@
                         <th>Fecha de Registro</th>
                         <th>Método</th>
                         <th>Suscripción</th>
+                        <th class="text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -213,10 +214,44 @@
                                 Gratuito</span>
                             {% endif %}
                         </td>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <!-- Botón Hacer/Quitar Admin -->
+                                <form action="{{ url_for('admin.toggle_admin', user_id=u.id) }}" method="POST"
+                                    class="inline">
+                                    {% if u.is_admin %}
+                                    <button type="submit"
+                                        class="p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors"
+                                        title="Revocar Administrador"
+                                        onclick="return confirm('¿Estás seguro de quitarle privilegios de administrador a este usuario?');">
+                                        <i class="fas fa-user-minus"></i>
+                                    </button>
+                                    {% else %}
+                                    <button type="submit"
+                                        class="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
+                                        title="Convertir en Administrador"
+                                        onclick="return confirm('¿Estás seguro de otorgarle privilegios de administrador a este usuario? Puede ser peligroso.');">
+                                        <i class="fas fa-user-shield"></i>
+                                    </button>
+                                    {% endif %}
+                                </form>
+
+                                <!-- Botón Eliminar Usuario -->
+                                <form action="{{ url_for('admin.delete_user', user_id=u.id) }}" method="POST"
+                                    class="inline">
+                                    <button type="submit"
+                                        class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Eliminar cuenta permanentemente"
+                                        onclick="return confirm('⚠️ ALERTA: ¿Estás seguro de eliminar a {{ u.email }} y TODOS sus tableros permanentemente? Esta acción NO se puede deshacer.');">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="text-center py-8 text-gray-500">No hay usuarios registrados.</td>
+                        <td colspan="6" class="text-center py-8 text-gray-500">No hay usuarios registrados.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
