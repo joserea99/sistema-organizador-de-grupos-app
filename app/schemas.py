@@ -38,7 +38,7 @@ class ListaSchema(Schema):
 
 class TarjetaBaseSchema(Schema):
     class Meta:
-        unknown = EXCLUDE
+        unknown = INCLUDE
         
     nombre = fields.String(required=True, validate=validate.Length(min=1, max=100, error="El nombre de la persona es requerido."))
     lista_id = fields.String(required=True)

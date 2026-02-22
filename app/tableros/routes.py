@@ -368,17 +368,17 @@ def agregar_tarjeta():
             # Additional keys that might not be in the strict schema yet
             edad=int(data.get('edad')) if data.get('edad') else None,
             estado_civil=data.get('estado_civil', ''),
-            numero_hijos=int(data.get('numero_hijos', 0)),
+            numero_hijos=int(data.get('numero_hijos', 0)) if data.get('numero_hijos') else 0,
             edades_hijos=data.get('edades_hijos', ''),
             ocupacion=data.get('ocupacion', ''),
             
-            nombre_conyuge=valid_data.get('nombre_esposo'), # Schema maps 'nombre_esposo' but method expects 'nombre_conyuge'
+            nombre_conyuge=data.get('nombre_conyuge', '').strip(),
             telefono_conyuge=data.get('telefono_conyuge', ''),
             edad_conyuge=int(data.get('edad_conyuge')) if data.get('edad_conyuge') else None,
             trabajo_conyuge=data.get('trabajo_conyuge', ''),
             fecha_matrimonio=data.get('fecha_matrimonio', ''),
             
-            email=data.get('email', ''),
+            email=data.get('email', '').strip(),
             notas=valid_data.get('notas'),
             codigo_postal=data.get('codigo_postal', ''),
             responsable=data.get('responsable', session.get('username', '')),
