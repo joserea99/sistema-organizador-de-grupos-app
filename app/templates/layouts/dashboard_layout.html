@@ -163,7 +163,9 @@
             </div>
         </aside>
 
-    </div>
+        <main class="flex-1 overflow-y-auto w-full">
+            {% block dashboard_content %}{% endblock %}
+        </main>
     </div>
     <!-- Mobile Menu Script using Alpine.js or vanilla JS -->
     <script>
