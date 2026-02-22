@@ -8,7 +8,7 @@ import openpyxl
 import csv
 import io
 import re
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Union
 
 
 def normalizar_nombre_columna(nombre: str) -> str:
@@ -213,20 +213,16 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
     
     for campo_estandar in campos_ordenados:
         variaciones = mapeo_campos[campo_estandar]
-        match_found = False
+        resultado[campo_estandar] = []
+        
         for variacion in variaciones:
             variacion_normalizada = normalizar_nombre_columna(variacion)
             if variacion_normalizada in columnas_disponibles:
-                resultado[campo_estandar] = headers_normalizados[variacion_normalizada]
+                resultado[campo_estandar].append(headers_normalizados[variacion_normalizada])
                 columnas_disponibles.remove(variacion_normalizada)
-                match_found = True
-                break
         
     # 2. Si no hay coincidencia exacta para algunos campos, usar fuzzy matching solo en las disponibles
     for campo_estandar in campos_ordenados:
-        if campo_estandar in resultado:
-            continue
-            
         variaciones = mapeo_campos[campo_estandar]
         if columnas_disponibles:
             mejores_coincidencias = []
@@ -239,9 +235,13 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
             # Si encontramos alguna coincidencia fuzzy
             if mejores_coincidencias:
                 mejor_match = mejores_coincidencias[0][0]
-                resultado[campo_estandar] = headers_normalizados[mejor_match]
+                resultado[campo_estandar].append(headers_normalizados[mejor_match])
                 columnas_disponibles.remove(mejor_match)
                 print(f"✨ Coincidencia inteligente: '{headers_normalizados[mejor_match]}' -> {campo_estandar}")
+                
+        # Limpiar listas vacías del resultado para mantener compatibilidad
+        if not resultado[campo_estandar]:
+            del resultado[campo_estandar]
     
     if columnas_disponibles:
         unmapped = [headers_normalizados[c] for c in columnas_disponibles if c in headers_normalizados]
@@ -250,14 +250,25 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
     return resultado
 
 
-def obtener_valor_flexible(fila: Dict, mapeo: Dict[str, str], campo: str) -> str:
+def obtener_valor_flexible(fila: Dict, mapeo: Dict[str, Union[str, List[str]]], campo: str) -> str:
     """
     Obtener valor de una fila usando el mapeo flexible.
+    Combina los datos si una misma etiqueta estándar apuntó a múltiples columnas del Excel.
     """
-    nombre_columna_real = mapeo.get(campo)
-    if nombre_columna_real:
-        return str(fila.get(nombre_columna_real, '')).strip()
-    return ''
+    columnas_reales = mapeo.get(campo)
+    if not columnas_reales:
+        return ''
+        
+    # Si detectamos múltiples columnas para un mismo campo (Ej: 'Dirección' y 'Reside en...')
+    if isinstance(columnas_reales, list):
+        valores_unicos = []
+        for col in columnas_reales:
+            val = str(fila.get(col, '')).strip()
+            if val and val not in valores_unicos:
+                valores_unicos.append(val)
+        return ' '.join(valores_unicos)
+    else:
+        return str(fila.get(columnas_reales, '')).strip()
 
 
 def process_excel_file(archivo) -> Tuple[List[Dict], List[str]]:
