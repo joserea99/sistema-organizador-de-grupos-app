@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validate, validates, ValidationError, pre_load, EXCLUDE
+from marshmallow import Schema, fields, validate, validates, ValidationError, pre_load, EXCLUDE, INCLUDE
 
 class UsuarioRegistroSchema(Schema):
     class Meta:
