@@ -60,6 +60,8 @@ class Tablero(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     creador_id = db.Column(db.String(36), db.ForeignKey('usuarios.id'), nullable=False)
     
+    historial = db.Column(db.JSON, default=list)
+    
     # Relaciones
     listas = db.relationship('Lista', backref='tablero', lazy=True, cascade="all, delete-orphan")
 
@@ -86,7 +88,7 @@ class Tablero(db.Model):
             'total_listas': len(self.listas),
             'total_tarjetas': total_tarjetas,
             'undo_stack': getattr(self, 'undo_stack', []),
-            'historial': getattr(self, 'historial', [])
+            'historial': self.historial or []
         }
 
     def agregar_lista(self, nombre, color="#e2e8f0"):
@@ -105,7 +107,7 @@ class Tablero(db.Model):
         return False
             
     def registrar_accion(self, usuario, accion, detalle):
-        if not hasattr(self, 'historial'):
+        if self.historial is None:
             self.historial = []
         
         evento = {
@@ -114,9 +116,13 @@ class Tablero(db.Model):
             'detalles': detalle,
             'fecha': datetime.now().isoformat()
         }
-        self.historial.insert(0, evento)
-        # Limitar historial a 50 eventos
-        self.historial = self.historial[:50]
+        
+        # Insertar al inicio y limitar a 50 eventos
+        nuevo_historial = [evento] + self.historial
+        self.historial = nuevo_historial[:50]
+        
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(self, "historial")
         
     def registrar_undo(self, tipo, datos):
         if not hasattr(self, 'undo_stack'):
