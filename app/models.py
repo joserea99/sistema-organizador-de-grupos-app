@@ -184,6 +184,11 @@ class Lista(db.Model):
         valid_columns = [c.key for c in Tarjeta.__table__.columns]
         filtered_kwargs = {k: v for k, v in kwargs.items() if k in valid_columns}
         
+        # Convert empty strings to None to satisfy SQLAlchemy type constraints (Int, Date, etc.)
+        for key, value in filtered_kwargs.items():
+            if value == "":
+                filtered_kwargs[key] = None
+        
         tarjeta = Tarjeta(lista_id=self.id, **filtered_kwargs)
         db.session.add(tarjeta)
         return tarjeta
