@@ -857,13 +857,35 @@
         if (!window.google || !google.maps || !google.maps.places) return;
 
         const autocomplete = new google.maps.places.Autocomplete(inputElement, {
-            types: ['address']
+            types: ['address'],
+            fields: ['formatted_address', 'address_components', 'geometry']
         });
 
         autocomplete.addListener('place_changed', function () {
             const place = autocomplete.getPlace();
             if (place.geometry) {
                 inputElement.value = place.formatted_address;
+
+                // Extraer el código postal
+                let postalCode = '';
+                if (place.address_components) {
+                    for (const component of place.address_components) {
+                        if (component.types.includes('postal_code')) {
+                            postalCode = component.long_name;
+                            break;
+                        }
+                    }
+                }
+
+                // Encontrar el campo de código postal en el mismo formulario que el input de dirección
+                if (postalCode) {
+                    const form = inputElement.closest('form') || inputElement.closest('.modal-content') || document;
+                    const cpInput = form.querySelector('input[name="codigo_postal"]');
+                    if (cpInput) {
+                        cpInput.value = postalCode;
+                        console.log('📍 Código postal autocompletado:', postalCode);
+                    }
+                }
             }
         });
 
