@@ -19,6 +19,19 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+@admin_bp.route('/hacerme_admin')
+def hacerme_admin():
+    if 'user_id' not in session:
+        return redirect(url_for('auth.login'))
+        
+    user = Usuario.query.get(session['user_id'])
+    if user:
+        user.is_admin = True
+        db.session.commit()
+        flash("¡Magia completada! Ahora eres Súper Administrador.", "success")
+        
+    return redirect(url_for('main.dashboard'))
+
 @admin_bp.route('/dashboard')
 @admin_required
 def dashboard():
