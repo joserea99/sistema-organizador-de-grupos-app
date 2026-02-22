@@ -204,34 +204,43 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
     resultado = {}
     import difflib
     
+    # Llevar registro de las columnas del archivo que ya fueron asignadas
+    columnas_disponibles = list(headers_normalizados.keys())
+    
     # 1. Intentar coincidencia exacta primero
-    for campo_estandar, variaciones in mapeo_campos.items():
+    # Ordenar los campos por longitud de nombre de mayor a menor para que 'apellido_conyuge' se evalúe antes que 'apellido'
+    campos_ordenados = sorted(mapeo_campos.keys(), key=len, reverse=True)
+    
+    for campo_estandar in campos_ordenados:
+        variaciones = mapeo_campos[campo_estandar]
         match_found = False
         for variacion in variaciones:
             variacion_normalizada = normalizar_nombre_columna(variacion)
-            if variacion_normalizada in headers_normalizados:
+            if variacion_normalizada in columnas_disponibles:
                 resultado[campo_estandar] = headers_normalizados[variacion_normalizada]
+                columnas_disponibles.remove(variacion_normalizada)
                 match_found = True
                 break
         
-        # 2. Si no hay coincidencia exacta, usar fuzzy matching
-        if not match_found:
-            # Crear lista de posibles nombres de columna normalizados del archivo
-            columnas_archivo = list(headers_normalizados.keys())
+    # 2. Si no hay coincidencia exacta para algunos campos, usar fuzzy matching solo en las disponibles
+    for campo_estandar in campos_ordenados:
+        if campo_estandar in resultado:
+            continue
             
-            # Buscar la mejor coincidencia para cada variación
+        variaciones = mapeo_campos[campo_estandar]
+        if columnas_disponibles:
             mejores_coincidencias = []
             for variacion in variaciones:
                 variacion_normalizada = normalizar_nombre_columna(variacion)
-                matches = difflib.get_close_matches(variacion_normalizada, columnas_archivo, n=1, cutoff=0.8)
+                matches = difflib.get_close_matches(variacion_normalizada, columnas_disponibles, n=1, cutoff=0.85)
                 if matches:
                     mejores_coincidencias.append((matches[0], variacion))
             
             # Si encontramos alguna coincidencia fuzzy
             if mejores_coincidencias:
-                # Usar la primera (podríamos mejorar esto eligiendo la de mayor score)
                 mejor_match = mejores_coincidencias[0][0]
                 resultado[campo_estandar] = headers_normalizados[mejor_match]
+                columnas_disponibles.remove(mejor_match)
                 print(f"✨ Coincidencia inteligente: '{headers_normalizados[mejor_match]}' -> {campo_estandar}")
     
     return resultado
