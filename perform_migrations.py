@@ -26,12 +26,16 @@ try:
             # Force inject the is_admin column bypassing Alembic tracking
             db.session.execute(text("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;"))
             db.session.commit()
+        except Exception as sql_err:
+            print(f"SQL fallback warning (is_admin): {sql_err}")
+            db.session.rollback()
             
+        try:
             # Force inject the historial column for tableros
             db.session.execute(text("ALTER TABLE tableros ADD COLUMN IF NOT EXISTS historial JSON DEFAULT '[]'::json;"))
             db.session.commit()
         except Exception as sql_err:
-            print(f"SQL fallback warning: {sql_err}")
+            print(f"SQL fallback warning (historial): {sql_err}")
             db.session.rollback()
 
         print("✓ Migrations completed successfully")
