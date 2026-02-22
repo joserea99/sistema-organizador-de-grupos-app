@@ -178,7 +178,8 @@
 
                 <div class="form-group">
                     <label class="form-label">Dirección</label>
-                    <input type="text" name="direccion" class="form-input" placeholder="Calle, Número, Ciudad">
+                    <input type="text" id="direccionInput" name="direccion" class="form-input"
+                        placeholder="Calle, Número, Ciudad">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -850,7 +851,39 @@
         window.googleMapsLoaded = true;
         window.dispatchEvent(new CustomEvent('google-maps-loaded'));
     };
+
+    function attachAutocomplete(inputElement) {
+        if (!inputElement || inputElement.hasAttribute('data-places-attached')) return;
+        if (!window.google || !google.maps || !google.maps.places) return;
+
+        const autocomplete = new google.maps.places.Autocomplete(inputElement, {
+            types: ['address']
+        });
+
+        autocomplete.addListener('place_changed', function () {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                inputElement.value = place.formatted_address;
+            }
+        });
+
+        inputElement.setAttribute('data-places-attached', 'true');
+        console.log('📍 Autocomplete ligado a:', inputElement.name || inputElement.id);
+    }
+
+    // Al cargar el mapa inicialmente
+    window.addEventListener('google-maps-loaded', () => {
+        document.querySelectorAll('#direccionInput, input[name="direccion"]').forEach(attachAutocomplete);
+    });
+
+    // Si HTMX inyecta nuevos modales de edición dinámicamente
+    document.body.addEventListener('htmx:afterSwap', function (evt) {
+        if (window.googleMapsLoaded) {
+            document.querySelectorAll('#direccionInput, input[name="direccion"]').forEach(attachAutocomplete);
+        }
+    });
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key={{ config['GOOGLE_MAPS_API_KEY'] }}&callback=initMap" async
-    defer></script>
+<script
+    src="https://maps.googleapis.com/maps/api/js?key={{ config['GOOGLE_MAPS_API_KEY'] }}&libraries=places&callback=initMap"
+    async defer></script>
 {% endblock %}
