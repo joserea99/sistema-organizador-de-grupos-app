@@ -182,7 +182,7 @@ def register():
     return render_template("auth/register.html")
 
 
-@auth_bp.route("/profile")
+@auth_bp.route("/profile", methods=["GET", "POST"])
 def profile():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
@@ -191,24 +191,32 @@ def profile():
     if not user:
         session.clear()
         return redirect(url_for("auth.login"))
+        
+    if request.method == "POST":
+        nuevo_nombre = request.form.get("nombre_completo")
+        nuevo_idioma = request.form.get("preferred_language")
+        
+        actualizado = False
+        
+        if nuevo_nombre is not None and nuevo_nombre != user.nombre_completo:
+            user.nombre_completo = nuevo_nombre
+            actualizado = True
+            
+        if nuevo_idioma in ['es', 'en'] and nuevo_idioma != user.preferred_language:
+            user.preferred_language = nuevo_idioma
+            session['lang'] = nuevo_idioma  # Update current session language
+            actualizado = True
+            
+        if actualizado:
+            db.session.commit()
+            flash("Perfil actualizado exitosamente.", "success")
+        
+        return redirect(url_for("auth.profile"))
 
     # Datos del usuario para el template
     usuario = user.to_dict()
-    
-    # Stats simuladas por ahora (se conectarán con TableroStorage luego)
-    stats = {
-        "total_tableros": 0,
-        "total_listas": 0,
-        "total_personas": 0,
-        "total_tarjetas": 0,
-        "tableros_activos": 0,
-        "tareas_pendientes": 0,
-        "tareas_completadas": 0,
-        "miembros_activos": 0,
-        "proyectos_completados": 0,
-    }
 
-    return render_template("auth/profile.html", usuario=usuario, stats=stats)
+    return render_template("auth/profile.html", usuario=usuario)
 
 
 @auth_bp.route("/change-password", methods=["GET", "POST"])
