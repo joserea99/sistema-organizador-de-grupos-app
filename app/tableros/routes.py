@@ -1044,12 +1044,12 @@ def editar_tarjeta(lista_id, tarjeta_id):
             tarjeta_encontrada.direccion = valid_data.get('direccion')
             
             # Información Familiar
-            tarjeta_encontrada.numero_hijos = int(form_data.get('numero_hijos', 0))
+            tarjeta_encontrada.numero_hijos = int(form_data.get('numero_hijos', 0)) if form_data.get('numero_hijos') else 0
             tarjeta_encontrada.edades_hijos = form_data.get('edades_hijos', '')
-            tarjeta_encontrada.nombre_conyuge = valid_data.get('nombre_esposo') # Note schema mapping 'nombre_esposo' -> method 'nombre_conyuge' expected internally. Wait, the model uses nombre_conyuge..
-            if tarjeta_encontrada.nombre_conyuge is None:
-                tarjeta_encontrada.nombre_conyuge = form_data.get('nombre_conyuge', '')    
+            tarjeta_encontrada.nombre_conyuge = form_data.get('nombre_conyuge', '').strip()
             tarjeta_encontrada.telefono_conyuge = form_data.get('telefono_conyuge', '')
+            tarjeta_encontrada.edad_conyuge = int(form_data.get('edad_conyuge')) if form_data.get('edad_conyuge') else None
+            tarjeta_encontrada.fecha_matrimonio = form_data.get('fecha_matrimonio', '')
             
             # Información Adicional
             tarjeta_encontrada.responsable = form_data.get('responsable', '')
