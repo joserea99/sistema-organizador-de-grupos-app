@@ -213,10 +213,8 @@ def profile():
         
         return redirect(url_for("auth.profile"))
 
-    # Datos del usuario para el template
-    usuario = user.to_dict()
-
-    return render_template("auth/profile.html", usuario=usuario)
+    # Pasar el objeto SQLAlchemy completo para evitar errores en Jinja con propiedades faltantes
+    return render_template("auth/profile.html", usuario=user)
 
 
 @auth_bp.route("/change-password", methods=["GET", "POST"])
