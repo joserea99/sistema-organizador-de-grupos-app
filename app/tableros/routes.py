@@ -284,7 +284,7 @@ def agregar_tarjeta():
         lista_id = request.args.get('lista_id')
         
         # Los otros datos pueden venir como JSON o form data
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
             # Si no hay JSON, intentar form data
             data = request.form.to_dict()
@@ -437,7 +437,7 @@ def mover_tarjeta():
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         
         if not data:
             return jsonify({'error': 'No se enviaron datos'}), 400
@@ -529,7 +529,7 @@ def agregar_lista():
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         if not data:
             # Si no hay JSON, intentar form data
             data = request.form.to_dict()
@@ -1171,7 +1171,7 @@ def apply_clustering():
         return jsonify({'error': 'No autorizado'}), 401
         
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         tablero_id = data.get('tablero_id')
         clusters = data.get('clusters', [])
         
@@ -1430,7 +1430,7 @@ def mover_lista():
         return jsonify({'error': 'No autorizado'}), 401
     
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True)
         
         if not data:
             return jsonify({'error': 'No se enviaron datos'}), 400
