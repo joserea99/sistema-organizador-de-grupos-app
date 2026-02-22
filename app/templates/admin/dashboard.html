@@ -216,22 +216,22 @@
                         </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <!-- Botón Hacer/Quitar Admin -->
-                                <form action="{{ url_for('admin.toggle_admin', user_id=u.id) }}" method="POST"
+                                <!-- Botón Dar/Quitar Premium -->
+                                <form action="{{ url_for('admin.toggle_premium', user_id=u.id) }}" method="POST"
                                     class="inline">
-                                    {% if u.is_admin %}
+                                    {% if u.suscripcion_activa %}
                                     <button type="submit"
-                                        class="p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors"
-                                        title="Revocar Administrador"
-                                        onclick="return confirm('¿Estás seguro de quitarle privilegios de administrador a este usuario?');">
-                                        <i class="fas fa-user-minus"></i>
+                                        class="p-2 text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                                        title="Revocar pase Premium"
+                                        onclick="return confirm('¿Estás seguro de REVOCAR el pase Premium a este usuario? Volverá al plan gratuito.');">
+                                        <i class="fas fa-star-half-stroke"></i>
                                     </button>
                                     {% else %}
                                     <button type="submit"
-                                        class="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors"
-                                        title="Convertir en Administrador"
-                                        onclick="return confirm('¿Estás seguro de otorgarle privilegios de administrador a este usuario? Puede ser peligroso.');">
-                                        <i class="fas fa-user-shield"></i>
+                                        class="p-2 text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                                        title="Otorgar pase Premium"
+                                        onclick="return confirm('¿Estás seguro de REGALAR un pase Premium de por vida a este usuario sin que pase por la pasarela de pago?');">
+                                        <i class="fas fa-star"></i>
                                     </button>
                                     {% endif %}
                                 </form>
