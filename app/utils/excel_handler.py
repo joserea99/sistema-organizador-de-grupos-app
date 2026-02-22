@@ -285,7 +285,7 @@ def process_excel_file(archivo) -> Tuple[List[Dict], List[str]]:
     errores = []
     
     try:
-        workbook = openpyxl.load_workbook(archivo)
+        workbook = openpyxl.load_workbook(archivo, data_only=True)
         sheet = workbook.active
         
         # Detectar qué fila tiene los headers
