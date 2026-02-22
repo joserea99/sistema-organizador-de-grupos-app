@@ -1,262 +1,307 @@
-{% extends "base.html" %}
+{% extends "layouts/dashboard_layout.html" %}
 
-{% block title %}Mi Perfil - Organizador de Iglesia{% endblock %}
-
-{% block styles %}
-{{ super() }}
-<style>
-    /* Extend Tailwind classes with some custom properties if needed */
-    .profile-container {
-        max-width: 800px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
-
-    .card-block {
-        background: var(--bg-surface, #ffffff);
-        border: 1px solid var(--border-color, #e2e8f0);
-        border-radius: 1rem;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        padding: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .dark .card-block {
-        background: var(--bg-surface-dark, #1e293b);
-        border-color: var(--border-color-dark, #334155);
-    }
-</style>
-<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-{% endblock %}
-
-{% block content %}
-
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen font-sans antialiased">
-    <div class="profile-container">
-
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
-            <div>
-                <h1 class="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-white">
-                    <span class="material-symbols-outlined text-4xl text-blue-600">account_circle</span>
-                    {{ _('Configuración de Perfil') }}
-                </h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-1">
-                    Gestiona tu información personal y preferencias de la cuenta.
-                </p>
-            </div>
-            <a href="{{ url_for('main.dashboard') }}"
-                class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 shadow-sm transition-colors">
-                <span class="material-symbols-outlined mr-2" style="font-size: 20px;">arrow_back</span>
-                {{ _('Volver al Dashboard') }}
-            </a>
-        </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div
-            class="mb-6 rounded-lg p-4 {% if category == 'error' %}bg-red-50 text-red-800 border-l-4 border-red-500 dark:bg-red-900/30 dark:text-red-400{% else %}bg-green-50 text-green-800 border-l-4 border-green-500 dark:bg-green-900/30 dark:text-green-400{% endif %} flex items-center shadow-sm">
-            <span class="material-symbols-outlined mr-3">{% if category == 'error' %}error{% else %}check_circle{% endif
-                %}</span>
-            <p class="font-medium">{{ message }}</p>
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            <!-- Left Column: User Card -->
-            <div class="md:col-span-1">
-                <div class="card-block text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
-                    <div class="relative mt-8">
-                        <div
-                            class="w-24 h-24 mx-auto rounded-full bg-white dark:bg-slate-800 p-1 shadow-lg border-4 border-slate-50 dark:border-slate-800 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-gray-400" style="font-size: 80px;">person</span>
-                        </div>
-                        <h2 class="mt-4 text-xl font-bold font-display text-slate-900 dark:text-white">
-                            {{ usuario.nombre_completo or usuario.username }}
-                        </h2>
-                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ usuario.email }}</p>
-
-                        <div class="mt-2 text-sm text-slate-600 dark:text-slate-300 flex justify-center gap-2 mb-4">
-                            {% if current_user.oauth_provider == 'google' %}
-                            <span
-                                class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                <i class="fab fa-google"></i> Google Auth
-                            </span>
-                            {% elif current_user.oauth_provider == 'apple' %}
-                            <span
-                                class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-medium bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300">
-                                <i class="fab fa-apple"></i> Apple Auth
-                            </span>
-                            {% else %}
-                            <span
-                                class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                                <span class="material-symbols-outlined" style="font-size: 14px;">mail</span> Correo
-                                Registrado
-                            </span>
-                            {% endif %}
-                        </div>
-
-                        <div
-                            class="border-t border-slate-200 dark:border-slate-700 pt-4 mt-6 text-sm text-left space-y-3 px-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500 dark:text-slate-400 block">{{ _('Fecha de Registro')
-                                    }}</span>
-                                <span class="font-medium text-slate-900 dark:text-slate-200">
-                                    {% if usuario.fecha_registro and not (usuario.fecha_registro is string) %}
-                                    {{ usuario.fecha_registro.strftime('%d %b %Y') }}
-                                    {% elif usuario.fecha_registro %}
-                                    {{ usuario.fecha_registro[:10] }}
-                                    {% endif %}
-                                </span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-500 dark:text-slate-400 block">{{ _('ID de Usuario') }}</span>
-                                <span
-                                    class="font-medium text-slate-900 dark:text-slate-200 select-all truncate w-24 text-right"
-                                    title="{{ usuario.id }}">
-                                    ...{{ usuario.id[-6:] }}
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="card-block">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-yellow-500">stars</span>
-                        {{ _('Suscripción') }}
-                    </h3>
-
-                    {% if usuario.suscripcion_activa %}
-                    <div
-                        class="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg p-3 text-sm flex items-center gap-3 font-medium border border-green-200 dark:border-green-900/50 mb-4">
-                        <span class="material-symbols-outlined">verified</span>
-                        {{ _('Plan Premium Activo') }}
-                    </div>
-                    <form action="{{ url_for('billing.create_portal_session') }}" method="POST">
-                        <button type="submit"
-                            class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 px-4 py-2 font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
-                            <span class="material-symbols-outlined text-sm">settings</span>
-                            {{ _('Gestionar Facturación') }}
-                        </button>
-                    </form>
-                    {% else %}
-                    <div
-                        class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg p-3 text-sm flex items-center gap-3 border border-slate-200 dark:border-slate-700 mb-4">
-                        <span class="material-symbols-outlined">inventory_2</span>
-                        {{ _('Plan Básico Gratuito') }}
-                    </div>
-                    <a href="{{ url_for('billing.subscribe') }}"
-                        class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 font-semibold text-white shadow-md hover:from-amber-600 hover:to-orange-600 transition">
-                        {{ _('Desbloquear Premium') }}
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Right Column: Settings Form -->
-            <div class="md:col-span-2">
-
-                <div class="card-block">
-                    <h2
-                        class="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <span class="material-symbols-outlined text-blue-600">manage_accounts</span>
-                        {{ _('Datos Personales') }}
-                    </h2>
-
-                    <form action="{{ url_for('auth.profile') }}" method="POST" class="space-y-6">
-
-                        <div>
-                            <label for="nombre_completo"
-                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                {{ _('Nombre Completo') }}
-                            </label>
-                            <input type="text" id="nombre_completo" name="nombre_completo"
-                                value="{{ usuario.nombre_completo or '' }}" placeholder="Escribe tu nombre completo"
-                                class="w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ _('Este nombre se mostrará en
-                                las colaboraciones y notificaciones de tableros.') }}</p>
-                        </div>
-
-                        <div>
-                            <label for="preferred_language"
-                                class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                {{ _('Idioma de la Aplicación') }}
-                            </label>
-                            <select id="preferred_language" name="preferred_language"
-                                class="w-full rounded-lg border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="es" {% if usuario.preferred_language=='es' or not
-                                    usuario.preferred_language %}selected{% endif %}>Español (ES)</option>
-                                <option value="en" {% if usuario.preferred_language=='en' %}selected{% endif %}>English
-                                    (EN)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 opacity-60">
-                                {{ _('Nombre de Usuario (Username)') }}
-                            </label>
-                            <input type="text" value="{{ usuario.username }}" disabled
-                                class="w-full rounded-lg border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 cursor-not-allowed">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 opacity-60">
-                                {{ _('Correo Electrónico') }}
-                            </label>
-                            <input type="email" value="{{ usuario.email }}" disabled
-                                class="w-full rounded-lg border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-400 cursor-not-allowed">
-                            <p class="mt-1 text-xs text-slate-500">{{ _('Tu correo electrónico no puede ser
-                                modificado.') }}</p>
-                        </div>
-
-                        <div
-                            class="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-3">
-                            <button type="reset"
-                                class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
-                                {{ _('Descartar Cambios') }}
-                            </button>
-                            <button type="submit"
-                                class="inline-flex justify-center rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:focus:ring-2 hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors">
-                                {{ _('Guardar Configuración') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card-block">
-                    <h2 class="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-slate-500">lock_reset</span>
-                        {{ _('Seguridad de la Cuenta') }}
-                    </h2>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Asegúrate de usar una contraseña fuerte y
-                        segura para proteger tus datos.</p>
-
-                    {% if current_user.oauth_provider %}
-                    <div
-                        class="bg-amber-50 text-amber-800 p-4 border border-amber-200 rounded-lg dark:bg-amber-900/20 dark:border-amber-900/50 dark:text-amber-300 text-sm mb-4">
-                        <div class="flex">
-                            <span class="material-symbols-outlined mr-2">info</span>
-                            <p>Tu cuenta está vinculada a <strong>{{ current_user.oauth_provider | title }}</strong>. El
-                                inicio de sesión es gestionado automáticamente por tu proveedor de autenticación.</p>
-                        </div>
-                    </div>
-                    {% else %}
-                    <a href="{{ url_for('auth.change_password') }}"
-                        class="inline-flex justify-center rounded-lg bg-slate-800 dark:bg-slate-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors">
-                        {{ _('Modificar mi Contraseña Accesso') }}
-                    </a>
-                    {% endif %}
-                </div>
-
-            </div>
+{% block dashboard_content %}
+<!-- Settings / Profile Header -->
+<header class="flex justify-between items-center mb-8">
+    <div class="flex items-center gap-4">
+        <button
+            class="md:hidden text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
+            id="mobileMenuBtn">
+            <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+        <div>
+            <h1 class="text-2xl font-bold flex items-center gap-3 text-text-primary-light dark:text-text-primary-dark">
+                <span class="material-symbols-outlined text-primary dark:text-blue-400 text-3xl">manage_accounts</span>
+                {{ _('Configuración de Perfil') }}
+            </h1>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                {{ _('Personaliza tu experiencia, ajusta tu información y gestiona tu suscripción.') }}
+            </p>
         </div>
     </div>
-</body>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div
+    class="mb-6 rounded-xl p-4 {% if category == 'error' %}bg-red-50 text-red-800 border-l-4 border-red-500 dark:bg-red-900/30 dark:text-red-400{% else %}bg-green-50 text-green-800 border-l-4 border-green-500 dark:bg-green-900/30 dark:text-green-400{% endif %} flex items-center shadow-sm">
+    <span class="material-symbols-outlined mr-3">{% if category == 'error' %}error{% else %}check_circle{% endif
+        %}</span>
+    <p class="font-medium text-sm">{{ message }}</p>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+    <!-- Left Column: Identity Card -->
+    <div class="lg:col-span-1 space-y-6">
+
+        <!-- Profile Identify Card -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden text-center transition-all hover:shadow-md">
+            <!-- Header Banner -->
+            <div
+                class="h-32 bg-gradient-to-br from-primary to-indigo-600 dark:from-sky-900 dark:to-indigo-900 relative">
+                <div class="absolute inset-0 bg-black/10"></div>
+                <!-- Abstract decorations -->
+                <svg class="absolute bottom-0 text-surface-light dark:text-surface-dark w-full h-8 translate-y-px"
+                    preserveAspectRatio="none" viewBox="0 0 100 100" fill="currentColor">
+                    <polygon points="0,100 100,0 100,100" />
+                </svg>
+            </div>
+
+            <div class="relative px-6 pb-6 mt-[-3rem]">
+                <div
+                    class="w-24 h-24 mx-auto rounded-3xl bg-white dark:bg-background-dark p-1.5 shadow-xl border border-slate-100 dark:border-slate-800 flex items-center justify-center relative z-10 rotate-3 transition-transform hover:rotate-0">
+                    <div
+                        class="w-full h-full rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-5xl">face</span>
+                    </div>
+                </div>
+
+                <h2 class="mt-5 text-xl font-bold text-text-primary-light dark:text-text-primary-dark tracking-tight">
+                    {{ usuario.nombre_completo or usuario.username }}
+                </h2>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1 font-medium">{{
+                    usuario.email }}</p>
+
+                <!-- Auth Provider Badge -->
+                <div class="mt-4 flex justify-center">
+                    {% if current_user.oauth_provider == 'google' %}
+                    <span
+                        class="inline-flex items-center gap-1.5 py-1 px-3 rounded-xl text-xs font-semibold bg-red-50 text-red-600 border border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50 backdrop-blur-sm">
+                        <i class="fab fa-google"></i> Google Auth
+                    </span>
+                    {% elif current_user.oauth_provider == 'apple' %}
+                    <span
+                        class="inline-flex items-center gap-1.5 py-1 px-3 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 backdrop-blur-sm">
+                        <i class="fab fa-apple"></i> Apple Auth
+                    </span>
+                    {% else %}
+                    <span
+                        class="inline-flex items-center gap-1.5 py-1 px-3 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50 backdrop-blur-sm">
+                        <span class="material-symbols-outlined text-[14px]">mail</span> Correo Registrado
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div
+                    class="mt-6 pt-5 border-t border-border-light dark:border-border-dark flex justify-between items-center text-xs">
+                    <span
+                        class="text-text-secondary-light dark:text-text-secondary-dark uppercase font-bold tracking-wider">{{
+                        _('Registro') }}</span>
+                    <span
+                        class="font-medium text-text-primary-light dark:text-text-primary-dark bg-slate-100 dark:bg-slate-800 py-1 px-2 rounded-md">
+                        {% if usuario.fecha_registro and not (usuario.fecha_registro is string) %}
+                        {{ usuario.fecha_registro.strftime('%d %b %Y') }}
+                        {% elif usuario.fecha_registro %}
+                        {{ usuario.fecha_registro[:10] }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription Card -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark shadow-sm p-6 relative overflow-hidden group">
+            <h3
+                class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-500">stars</span>
+                {{ _('Mi Plan') }}
+            </h3>
+
+            {% if usuario.suscripcion_activa %}
+            <!-- Abstract Glow -->
+            <div
+                class="absolute -top-10 -right-10 w-32 h-32 bg-green-500/20 dark:bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/30 transition-colors">
+            </div>
+
+            <div
+                class="relative bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-900/30 rounded-xl p-4 mb-5 flex items-start gap-4">
+                <div class="bg-green-100 dark:bg-green-900/50 p-2.5 rounded-lg shrink-0">
+                    <span class="material-symbols-outlined text-green-600 dark:text-green-400">verified</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-green-900 dark:text-green-300">{{ _('Premium Activo') }}</h4>
+                    <p class="text-xs text-green-700 dark:text-green-400 mt-1 leading-relaxed">Disfrutas de acceso
+                        ilimitado a tableros, mapas inteligentes y soporte prioritario.</p>
+                </div>
+            </div>
+
+            <form action="{{ url_for('billing.create_portal_session') }}" method="POST">
+                <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold text-text-primary-light dark:text-text-primary-dark shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all">
+                    <span class="material-symbols-outlined text-sm">tune</span>
+                    {{ _('Gestionar Facturación') }}
+                </button>
+            </form>
+            {% else %}
+            <div
+                class="relative bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl p-4 mb-5 flex items-start gap-4">
+                <div
+                    class="bg-slate-200 dark:bg-slate-800 p-2.5 rounded-lg shrink-0 border border-slate-300 dark:border-slate-700">
+                    <span class="material-symbols-outlined text-slate-500 dark:text-slate-400">inventory_2</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-text-primary-light dark:text-text-primary-dark">{{ _('Plan Básico') }}
+                    </h4>
+                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1 leading-relaxed">
+                        Estás usando la versión gratuita con capacidades limitadas en tableros y tarjetas.</p>
+                </div>
+            </div>
+
+            <a href="{{ url_for('billing.subscribe') }}"
+                class="relative w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:from-amber-400 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all overflow-hidden">
+                <span class="relative z-10 flex items-center gap-2">
+                    {{ _('Desbloquear Premium') }}
+                    <span class="material-symbols-outlined text-lg">bolt</span>
+                </span>
+                <!-- Shine effect -->
+                <div
+                    class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]">
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Settings Form -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Editable Settings Form -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark shadow-sm overflow-hidden">
+            <div
+                class="px-6 py-5 border-b border-border-light dark:border-border-dark bg-slate-50/50 dark:bg-slate-800/20">
+                <h2
+                    class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary dark:text-blue-400">edit_document</span>
+                    {{ _('Información Personal') }}
+                </h2>
+            </div>
+
+            <form action="{{ url_for('auth.profile') }}" method="POST">
+                <div class="p-6 space-y-6">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Full Name -->
+                        <div class="space-y-2">
+                            <label for="nombre_completo"
+                                class="block text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                                {{ _('Nombre Completo') }}
+                            </label>
+                            <div class="relative">
+                                <span
+                                    class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary-light dark:text-text-secondary-dark pointer-events-none">
+                                    <span class="material-symbols-outlined text-[20px]">badge</span>
+                                </span>
+                                <input type="text" id="nombre_completo" name="nombre_completo"
+                                    value="{{ usuario.nombre_completo or '' }}" placeholder="Juan Pérez"
+                                    class="block w-full pl-10 pr-3 py-2.5 text-sm rounded-xl border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark focus:ring-2 focus:ring-primary focus:border-primary transition-colors">
+                            </div>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">{{ _('Así es
+                                como te verán los demás colaboradores.') }}</p>
+                        </div>
+
+                        <!-- Language -->
+                        <div class="space-y-2">
+                            <label for="preferred_language"
+                                class="block text-sm font-semibold text-text-primary-light dark:text-text-primary-dark">
+                                {{ _('Idioma Preferido') }}
+                            </label>
+                            <div class="relative">
+                                <span
+                                    class="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary-light dark:text-text-secondary-dark pointer-events-none">
+                                    <span class="material-symbols-outlined text-[20px]">language</span>
+                                </span>
+                                <select id="preferred_language" name="preferred_language"
+                                    class="block w-full pl-10 pr-8 py-2.5 text-sm rounded-xl border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark focus:ring-2 focus:ring-primary focus:border-primary transition-colors appearance-none">
+                                    <option value="es" {% if usuario.preferred_language=='es' or not
+                                        usuario.preferred_language %}selected{% endif %}>Español (ES)</option>
+                                    <option value="en" {% if usuario.preferred_language=='en' %}selected{% endif %}>
+                                        English (EN)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        <!-- Username (Disabled) -->
+                        <div class="space-y-2">
+                            <label
+                                class="block text-sm font-semibold text-text-primary-light dark:text-text-primary-dark opacity-80">
+                                {{ _('Nombre de Usuario') }} <span
+                                    class="font-normal text-xs text-text-secondary-light ml-1">(Inmodificable)</span>
+                            </label>
+                            <input type="text" value="{{ usuario.username }}" disabled
+                                class="block w-full px-3 py-2.5 text-sm font-mono rounded-xl border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-slate-400 cursor-not-allowed shadow-inner">
+                        </div>
+
+                        <!-- Email (Disabled) -->
+                        <div class="space-y-2">
+                            <label
+                                class="block text-sm font-semibold text-text-primary-light dark:text-text-primary-dark opacity-80">
+                                {{ _('Correo Electrónico') }} <span
+                                    class="font-normal text-xs text-text-secondary-light ml-1">(Inmodificable)</span>
+                            </label>
+                            <input type="email" value="{{ usuario.email }}" disabled
+                                class="block w-full px-3 py-2.5 text-sm rounded-xl border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-slate-400 cursor-not-allowed shadow-inner">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Action Footer -->
+                <div
+                    class="px-6 py-4 bg-slate-50 dark:bg-slate-800/30 border-t border-border-light dark:border-border-dark flex items-center justify-end gap-3">
+                    <button type="reset"
+                        class="px-4 py-2 text-sm font-bold text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
+                        {{ _('Descartar') }}
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all hover:-translate-y-0.5">
+                        <span class="material-symbols-outlined text-[18px]">save</span>
+                        {{ _('Guardar Cambios') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Card -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark shadow-sm p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h3
+                    class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-slate-400">lock</span>
+                    {{ _('Seguridad y Acceso') }}
+                </h3>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark max-w-md">Para mayor
+                    seguridad, te recomendamos actualizar tu contraseña periódicamente. Si tienes sesión iniciada con
+                    Google o Apple, ellos gestionan tu contraseña.</p>
+            </div>
+
+            <div class="shrink-0 pt-2 sm:pt-0">
+                {% if current_user.oauth_provider %}
+                <div
+                    class="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-sm font-medium text-slate-500 dark:text-slate-400 cursor-not-allowed">
+                    <span class="material-symbols-outlined text-[18px]">vpn_key_off</span>
+                    {{ _('Gestionado por') }} {{ current_user.oauth_provider | title }}
+                </div>
+                {% else %}
+                <a href="{{ url_for('auth.change_password') }}"
+                    class="inline-flex items-center gap-2 rounded-xl bg-slate-800 dark:bg-slate-700 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition-all hover:shadow-md">
+                    <span class="material-symbols-outlined text-[18px]">key</span>
+                    {{ _('Cambiar Contraseña') }}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
 {% endblock %}
