@@ -99,17 +99,18 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
         'nombre': [
             'nombre', 'name', 'nombrecompleto', 'nombreyfamiliar', 
             'nombrepersona', 'titulo', 'persona', 'fullname',
-            'nombres', 'nombreyapellido', 'nombreyapellidos'
+            'nombres', 'nombreyapellido', 'nombreyapellidos', 'nombrereferencia'
         ],
         'apellido': [
-            'apellido', 'lastname', 'surname', 'apellidopersona', 'apellidos'
+            'apellido', 'lastname', 'surname', 'apellidopersona', 'apellidos',
+            'apellidoreferencia'
         ],
         'direccion': [
             'direccion', 'address', 'ubicacion', 'domicilio', 
             'calle', 'residencia', 'descripcion', 'direccionderesidencia',
             'direccionresidencia', 'direccioncompl', 'direccionderesidenciacompl',
             'direcci', 'direc', 'domicili', 'residenci',
-            'direcciondecasa', 'direccionhabitacion', 'lugar', 'dondevive'
+            'direcciondecasa', 'direccionhabitacion', 'lugar', 'dondevive', 'resideen'
         ],
         'codigo_postal': [
             'codigopostal', 'cp', 'zip', 'zipcode', 'postalcode', 
@@ -133,7 +134,7 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
         ],
         'num_hijos': [
             'numerohijos', 'numerodehijos', 'cantidadhijos', 'nohijos',
-            'children', 'cuantoshijos', 'cuantos', 'numhijos', 'nohijos'
+            'children', 'cuantoshijos', 'cuantos', 'numhijos', 'nohijos', 'hijos'
         ],
         'edades_hijos': [
             'edadeshijos', 'edadesdehijos', 'edadeshijo', 
