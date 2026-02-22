@@ -102,8 +102,7 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
             'nombres', 'nombreyapellido', 'nombreyapellidos'
         ],
         'apellido': [
-            'apellido', 'lastname', 'surname', 'apellidopersona',
-            'apellidodelconyuge', 'apellidodel', 'apellidos'
+            'apellido', 'lastname', 'surname', 'apellidopersona', 'apellidos'
         ],
         'direccion': [
             'direccion', 'address', 'ubicacion', 'domicilio', 
@@ -243,6 +242,10 @@ def mapear_columnas(headers: List[str]) -> Dict[str, str]:
                 columnas_disponibles.remove(mejor_match)
                 print(f"✨ Coincidencia inteligente: '{headers_normalizados[mejor_match]}' -> {campo_estandar}")
     
+    if columnas_disponibles:
+        unmapped = [headers_normalizados[c] for c in columnas_disponibles if c in headers_normalizados]
+        print(f"⚠️ Columnas ignoradas/no mapeadas en el archivo: {', '.join(unmapped)}")
+        
     return resultado
 
 
