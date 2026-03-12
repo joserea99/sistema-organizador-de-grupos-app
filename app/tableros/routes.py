@@ -655,6 +655,7 @@ def importar_excel(lista_id):
             # Importar personas a la lista
             tarjetas_importadas = 0
             for persona_data in personas_data:
+                print(f"DEBUG EXCEL IMPORT: Tratando de importar -> {persona_data}")
                 try:
                     lista_encontrada.agregar_persona(
                         responsable=session.get('username', 'Usuario'),
@@ -662,6 +663,7 @@ def importar_excel(lista_id):
                     )
                     tarjetas_importadas += 1
                 except Exception as e:
+                    print(f"DEBUG EXCEL IMPORT ERROR: {str(e)}")
                     errores.append(f'Error creando persona: {str(e)}')
             
             # Guardar cambios a disco
@@ -1026,6 +1028,8 @@ def editar_tarjeta(lista_id, tarjeta_id):
         try:
             valid_data = TarjetaBaseSchema().load(form_data)
         except ValidationError as err:
+            with open('/tmp/debug_form.txt', 'a') as f:
+                f.write(f"ValidationError: {str(err)}\nForm Data: {str(form_data)}\n")
             error_messages = [msg for el in err.messages.values() for msg in el]
             flash(error_messages[0] if error_messages else "Datos de tarjeta inválidos.", "error")
             return redirect(request.url)
@@ -1049,7 +1053,15 @@ def editar_tarjeta(lista_id, tarjeta_id):
             tarjeta_encontrada.nombre_conyuge = form_data.get('nombre_conyuge', '').strip()
             tarjeta_encontrada.telefono_conyuge = form_data.get('telefono_conyuge', '')
             tarjeta_encontrada.edad_conyuge = int(form_data.get('edad_conyuge')) if form_data.get('edad_conyuge') else None
-            tarjeta_encontrada.fecha_matrimonio = form_data.get('fecha_matrimonio', '')
+            
+            fecha_mat = form_data.get('fecha_matrimonio', '').strip()
+            if fecha_mat:
+                try:
+                    tarjeta_encontrada.fecha_matrimonio = datetime.strptime(fecha_mat, '%Y-%m-%d').date()
+                except ValueError:
+                    tarjeta_encontrada.fecha_matrimonio = None
+            else:
+                tarjeta_encontrada.fecha_matrimonio = None
             
             # Información Adicional
             tarjeta_encontrada.responsable = form_data.get('responsable', '')
@@ -1073,6 +1085,9 @@ def editar_tarjeta(lista_id, tarjeta_id):
             return redirect(url_for('tableros.ver', tablero_id=tablero_encontrado.id))
             
         except Exception as e:
+            with open('/tmp/debug_form.txt', 'a') as f:
+                import traceback
+                f.write(f"Exception updating tarjeta: {str(e)}\n{traceback.format_exc()}\n")
             flash(f'Error actualizando tarjeta: {str(e)}', 'error')
             return redirect(request.url)
 

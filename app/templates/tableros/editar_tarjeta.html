@@ -444,6 +444,17 @@
 
 <body>
     <div class="container">
+        <!-- Mensajes Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}" style="margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: {{ '#dcfce7' if category == 'success' else '#fee2e2' }}; color: {{ '#166534' if category == 'success' else '#991b1b' }}; border: 1px solid {{ '#86efac' if category == 'success' else '#f87171' }};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <!-- Header -->
         <div class="header">
             <div class="header-content">
@@ -544,12 +555,11 @@
 
                         <div class="form-group">
                             <label class="form-label">
-                                Apellido <span class="required">*</span>
+                                Apellido
                             </label>
                             <div class="input-group">
                                 <i class="fas fa-user input-icon"></i>
-                                <input type="text" name="apellido" class="form-input" value="{{ tarjeta.apellido }}"
-                                    required>
+                                <input type="text" name="apellido" class="form-input" value="{{ tarjeta.apellido if tarjeta.apellido else '' }}">
                             </div>
                         </div>
 
@@ -1165,11 +1175,10 @@
             if (form) {
                 form.addEventListener('submit', function (e) {
                     const nombre = document.querySelector('[name="nombre"]').value.trim();
-                    const apellido = document.querySelector('[name="apellido"]').value.trim();
 
-                    if (!nombre || !apellido) {
+                    if (!nombre) {
                         e.preventDefault();
-                        mostrarNotificacion('El nombre y apellido son requeridos', 'error');
+                        mostrarNotificacion('El nombre es requerido', 'error');
                         switchTab('personal');
                         return;
                     }
