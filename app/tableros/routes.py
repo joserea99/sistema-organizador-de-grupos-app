@@ -652,9 +652,45 @@ def importar_excel(lista_id):
             if columnas_faltantes:
                 flash(f'⚠️ Advertencia: No se encontraron las siguientes columnas: {", ".join(columnas_faltantes)}. Verifica los encabezados de tu archivo.', 'warning')
             
+            # Obtener todas las personas actuales en el tablero para evitar duplicados
+            personas_actuales = tablero_encontrado.get_todas_las_personas()
+            
+            # Crear un índice de personas existentes basado en email y nombre normalizado
+            emails_existentes = set()
+            nombres_existentes = set()
+            
+            for p in personas_actuales:
+                if p.get('email'):
+                    emails_existentes.add(p['email'].strip().lower())
+                
+                # Normalizar nombre + apellido para la comparación
+                nombre_completo_norm = f"{p.get('nombre', '')} {p.get('apellido', '')}".strip().lower()
+                import re
+                nombre_completo_norm = re.sub(r'\s+', ' ', nombre_completo_norm)
+                if nombre_completo_norm:
+                    nombres_existentes.add(nombre_completo_norm)
+            
             # Importar personas a la lista
             tarjetas_importadas = 0
+            tarjetas_omitidas = 0
+            
             for persona_data in personas_data:
+                # Comprobar si es un duplicado
+                es_duplicado = False
+                
+                email_nuevo = str(persona_data.get('email', '')).strip().lower()
+                if email_nuevo and email_nuevo in emails_existentes:
+                    es_duplicado = True
+                    
+                nombre_norm = f"{persona_data.get('nombre', '')} {persona_data.get('apellido', '')}".strip().lower()
+                nombre_norm = re.sub(r'\s+', ' ', nombre_norm)
+                if nombre_norm and nombre_norm in nombres_existentes:
+                     es_duplicado = True
+                
+                if es_duplicado:
+                    tarjetas_omitidas += 1
+                    continue
+                
                 print(f"DEBUG EXCEL IMPORT: Tratando de importar -> {persona_data}")
                 try:
                     lista_encontrada.agregar_persona(
@@ -662,6 +698,9 @@ def importar_excel(lista_id):
                         **persona_data
                     )
                     tarjetas_importadas += 1
+                    # Añadir al set local para no duplicar filas dentro del mismo Excel
+                    if email_nuevo: emails_existentes.add(email_nuevo)
+                    if nombre_norm: nombres_existentes.add(nombre_norm)
                 except Exception as e:
                     print(f"DEBUG EXCEL IMPORT ERROR: {str(e)}")
                     errores.append(f'Error creando persona: {str(e)}')
@@ -671,12 +710,17 @@ def importar_excel(lista_id):
             
             # Mostrar resultados
             if tarjetas_importadas > 0:
-                flash(f'✅ Se importaron {tarjetas_importadas} personas exitosamente', 'success')
+                mensaje_exito = f'✅ Se importaron {tarjetas_importadas} personas exitosamente.'
+                if tarjetas_omitidas > 0:
+                    mensaje_exito += f' Se omitieron {tarjetas_omitidas} personas que ya existían.'
+                flash(mensaje_exito, 'success')
+            elif tarjetas_omitidas > 0:
+                flash(f'ℹ️ No se importaron nuevos registros. Las {tarjetas_omitidas} personas ya existían en el tablero.', 'info')
             
             if errores:
                 flash(f'⚠️ Se encontraron {len(errores)} errores: {"; ".join(errores[:3])}{"..." if len(errores) > 3 else ""}', 'warning')
             
-            if tarjetas_importadas == 0:
+            if tarjetas_importadas == 0 and tarjetas_omitidas == 0:
                 flash('❌ No se importó ninguna persona. Verifica el formato del archivo.', 'error')
                 return redirect(request.url)
             
