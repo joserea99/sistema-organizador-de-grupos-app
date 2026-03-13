@@ -123,18 +123,55 @@ def lista():
 
 # Colores para las listas
 KANBAN_COLORS = [
-    "#ef4444", "#dc2626", "#b91c1c", # Rojos
-    "#f97316", "#ea580c", "#c2410c", # Naranjas
-    "#f59e0b", "#d97706", "#b45309", # Ambar
-    "#84cc16", "#65a30d", "#4d7c0f", # Lima
-    "#10b981", "#059669", "#047857", # Esmeralda
-    "#06b6d4", "#0891b2", "#0e7490", # Cyan
-    "#3b82f6", "#2563eb", "#1d4ed8", # Azul
-    "#6366f1", "#4f46e5", "#4338ca", # Indigo
-    "#8b5cf6", "#7c3aed", "#6d28d9", # Violeta
-    "#ec4899", "#db2777", "#be185d", # Rosa
-    "#f43f5e", "#e11d48", "#be123c", # Rose
-    "#64748b", "#475569", "#334155"  # Slate
+    # --- Fila 1: Rojos y Rosa ---
+    "#EF4444",  # Rojo puro
+    "#F43F5E",  # Rojo-Rosa
+    "#EC4899",  # Rosa Brillante
+    "#BE185D",  # Fucsia Oscuro
+    "#F472B6",  # Rosa Pastel
+    # --- Fila 2: Naranjas y Ambar ---
+    "#F97316",  # Naranja Fuerte
+    "#FB923C",  # Naranja Suave
+    "#FBBF24",  # Ambar Dorado
+    "#EAB308",  # Amarillo Mostaza
+    "#FDE047",  # Amarillo Brillante
+    # --- Fila 3: Verdes ---
+    "#84CC16",  # Lima Verde
+    "#22C55E",  # Verde Puro
+    "#10B981",  # Esmeralda
+    "#059669",  # Verde Oscuro
+    "#4ADE80",  # Verde Claro
+    # --- Fila 4: Turquesa y Cyan ---
+    "#2DD4BF",  # Turquesa
+    "#14B8A6",  # Teal
+    "#06B6D4",  # Cyan Brillante
+    "#22D3EE",  # Celeste Claro
+    "#67E8F9",  # Azul Cielo
+    # --- Fila 5: Azules ---
+    "#60A5FA",  # Azul Claro
+    "#3B82F6",  # Azul Puro
+    "#2563EB",  # Azul Fuerte
+    "#1D4ED8",  # Azul Oscuro
+    "#1E40AF",  # Azul Marino
+    # --- Fila 6: Índigo y Violeta ---
+    "#818CF8",  # Índigo Claro
+    "#6366F1",  # Índigo
+    "#8B5CF6",  # Violeta
+    "#7C3AED",  # Morado Fuerte
+    "#A855F7",  # Púrpura
+    # --- Fila 7: Fuchsia y Magenta ---
+    "#C084FC",  # Lavanda
+    "#D946EF",  # Fuchsia
+    "#E879F9",  # Magenta Claro
+    "#C026D3",  # Magenta Oscuro
+    # --- Fila 8: Marrones, Rojos oscuros y Terracota ---
+    "#B45309",  # Dorado Oscuro
+    "#92400E",  # Marrón
+    "#DC2626",  # Rojo Vivo
+    "#991B1B",  # Rojo Oscuro
+    # --- Fila 9: Grises ---
+    "#64748B",  # Gris Azulado
+    "#334155",  # Gris Oscuro
 ]
 
 @tableros_bp.route("/<tablero_id>")
