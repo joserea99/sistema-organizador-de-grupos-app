@@ -1250,26 +1250,26 @@ def apply_clustering():
         
         # Paleta de colores distintivos para los grupos
         colores_grupos = [
-            "#EF4444", # Rojo
-            "#F59E0B", # Ambar
-            "#10B981", # Esmeralda
-            "#3B82F6", # Azul
-            "#6366F1", # Indigo
-            "#8B5CF6", # Violeta
-            "#EC4899", # Rosa
-            "#F97316", # Naranja
-            "#84CC16", # Lima
-            "#06B6D4", # Cyan
-            "#14B8A6", # Teal
-            "#64748B", # Slate
-            "#A855F7", # Purple
-            "#D946EF", # Fuchsia
-            "#F43F5E", # Rose
-            "#EAB308", # Yellow
-            "#22C55E", # Green
-            "#0EA5E9", # Sky
-            "#4F46E5", # Indigo
-            "#C026D3"  # Fuchsia Dark
+            "#EF4444", # Rojo (Warm)
+            "#3B82F6", # Azul (Cool)
+            "#84CC16", # Lima Verde (Yellow-Green)
+            "#D946EF", # Fuchsia (Pink-Purple)
+            "#F59E0B", # Ambar Naranja (Warm)
+            "#0EA5E9", # Celeste Sky (Cool)
+            "#10B981", # Verde Esmeralda (Cool-Green)
+            "#8B5CF6", # Violeta (Purple)
+            "#F97316", # Naranja Fuerte (Warm)
+            "#06B6D4", # Cyan Brillante (Cool)
+            "#EAB308", # Amarillo (Warm)
+            "#4F46E5", # Indigo Oscuro (Cool)
+            "#EC4899", # Rosa (Warm-Pink)
+            "#14B8A6", # Verde Azulado Teal (Cool)
+            "#F43F5E", # Rojo Rosa (Warm)
+            "#6366F1", # Indigo Claro (Cool)
+            "#22C55E", # Verde Puro (Cool-Green)
+            "#C026D3", # Fuchsia Oscuro (Purple)
+            "#B45309", # Naranja Oscuro (Warm)
+            "#1E40AF"  # Azul Oscuro (Cool)
         ]
         
         for i, cluster in enumerate(clusters):

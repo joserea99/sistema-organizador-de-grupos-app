@@ -155,23 +155,65 @@ export class MapManager {
         }
     }
 
+    getMarkerShape(hashString) {
+        const shapes = [
+            // 0: Classic Teardrop Pin
+            "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+            // 1: Shield
+            "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z",
+            // 2: Hexagon
+            "M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z",
+            // 3: Rounded Square
+            "M5 3h14c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2z",
+            // 4: Circle
+            "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"
+        ];
+        
+        let hash = 0;
+        if (hashString && hashString.length > 0) {
+            for (let i = 0; i < hashString.length; i++) {
+                hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
+                hash |= 0; 
+            }
+        }
+        return shapes[Math.abs(hash) % shapes.length];
+    }
+
     addMarker(position, personData) {
-        // Crear icono SVG personalizado con el color de la lista
+        // Crear icono SVG personalizado y forma rotativa
         const svgMarker = {
-            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+            path: this.getMarkerShape(personData.listName || personData.listId || "default"),
             fillColor: personData.color,
             fillOpacity: 1,
-            strokeWeight: 1,
+            strokeWeight: 1.5,
             strokeColor: "#FFFFFF",
             rotation: 0,
             scale: 2,
             anchor: new google.maps.Point(12, 22),
+            labelOrigin: new google.maps.Point(12, 10)
         };
+        
+        // Etiqueta corta (2 letras de la lista o nombre)
+        let shortLabel = "";
+        let srcLabel = personData.listName || personData.initials || "Grp";
+        // Attempt to extract numeric part for "Grupo 1" -> "G1"
+        const numbers = srcLabel.match(/\d+/);
+        if (numbers && srcLabel.toUpperCase().startsWith("GRUPO")) {
+            shortLabel = "G" + numbers[0];
+        } else {
+            shortLabel = srcLabel.substring(0, 2).toUpperCase();
+        }
 
         const marker = new google.maps.Marker({
             position: position,
             title: personData.name,
             icon: svgMarker,
+            label: {
+                text: shortLabel,
+                color: "#FFFFFF",
+                fontSize: "10px",
+                fontWeight: "bold"
+            },
             animation: google.maps.Animation.DROP
         });
 
@@ -241,22 +283,39 @@ export class MapManager {
     geocodeAndAddMarker(geocoder, address, personData) {
         geocoder.geocode({ 'address': address }, (results, status) => {
             if (status === 'OK') {
-                // Crear icono SVG personalizado con el color de la lista
+                // Crear icono SVG personalizado y forma rotativa
                 const svgMarker = {
-                    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+                    path: this.getMarkerShape(personData.listName || personData.listId || "default"),
                     fillColor: personData.color,
                     fillOpacity: 1,
-                    strokeWeight: 1,
+                    strokeWeight: 1.5,
                     strokeColor: "#FFFFFF",
                     rotation: 0,
                     scale: 2,
                     anchor: new google.maps.Point(12, 22),
+                    labelOrigin: new google.maps.Point(12, 10)
                 };
+                
+                // Etiqueta corta (2 letras de la lista o nombre)
+                let shortLabel = "";
+                let srcLabel = personData.listName || personData.initials || "Grp";
+                const numbers = srcLabel.match(/\d+/);
+                if (numbers && srcLabel.toUpperCase().startsWith("GRUPO")) {
+                    shortLabel = "G" + numbers[0];
+                } else {
+                    shortLabel = srcLabel.substring(0, 2).toUpperCase();
+                }
 
                 const marker = new google.maps.Marker({
                     position: results[0].geometry.location,
                     title: personData.name,
                     icon: svgMarker,
+                    label: {
+                        text: shortLabel,
+                        color: "#FFFFFF",
+                        fontSize: "10px",
+                        fontWeight: "bold"
+                    },
                     animation: google.maps.Animation.DROP
                 });
 
